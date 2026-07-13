@@ -2,10 +2,8 @@ using UnityEngine;
 
 public class LoopTrigger : MonoBehaviour
 {
-    [Tooltip("Le Trigger vers lequel le joueur sera téléporté")]
     public Transform destinationTrigger;
 
-    [Tooltip("Coche VRAI sur le Trigger de FIN. Laisse FAUX sur le Trigger de DÉBUT.")]
     public bool isForwardExit;
 
     private static float cooldownTimer = 0f;

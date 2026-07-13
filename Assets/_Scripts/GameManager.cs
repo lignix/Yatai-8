@@ -1,17 +1,19 @@
 using UnityEngine;
-using TMPro; // Requis pour les textes TextMeshPro
+using TMPro;
 
 public class GameManager : MonoBehaviour
 {
     public static GameManager Instance;
 
-    [Header("UI de Debug")]
+    [Header("Debug UI")]
     public TMP_Text textAnomaly;
     public TMP_Text textLevel;
 
-    [Header("État du Jeu")]
+    [Header("Game State")]
     public bool hasAnomaly = false;
     public int currentLevel = 0;
+    
+    private string currentAnomalyName = "";
 
     private void Awake()
     {
@@ -31,12 +33,15 @@ public class GameManager : MonoBehaviour
         if (correctChoice)
         {
             currentLevel++;
-            Debug.Log($"<color=green>Bon choix !</color> Passage au niveau {currentLevel}.");
+            
+            if (hasAnomaly) 
+            {
+                AnomalyController.Instance.UnlockCurrentAnomaly();
+            }
         }
         else
         {
             currentLevel = 0;
-            Debug.Log($"<color=red>Mauvais choix !</color> Retour à zéro.");
         }
 
         GenerateNextLoop();
@@ -53,21 +58,29 @@ public class GameManager : MonoBehaviour
             hasAnomaly = Random.value > 0.5f;
         }
 
-        UpdateDebugUI();
+        // Resets scene + Generate the anomaly for this loop if hasAnomaly
+        currentAnomalyName = AnomalyController.Instance.SetupLoop(hasAnomaly);
 
-        //TODO add anomalycontroller to choose an anomaly to play
+        UpdateDebugUI();
     }
 
     private void UpdateDebugUI()
     {
         if (textAnomaly != null)
         {
-            textAnomaly.text = "Anomalie : " + (hasAnomaly ? "<color=red>OUI</color>" : "<color=green>NON</color>");
+            if (hasAnomaly)
+            {
+                textAnomaly.text = $"Anomaly? : <color=red>YES ({currentAnomalyName})</color>";
+            }
+            else
+            {
+                textAnomaly.text = "Anomaly? : <color=green>NO</color>";
+            }
         }
         
         if (textLevel != null)
         {
-            textLevel.text = "Niveau : " + currentLevel;
+            textLevel.text = "Level : " + currentLevel;
         }
     }
 }

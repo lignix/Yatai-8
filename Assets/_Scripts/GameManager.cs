@@ -1,13 +1,8 @@
 using UnityEngine;
-using TMPro;
 
 public class GameManager : MonoBehaviour
 {
     public static GameManager Instance;
-
-    [Header("Debug UI")]
-    public TMP_Text textAnomaly;
-    public TMP_Text textLevel;
 
     [Header("Game State")]
     public bool hasAnomaly = false;
@@ -33,6 +28,7 @@ public class GameManager : MonoBehaviour
         if (correctChoice)
         {
             currentLevel++;
+            Debug.Log($"<color=green>Correct choice!</color> Moving to level {currentLevel}.");
             
             if (hasAnomaly) 
             {
@@ -42,6 +38,7 @@ public class GameManager : MonoBehaviour
         else
         {
             currentLevel = 0;
+            Debug.Log($"<color=red>Wrong choice!</color> Back to zero.");
         }
 
         GenerateNextLoop();
@@ -58,29 +55,8 @@ public class GameManager : MonoBehaviour
             hasAnomaly = Random.value > 0.5f;
         }
 
-        // Resets scene + Generate the anomaly for this loop if hasAnomaly
         currentAnomalyName = AnomalyController.Instance.SetupLoop(hasAnomaly);
-
-        UpdateDebugUI();
-    }
-
-    private void UpdateDebugUI()
-    {
-        if (textAnomaly != null)
-        {
-            if (hasAnomaly)
-            {
-                textAnomaly.text = $"Anomaly? : <color=red>YES ({currentAnomalyName})</color>";
-            }
-            else
-            {
-                textAnomaly.text = "Anomaly? : <color=green>NO</color>";
-            }
-        }
         
-        if (textLevel != null)
-        {
-            textLevel.text = "Level : " + currentLevel;
-        }
+        Debug.Log($"Next loop generated. Anomaly: {hasAnomaly} ({currentAnomalyName}). Level: {currentLevel}");
     }
 }

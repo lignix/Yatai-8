@@ -2,22 +2,22 @@ using System.Collections.Generic;
 using UnityEngine;
 
 [System.Serializable]
-public class AnomalyData
+public class AnomalySceneData
 {
-    public string anomalyName;
+    public int databaseIndex;
     public GameObject anomalyObject;
     public GameObject normalObjectToHide;
-    public bool isUnlocked;
+    [HideInInspector] public bool isUnlocked;
 }
 
 public class AnomalyController : MonoBehaviour
 {
     public static AnomalyController Instance;
 
-    [Header("Anomalies list")]
-    public List<AnomalyData> anomalies = new List<AnomalyData>();
+    public AnomalyDatabase database;
+    public List<AnomalySceneData> anomalies = new List<AnomalySceneData>();
 
-    private AnomalyData currentAnomaly = null;
+    private AnomalySceneData currentAnomaly = null;
 
     private void Awake()
     {
@@ -25,18 +25,33 @@ public class AnomalyController : MonoBehaviour
         else Destroy(gameObject);
     }
 
-    // Called by GameManager on each loop
+    private void Start()
+    {
+        LoadUnlockedAnomalies();
+    }
+
+    private void LoadUnlockedAnomalies()
+    {
+        List<int> savedUnlocks = SaveManager.Load();
+        
+        foreach (var anomaly in anomalies)
+        {
+            if (savedUnlocks.Contains(anomaly.databaseIndex))
+            {
+                anomaly.isUnlocked = true;
+            }
+        }
+    }
+
     public string SetupLoop(bool hasAnomaly)
     {
         ResetCurrentAnomaly();
         if (!hasAnomaly) return "";
 
-        // Chooses an anomaly
-        List<AnomalyData> availableAnomalies = anomalies.FindAll(a => !a.isUnlocked);
+        List<AnomalySceneData> availableAnomalies = anomalies.FindAll(a => !a.isUnlocked);
         
         if (availableAnomalies.Count == 0)
         {
-            Debug.Log("All anomalies unlocked. Picking from all anomalies.");
             availableAnomalies = anomalies; 
         }
 
@@ -45,9 +60,8 @@ public class AnomalyController : MonoBehaviour
         if (currentAnomaly.anomalyObject != null) currentAnomaly.anomalyObject.SetActive(true);
         if (currentAnomaly.normalObjectToHide != null) currentAnomaly.normalObjectToHide.SetActive(false);
 
-        Debug.Log(currentAnomaly.anomalyName);
-
-        return currentAnomaly.anomalyName;
+        string key = database.anomalyKeys[currentAnomaly.databaseIndex];
+        return LocalizationManager.Instance != null ? LocalizationManager.Instance.GetTranslation(key) : key;
     }
 
     private void ResetCurrentAnomaly()
@@ -62,9 +76,23 @@ public class AnomalyController : MonoBehaviour
 
     public void UnlockCurrentAnomaly()
     {
-        if (currentAnomaly != null)
+        if (currentAnomaly != null && !currentAnomaly.isUnlocked)
         {
             currentAnomaly.isUnlocked = true;
+            SaveAllProgress();
         }
+    }
+
+    public void SaveAllProgress()
+    {
+        List<int> unlockedIndexes = new List<int>();
+        foreach (var anomaly in anomalies)
+        {
+            if (anomaly.isUnlocked)
+            {
+                unlockedIndexes.Add(anomaly.databaseIndex);
+            }
+        }
+        SaveManager.Save(unlockedIndexes);
     }
 }

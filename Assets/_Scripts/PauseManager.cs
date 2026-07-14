@@ -1,8 +1,8 @@
 using System.Collections.Generic;
-using UnityEngine;
-using UnityEngine.SceneManagement;
 using TMPro;
+using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.SceneManagement;
 
 public class PauseManager : MonoBehaviour
 {
@@ -25,10 +25,12 @@ public class PauseManager : MonoBehaviour
     private void Start()
     {
         pausePanel.SetActive(false);
-        if (optionsPanel != null) optionsPanel.SetActive(false);
+        if (optionsPanel != null)
+            optionsPanel.SetActive(false);
 
-        if (deleteSaveButton != null) deleteSaveButton.SetActive(false);
-        
+        if (deleteSaveButton != null)
+            deleteSaveButton.SetActive(false);
+
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
     }
@@ -62,8 +64,9 @@ public class PauseManager : MonoBehaviour
     {
         isPaused = !isPaused;
         pausePanel.SetActive(isPaused);
-        
+
         Time.timeScale = isPaused ? 0f : 1f;
+        AudioListener.pause = isPaused;
 
         Cursor.lockState = isPaused ? CursorLockMode.None : CursorLockMode.Locked;
         Cursor.visible = isPaused;
@@ -82,18 +85,20 @@ public class PauseManager : MonoBehaviour
     public void OpenOptions()
     {
         pausePanel.SetActive(false);
-        if (optionsPanel != null) optionsPanel.SetActive(true);
+        if (optionsPanel != null)
+            optionsPanel.SetActive(true);
     }
 
     public void CloseOptions()
     {
-        if (optionsPanel != null) optionsPanel.SetActive(false);
+        if (optionsPanel != null)
+            optionsPanel.SetActive(false);
         pausePanel.SetActive(true);
     }
 
     public void LoadMainMenu()
     {
-        Time.timeScale = 1f; 
+        Time.timeScale = 1f;
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
         SceneManager.LoadScene("Menu");
@@ -101,15 +106,17 @@ public class PauseManager : MonoBehaviour
 
     private void UpdateProgressText()
     {
-        if (progressText == null || database == null) return;
+        if (progressText == null || database == null)
+            return;
 
         List<int> unlockedAnomalies = SaveManager.Load();
         int totalAnomalies = database.anomalyKeys.Count;
-        
-        string progressFormat = LocalizationManager.Instance != null 
-            ? LocalizationManager.Instance.GetTranslation("ui_progress") 
-            : "{0} / {1}";
-            
+
+        string progressFormat =
+            LocalizationManager.Instance != null
+                ? LocalizationManager.Instance.GetTranslation("ui_progress")
+                : "{0} / {1}";
+
         progressText.text = string.Format(progressFormat, unlockedAnomalies.Count, totalAnomalies);
     }
 }

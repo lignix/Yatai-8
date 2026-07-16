@@ -3,6 +3,7 @@ using UnityEngine;
 public class LoopTrigger : MonoBehaviour
 {
     public Transform destinationTrigger;
+    public Transform endgameDestinationTrigger;
 
     public bool isForwardExit;
 
@@ -29,7 +30,14 @@ public class LoopTrigger : MonoBehaviour
                     localPos.z = -localPos.z;
                 }
 
-                Vector3 worldDestination = destinationTrigger.TransformPoint(localPos);
+                Transform targetDestination = destinationTrigger;
+
+                if (GameManager.Instance.currentLevel >= GameManager.Instance.winLevel)
+                {
+                    targetDestination = endgameDestinationTrigger;
+                }
+
+                Vector3 worldDestination = targetDestination.TransformPoint(localPos);
 
                 cc.enabled = false;
                 other.transform.position = worldDestination;

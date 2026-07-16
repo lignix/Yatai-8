@@ -52,12 +52,18 @@ MonoBehaviour:
   - key: ui_delete_success
     english: PROGRESSION REMOVED
     french: "PROGRESSION SUPPRIM\xC9E"
-  - key: ano_missing_bench
-    english: Missing bench
-    french: Banc manquant
   - key: ui_mainmenu
     english: Main Menu
     french: Menu Principal
   - key: ui_resume
     english: Resume
     french: Reprendre
+  - key: ano_missing_bench
+    english: Missing bench
+    french: Banc manquant
+  - key: ano_rotated_bench
+    english: Rotated bench
+    french: "Banc tourn\xE9"
+  - key: ano_flickering_window
+    english: Flickering Window
+    french: "Fen\xEAtre qui clignotte"

@@ -15,3 +15,4 @@ MonoBehaviour:
   anomalyKeys:
   - ano_rotated_bench
   - ano_missing_bench
+  - ano_flickering_window

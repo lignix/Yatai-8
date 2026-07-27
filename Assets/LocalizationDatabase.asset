@@ -37,6 +37,15 @@ MonoBehaviour:
   - key: ui_options
     english: Options
     french: Options
+  - key: ui_maxfps
+    english: Max FPS
+    french: FPS max
+  - key: ui_vsync
+    english: Vsync
+    french: Vsync
+  - key: ui_unlimited
+    english: Unlimited
+    french: "Illimit\xE9"
   - key: ui_back
     english: Back
     french: Retour

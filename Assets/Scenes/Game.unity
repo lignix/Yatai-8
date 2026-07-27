@@ -43004,6 +43004,8 @@ MonoBehaviour:
   hasAnomaly: 0
   currentLevel: 0
   winLevel: 9
+  anomalyProbability: 0.5
+  shuffleBagSize: 10
   levelDisplay: {fileID: 1334290211}
 --- !u!4 &1543222145
 Transform:
@@ -43055,6 +43057,7 @@ MonoBehaviour:
   - {fileID: 1770635010}
   - {fileID: 1288414081}
   - {fileID: 1288414082}
+  - {fileID: 1869499870}
   fadeToBlackDuration: 2
   waitBeforeCredits: 1
   delayAfterScroll: 3

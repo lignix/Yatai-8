@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
 
@@ -10,10 +11,16 @@ public class GameManager : MonoBehaviour
     public int currentLevel = 0;
     public int winLevel = 8;
 
+    [Header("Rhythm Settings (Shuffle Bag)")]
+    [Range(0f, 1f)] 
+    public float anomalyProbability = 0.5f;
+    public int shuffleBagSize = 10; 
+
     [Header("UI")]
     public TMP_Text levelDisplay;
 
     private string currentAnomalyName = "";
+    private List<bool> shuffleBag = new List<bool>();
 
     private void Awake()
     {
@@ -23,6 +30,7 @@ public class GameManager : MonoBehaviour
 
     private void Start()
     {
+        RefillShuffleBag();
         GenerateNextLoop();
         UpdateLevelDisplay();
     }
@@ -50,10 +58,47 @@ public class GameManager : MonoBehaviour
         {
             currentLevel = 0;
             Debug.Log("Wrong choice. Reset to level 0.");
+            
+            // Resets the bag when the player makes a mistake to restart the rhythm fresh
+            RefillShuffleBag();
         }
 
         GenerateNextLoop();
         UpdateLevelDisplay();
+    }
+
+    private void RefillShuffleBag()
+    {
+        shuffleBag.Clear();
+        
+        // Calculates how many anomalies should be in the bag based on probability
+        int anomalyCount = Mathf.RoundToInt(anomalyProbability * shuffleBagSize);
+
+        for (int i = 0; i < shuffleBagSize; i++)
+        {
+            shuffleBag.Add(i < anomalyCount);
+        }
+        
+        // Shuffles the bag using the Fisher-Yates algorithm
+        for (int i = 0; i < shuffleBag.Count; i++)
+        {
+            bool temp = shuffleBag[i];
+            int randomIndex = Random.Range(i, shuffleBag.Count);
+            shuffleBag[i] = shuffleBag[randomIndex];
+            shuffleBag[randomIndex] = temp;
+        }
+    }
+
+    private bool PullFromBag()
+    {
+        if (shuffleBag.Count == 0)
+        {
+            RefillShuffleBag();
+        }
+
+        bool nextState = shuffleBag[0];
+        shuffleBag.RemoveAt(0);
+        return nextState;
     }
 
     private void GenerateNextLoop()
@@ -64,7 +109,16 @@ public class GameManager : MonoBehaviour
             return;
         }
 
-        hasAnomaly = currentLevel != 0 && Random.value > 0.5f;
+        // Level 0 is always normal and shouldn't consume a ticket from the bag
+        if (currentLevel == 0)
+        {
+            hasAnomaly = false;
+        }
+        else
+        {
+            hasAnomaly = PullFromBag();
+        }
+
         currentAnomalyName = AnomalyController.Instance.SetupLoop(hasAnomaly);
 
         Debug.Log($"Next loop generated. Anomaly: {hasAnomaly} ({currentAnomalyName}). Level: {currentLevel}");

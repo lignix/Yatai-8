@@ -43003,7 +43003,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::GameManager
   hasAnomaly: 0
   currentLevel: 0
-  winLevel: 9
+  winLevel: 1
   anomalyProbability: 0.5
   shuffleBagSize: 10
   levelDisplay: {fileID: 1334290211}
@@ -43057,7 +43057,7 @@ MonoBehaviour:
   - {fileID: 1770635010}
   - {fileID: 1288414081}
   - {fileID: 1288414082}
-  - {fileID: 1869499870}
+  - {fileID: 1869499872}
   fadeToBlackDuration: 2
   waitBeforeCredits: 1
   delayAfterScroll: 3

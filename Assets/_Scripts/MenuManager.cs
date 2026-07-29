@@ -46,7 +46,14 @@ public class MenuManager : MonoBehaviour
 
     public void PlayGame()
     {
-        SceneManager.LoadScene("Game");
+        if (FadeManager.Instance != null)
+        {
+            FadeManager.Instance.FadeAndLoadScene("Game", 0.5f);
+        }
+        else
+        {
+            SceneManager.LoadScene("Game");
+        }
     }
 
     public void QuitGame()

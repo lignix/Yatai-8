@@ -89,6 +89,20 @@ public class GameManager : MonoBehaviour
         }
     }
 
+    public void RestartFromDeath()
+    {
+        currentLevel = 0;
+        
+        if (FadeManager.Instance != null)
+        {
+            FadeManager.Instance.FadeAndRestart();
+        }
+        else
+        {
+            UnityEngine.SceneManagement.SceneManager.LoadScene(UnityEngine.SceneManagement.SceneManager.GetActiveScene().name);
+        }
+    }
+
     private bool PullFromBag()
     {
         if (shuffleBag.Count == 0)

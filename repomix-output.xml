@@ -61,6 +61,10 @@ Assets/
     CreditsManager.cs.meta
     EndgameFade.cs
     EndgameFade.cs.meta
+    FadeManager.cs
+    FadeManager.cs.meta
+    FallingPoleAnomaly.cs
+    FallingPoleAnomaly.cs.meta
     GameManager.cs
     GameManager.cs.meta
     LocalizationDatabase.cs
@@ -92,162 +96,176 @@ Assets/
 <files>
 This section contains the contents of the repository's files.
 
-<file path="Assets/_Scripts/TrashAvalancheAnomaly.cs">
+<file path="Assets/_Scripts/FadeManager.cs">
+using System.Collections;
 using UnityEngine;
+using UnityEngine.UI;
+using UnityEngine.SceneManagement;
+using TMPro;
 
-public class TrashAvalancheAnomaly : MonoBehaviour
+public class FadeManager : MonoBehaviour
 {
-    [Header("References")]
-    public GameObject trashBagsParent;
-    public AudioSource avalancheSound;
+    public static FadeManager Instance;
 
-    private Transform[] trashBags;
-    private Vector3[] startPositions;
-    private Quaternion[] startRotations;
-    private bool hasTriggered = false;
+    [Header("References")]
+    public Image fadeImage;
+    public TMP_Text loadingText;
+
+    [Header("Settings")]
+    public float startBlackDuration = 1.5f;
+    public float fadeOutDuration = 1.5f;
+    public float fadeInDuration = .5f;
 
     private void Awake()
     {
-        if (trashBagsParent != null)
-        {
-            int childCount = trashBagsParent.transform.childCount;
-            trashBags = new Transform[childCount];
-            startPositions = new Vector3[childCount];
-            startRotations = new Quaternion[childCount];
+        if (Instance == null) Instance = this;
+        else Destroy(gameObject);
+    }
 
-            for (int i = 0; i < childCount; i++)
+    private void Start()
+    {
+        if (fadeImage != null)
+        {
+            fadeImage.gameObject.SetActive(true);
+            fadeImage.color = Color.black;
+        }
+        
+        if (loadingText != null)
+        {
+            loadingText.gameObject.SetActive(true);
+        }
+
+        StartCoroutine(StartGameFadeSequence());
+    }
+
+    private IEnumerator StartGameFadeSequence()
+    {
+        yield return new WaitForSeconds(startBlackDuration);
+
+        if (loadingText != null) loadingText.gameObject.SetActive(false);
+
+        float timer = 0f;
+        while (timer < fadeOutDuration)
+        {
+            timer += Time.deltaTime;
+            float alpha = Mathf.Lerp(1f, 0f, timer / fadeOutDuration);
+            
+            if (fadeImage != null)
             {
-                trashBags[i] = trashBagsParent.transform.GetChild(i);
-                startPositions[i] = trashBags[i].localPosition;
-                startRotations[i] = trashBags[i].localRotation;
+                Color c = fadeImage.color;
+                c.a = alpha;
+                fadeImage.color = c;
             }
+            yield return null;
+        }
+
+        if (fadeImage != null) fadeImage.gameObject.SetActive(false);
+    }
+
+    public void FadeAndRestart()
+    {
+        StartCoroutine(DeathAndRestartSequence());
+    }
+
+    private IEnumerator DeathAndRestartSequence()
+    {
+        if (fadeImage != null) fadeImage.gameObject.SetActive(true);
+
+        float timer = 0f;
+        while (timer < fadeInDuration)
+        {
+            timer += Time.deltaTime;
+            float alpha = Mathf.Lerp(0f, 1f, timer / fadeInDuration);
+            
+            if (fadeImage != null)
+            {
+                Color c = fadeImage.color;
+                c.a = alpha;
+                fadeImage.color = c;
+            }
+            yield return null;
+        }
+
+        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+    }
+}
+</file>
+
+<file path="Assets/_Scripts/FadeManager.cs.meta">
+fileFormatVersion: 2
+guid: 0fb09a7eb4de1fa4a844bc8246d970b0
+</file>
+
+<file path="Assets/_Scripts/FallingPoleAnomaly.cs">
+using UnityEngine;
+
+public class FallingPoleAnomaly : MonoBehaviour
+{
+    [Header("References")]
+    public Transform player;
+    public Transform polePivot;
+    
+    [Header("Settings")]
+    public float triggerDistance = 4f;
+    public float fallSpeed = 60f;
+    public Vector3 targetRotationEuler = new Vector3(90f, 0f, 0f);
+
+    private bool hasTriggered = false;
+    private bool isFalling = false;
+    private Quaternion originalRotation;
+    private Quaternion targetRotation;
+
+    private void Awake()
+    {
+        if (polePivot != null)
+        {
+            originalRotation = polePivot.localRotation;
+            targetRotation = originalRotation * Quaternion.Euler(targetRotationEuler);
         }
     }
 
     private void OnEnable()
     {
         hasTriggered = false;
-
-        if (trashBagsParent != null)
+        isFalling = false;
+        if (polePivot != null)
         {
-            trashBagsParent.SetActive(false);
+            polePivot.localRotation = originalRotation;
+        }
+    }
 
-            for (int i = 0; i < trashBags.Length; i++)
-            {
-                if (trashBags[i] != null)
-                {
-                    trashBags[i].localPosition = startPositions[i];
-                    trashBags[i].localRotation = startRotations[i];
+    private void Update()
+    {
+        if (player == null || polePivot == null) return;
 
-                    Rigidbody rb = trashBags[i].GetComponent<Rigidbody>();
-                    if (rb != null)
-                    {
-                        rb.linearVelocity = Vector3.zero;
-                        rb.angularVelocity = Vector3.zero;
-                    }
-                }
-            }
+        // Détection de proximité
+        if (!hasTriggered && Vector3.Distance(player.position, transform.position) <= triggerDistance)
+        {
+            hasTriggered = true;
+            isFalling = true;
+        }
+
+        // Chute scriptée
+        if (isFalling)
+        {
+            polePivot.localRotation = Quaternion.RotateTowards(polePivot.localRotation, targetRotation, fallSpeed * Time.deltaTime);
         }
     }
 
     private void OnTriggerEnter(Collider other)
     {
-        if (hasTriggered) return;
-
-        if (other.CompareTag("Player"))
+        if (hasTriggered && other.CompareTag("Player"))
         {
-            hasTriggered = true;
-            
-            if (trashBagsParent != null)
-            {
-                trashBagsParent.SetActive(true);
-            }
-
-            if (avalancheSound != null)
-            {
-                avalancheSound.Play();
-            }
+            isFalling = false;
+            GameManager.Instance.RestartFromDeath();
         }
     }
 }
 </file>
 
-<file path="Assets/_Scripts/TrashAvalancheAnomaly.cs.meta">
+<file path="Assets/_Scripts/FallingPoleAnomaly.cs.meta">
 fileFormatVersion: 2
-guid: 904c193f961de6042b58c449869f858e
-</file>
-
-<file path="Assets/_Scripts/TrashBagCollisionSound.cs">
-using System.Collections;
-using UnityEngine;
-
-[RequireComponent(typeof(AudioSource))]
-public class TrashBagCollisionSound : MonoBehaviour
-{
-    [Header("Audio Settings")]
-    public AudioClip impactSound;
-    public float sliceDuration = 0.4f;
-    
-    [Header("Optimization")]
-    public float minImpactForce = 2f;
-    public float soundCooldown = 0.2f;
-
-    private AudioSource audioSource;
-    private float lastSoundTime;
-    private Coroutine stopRoutine;
-
-    private void Awake()
-    {
-        audioSource = GetComponent<AudioSource>();
-        audioSource.playOnAwake = false;
-        audioSource.spatialBlend = 1f;
-        audioSource.clip = impactSound;
-    }
-
-    private void OnCollisionEnter(Collision collision)
-    {
-        if (Time.time - lastSoundTime < soundCooldown) return;
-
-        float impactForce = collision.relativeVelocity.magnitude;
-        if (impactForce >= minImpactForce)
-        {
-            PlayImpactSound(impactForce);
-        }
-    }
-
-    private void PlayImpactSound(float impactForce)
-    {
-        if (impactSound == null) return;
-
-        if (stopRoutine != null)
-        {
-            StopCoroutine(stopRoutine);
-        }
-
-        audioSource.pitch = Random.Range(0.85f, 1.15f);
-        audioSource.volume = Mathf.Clamp01(impactForce / 10f);
-
-        // Ensure the random start time leaves enough room to play the full slice duration
-        float maxStartTime = Mathf.Max(0, impactSound.length - sliceDuration);
-        audioSource.time = Random.Range(0f, maxStartTime);
-
-        audioSource.Play();
-        lastSoundTime = Time.time;
-
-        stopRoutine = StartCoroutine(StopAudioAfterSlice());
-    }
-
-    private IEnumerator StopAudioAfterSlice()
-    {
-        yield return new WaitForSeconds(sliceDuration);
-        audioSource.Stop();
-    }
-}
-</file>
-
-<file path="Assets/_Scripts/TrashBagCollisionSound.cs.meta">
-fileFormatVersion: 2
-guid: 0f284e176f93e6e48b296c1b518a8000
+guid: cd9a5af1dec794f4abdf35d2ff128288
 </file>
 
 <file path="Assets/_Scripts/Anomalies/ArcadeAnomaly.cs">
@@ -1202,116 +1220,167 @@ fileFormatVersion: 2
 guid: ee5573890d8e6634d99e8349e671d81a
 </file>
 
-<file path="Assets/_Scripts/SettingsManager.cs">
-using System.Collections.Generic;
+<file path="Assets/_Scripts/SettingsManager.cs.meta">
+fileFormatVersion: 2
+guid: e8c80499fb745f947acdd17bc4aa31fd
+</file>
+
+<file path="Assets/_Scripts/TrashAvalancheAnomaly.cs">
 using UnityEngine;
-using UnityEngine.UI;
-using TMPro;
 
-public class SettingsManager : MonoBehaviour
+public class TrashAvalancheAnomaly : MonoBehaviour
 {
-    [Header("UI Elements")]
-    public TMP_Dropdown resolutionDropdown;
-    public TMP_Dropdown languageDropdown;
-    public Slider volumeSlider;
-    public Toggle fullscreenToggle;
+    [Header("References")]
+    public GameObject trashBagsParent;
+    public AudioSource avalancheSound;
 
-    private Resolution[] resolutions;
+    private Transform[] trashBags;
+    private Vector3[] startPositions;
+    private Quaternion[] startRotations;
+    private bool hasTriggered = false;
 
-    private void Start()
+    private void Awake()
     {
-        SetupResolutions();
-        SetupVolume();
-        SetupLanguage();
-        SetupFullscreen();
-    }
-
-    private void SetupResolutions()
-    {
-        resolutions = Screen.resolutions;
-        resolutionDropdown.ClearOptions();
-
-        List<string> options = new List<string>();
-        int currentResIndex = 0;
-
-        for (int i = 0; i < resolutions.Length; i++)
+        if (trashBagsParent != null)
         {
-            string option = resolutions[i].width + " x " + resolutions[i].height;
-            options.Add(option);
+            int childCount = trashBagsParent.transform.childCount;
+            trashBags = new Transform[childCount];
+            startPositions = new Vector3[childCount];
+            startRotations = new Quaternion[childCount];
 
-            if (resolutions[i].width == Screen.currentResolution.width &&
-                resolutions[i].height == Screen.currentResolution.height)
+            for (int i = 0; i < childCount; i++)
             {
-                currentResIndex = i;
+                trashBags[i] = trashBagsParent.transform.GetChild(i);
+                startPositions[i] = trashBags[i].localPosition;
+                startRotations[i] = trashBags[i].localRotation;
             }
         }
-
-        resolutionDropdown.AddOptions(options);
-        
-        int savedRes = PlayerPrefs.GetInt("ResolutionPref", currentResIndex);
-        resolutionDropdown.SetValueWithoutNotify(savedRes);
-        resolutionDropdown.RefreshShownValue();
-        
-        SetResolution(savedRes);
     }
 
-    public void SetResolution(int index)
+    private void OnEnable()
     {
-        Resolution res = resolutions[index];
-        Screen.SetResolution(res.width, res.height, Screen.fullScreen);
-        PlayerPrefs.SetInt("ResolutionPref", index);
-    }
+        hasTriggered = false;
 
-    private void SetupVolume()
-    {
-        float savedVolume = PlayerPrefs.GetFloat("VolumePref", 1f);
-        volumeSlider.SetValueWithoutNotify(savedVolume);
-        AudioListener.volume = savedVolume;
-    }
-
-    public void SetVolume(float volume)
-    {
-        AudioListener.volume = volume;
-        PlayerPrefs.SetFloat("VolumePref", volume);
-    }
-
-    private void SetupLanguage()
-    {
-        int savedLang = PlayerPrefs.GetInt("LanguagePref", 0);
-        languageDropdown.SetValueWithoutNotify(savedLang);
-        languageDropdown.RefreshShownValue();
-    }
-
-    public void SetLanguage(int index)
-    {
-        PlayerPrefs.SetInt("LanguagePref", index);
-        if (LocalizationManager.Instance != null)
+        if (trashBagsParent != null)
         {
-            LocalizationManager.Instance.SetLanguage(index);
+            trashBagsParent.SetActive(false);
+
+            for (int i = 0; i < trashBags.Length; i++)
+            {
+                if (trashBags[i] != null)
+                {
+                    trashBags[i].localPosition = startPositions[i];
+                    trashBags[i].localRotation = startRotations[i];
+
+                    Rigidbody rb = trashBags[i].GetComponent<Rigidbody>();
+                    if (rb != null)
+                    {
+                        rb.linearVelocity = Vector3.zero;
+                        rb.angularVelocity = Vector3.zero;
+                    }
+                }
+            }
         }
     }
 
-    private void SetupFullscreen()
+    private void OnTriggerEnter(Collider other)
     {
-        if (fullscreenToggle != null)
-        {
-            bool isFullscreen = PlayerPrefs.GetInt("FullscreenPref", 1) == 1;
-            fullscreenToggle.SetIsOnWithoutNotify(isFullscreen);
-            Screen.fullScreen = isFullscreen;
-        }
-    }
+        if (hasTriggered) return;
 
-    public void SetFullscreen(bool isFullscreen)
-    {
-        Screen.fullScreen = isFullscreen;
-        PlayerPrefs.SetInt("FullscreenPref", isFullscreen ? 1 : 0);
+        if (other.CompareTag("Player"))
+        {
+            hasTriggered = true;
+            
+            if (trashBagsParent != null)
+            {
+                trashBagsParent.SetActive(true);
+            }
+
+            if (avalancheSound != null)
+            {
+                avalancheSound.Play();
+            }
+        }
     }
 }
 </file>
 
-<file path="Assets/_Scripts/SettingsManager.cs.meta">
+<file path="Assets/_Scripts/TrashAvalancheAnomaly.cs.meta">
 fileFormatVersion: 2
-guid: e8c80499fb745f947acdd17bc4aa31fd
+guid: 904c193f961de6042b58c449869f858e
+</file>
+
+<file path="Assets/_Scripts/TrashBagCollisionSound.cs">
+using System.Collections;
+using UnityEngine;
+
+[RequireComponent(typeof(AudioSource))]
+public class TrashBagCollisionSound : MonoBehaviour
+{
+    [Header("Audio Settings")]
+    public AudioClip impactSound;
+    public float sliceDuration = 0.4f;
+    
+    [Header("Optimization")]
+    public float minImpactForce = 2f;
+    public float soundCooldown = 0.2f;
+
+    private AudioSource audioSource;
+    private float lastSoundTime;
+    private Coroutine stopRoutine;
+
+    private void Awake()
+    {
+        audioSource = GetComponent<AudioSource>();
+        audioSource.playOnAwake = false;
+        audioSource.spatialBlend = 1f;
+        audioSource.clip = impactSound;
+    }
+
+    private void OnCollisionEnter(Collision collision)
+    {
+        if (Time.time - lastSoundTime < soundCooldown) return;
+
+        float impactForce = collision.relativeVelocity.magnitude;
+        if (impactForce >= minImpactForce)
+        {
+            PlayImpactSound(impactForce);
+        }
+    }
+
+    private void PlayImpactSound(float impactForce)
+    {
+        if (impactSound == null) return;
+
+        if (stopRoutine != null)
+        {
+            StopCoroutine(stopRoutine);
+        }
+
+        audioSource.pitch = Random.Range(0.85f, 1.15f);
+        audioSource.volume = Mathf.Clamp01(impactForce / 10f);
+
+        // Ensure the random start time leaves enough room to play the full slice duration
+        float maxStartTime = Mathf.Max(0, impactSound.length - sliceDuration);
+        audioSource.time = Random.Range(0f, maxStartTime);
+
+        audioSource.Play();
+        lastSoundTime = Time.time;
+
+        stopRoutine = StartCoroutine(StopAudioAfterSlice());
+    }
+
+    private IEnumerator StopAudioAfterSlice()
+    {
+        yield return new WaitForSeconds(sliceDuration);
+        audioSource.Stop();
+    }
+}
+</file>
+
+<file path="Assets/_Scripts/TrashBagCollisionSound.cs.meta">
+fileFormatVersion: 2
+guid: 0f284e176f93e6e48b296c1b518a8000
 </file>
 
 <file path="Assets/_Scripts/AnomalyController.cs">
@@ -1411,6 +1480,241 @@ public class AnomalyController : MonoBehaviour
             }
         }
         SaveManager.Save(unlockedIndexes);
+    }
+}
+</file>
+
+<file path="Assets/_Scripts/SettingsManager.cs">
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.UI;
+using TMPro;
+
+public class SettingsManager : MonoBehaviour
+{
+    [Header("UI Elements")]
+    public TMP_Dropdown resolutionDropdown;
+    public TMP_Dropdown languageDropdown;
+    public Slider volumeSlider;
+    public Toggle fullscreenToggle;
+    public Toggle vsyncToggle;
+    public TMP_Dropdown fpsDropdown;
+
+    private List<Resolution> filteredResolutions;
+    private readonly int[] fpsLimits = { -1, 30, 60, 120, 144 };
+
+    private void Start()
+    {
+        SetupResolutions();
+        SetupVolume();
+        SetupLanguage();
+        SetupFullscreen();
+        SetupVSync();
+        SetupFPS();
+    }
+
+    private void SetupResolutions()
+    {
+        Resolution[] rawResolutions = Screen.resolutions;
+        filteredResolutions = new List<Resolution>();
+        resolutionDropdown.ClearOptions();
+
+        List<string> options = new List<string>();
+        int currentResIndex = 0;
+
+        for (int i = 0; i < rawResolutions.Length; i++)
+        {
+            Resolution res = rawResolutions[i];
+            string option = res.width + " x " + res.height;
+
+            // Filter out duplicate width x height entries
+            if (!options.Contains(option))
+            {
+                filteredResolutions.Add(res);
+                options.Add(option);
+
+                if (res.width == Screen.currentResolution.width &&
+                    res.height == Screen.currentResolution.height)
+                {
+                    currentResIndex = filteredResolutions.Count - 1;
+                }
+            }
+        }
+
+        resolutionDropdown.AddOptions(options);
+
+        int savedRes = PlayerPrefs.GetInt("ResolutionPref", currentResIndex);
+        if (savedRes >= filteredResolutions.Count) savedRes = currentResIndex;
+
+        resolutionDropdown.SetValueWithoutNotify(savedRes);
+        resolutionDropdown.RefreshShownValue();
+
+        SetResolution(savedRes);
+    }
+
+    public void SetResolution(int index)
+    {
+        Resolution res = filteredResolutions[index];
+        Screen.SetResolution(res.width, res.height, Screen.fullScreen);
+        PlayerPrefs.SetInt("ResolutionPref", index);
+    }
+
+    private void SetupVolume()
+    {
+        float savedVolume = PlayerPrefs.GetFloat("VolumePref", 1f);
+        volumeSlider.SetValueWithoutNotify(savedVolume);
+        AudioListener.volume = savedVolume;
+    }
+
+    public void SetVolume(float volume)
+    {
+        AudioListener.volume = volume;
+        PlayerPrefs.SetFloat("VolumePref", volume);
+    }
+
+    private void SetupLanguage()
+    {
+        int savedLang = PlayerPrefs.GetInt("LanguagePref", 0);
+        languageDropdown.SetValueWithoutNotify(savedLang);
+        languageDropdown.RefreshShownValue();
+    }
+
+    public void SetLanguage(int index)
+    {
+        PlayerPrefs.SetInt("LanguagePref", index);
+        if (LocalizationManager.Instance != null)
+        {
+            LocalizationManager.Instance.SetLanguage(index);
+
+            // Refreshes the dropdown text when the language changes
+            UpdateFPSDropdownText();
+        }
+    }
+
+    private void SetupFullscreen()
+    {
+        if (fullscreenToggle != null)
+        {
+            bool isFullscreen = PlayerPrefs.GetInt("FullscreenPref", 1) == 1;
+            fullscreenToggle.SetIsOnWithoutNotify(isFullscreen);
+            Screen.fullScreen = isFullscreen;
+        }
+    }
+
+    public void SetFullscreen(bool isFullscreen)
+    {
+        Screen.fullScreen = isFullscreen;
+        PlayerPrefs.SetInt("FullscreenPref", isFullscreen ? 1 : 0);
+    }
+
+    private void SetupVSync()
+    {
+        if (vsyncToggle != null)
+        {
+            bool isVSync = PlayerPrefs.GetInt("VSyncPref", 0) == 1;
+            vsyncToggle.SetIsOnWithoutNotify(isVSync);
+            SetVSync(isVSync);
+        }
+    }
+
+    public void SetVSync(bool isVSync)
+    {
+        QualitySettings.vSyncCount = isVSync ? 1 : 0;
+        PlayerPrefs.SetInt("VSyncPref", isVSync ? 1 : 0);
+    }
+
+    private void SetupFPS()
+    {
+        if (fpsDropdown != null)
+        {
+            UpdateFPSDropdownText();
+
+            int savedFPSIndex = PlayerPrefs.GetInt("FPSPref", 0);
+            fpsDropdown.SetValueWithoutNotify(savedFPSIndex);
+            fpsDropdown.RefreshShownValue();
+            SetFPSLimit(savedFPSIndex);
+        }
+    }
+    private void UpdateFPSDropdownText()
+    {
+        if (fpsDropdown != null && fpsDropdown.options.Count > 0 && LocalizationManager.Instance != null)
+        {
+            // Replaces the first option's text with the localized string
+            fpsDropdown.options[0].text = LocalizationManager.Instance.GetTranslation("ui_unlimited");
+
+            // Forces the displayed text to update immediately if "Unlimited" is currently selected
+            if (fpsDropdown.value == 0)
+            {
+                fpsDropdown.captionText.text = fpsDropdown.options[0].text;
+            }
+        }
+    }
+
+    public void SetFPSLimit(int index)
+    {
+        if (index >= 0 && index < fpsLimits.Length)
+        {
+            Application.targetFrameRate = fpsLimits[index];
+            PlayerPrefs.SetInt("FPSPref", index);
+        }
+    }
+}
+</file>
+
+<file path="Assets/_Scripts/LoopTrigger.cs">
+using UnityEngine;
+
+public class LoopTrigger : MonoBehaviour
+{
+    public Transform destinationTrigger;
+    public Transform endgameDestinationTrigger;
+
+    public bool isForwardExit;
+
+    private static float cooldownTimer = 0f;
+
+    private void OnTriggerEnter(Collider other)
+    {
+        if (Time.time < cooldownTimer) return;
+
+        if (other.CompareTag("Player"))
+        {
+            CharacterController cc = other.GetComponent<CharacterController>();
+            if (cc != null)
+            {
+                cooldownTimer = Time.time + 0.2f;
+
+                GameManager.Instance.CheckPlayerChoice(isForwardExit);
+
+                Vector3 localPos = transform.InverseTransformPoint(other.transform.position);
+
+                if (!isForwardExit)
+                {
+                    localPos.x = -localPos.x;
+                    localPos.z = -localPos.z;
+                }
+
+                Transform targetDestination = destinationTrigger;
+
+                if (GameManager.Instance.currentLevel >= GameManager.Instance.winLevel)
+                {
+                    targetDestination = endgameDestinationTrigger;
+                }
+
+                Vector3 worldDestination = targetDestination.TransformPoint(localPos);
+
+                cc.enabled = false;
+                other.transform.position = worldDestination;
+
+                if (!isForwardExit)
+                {
+                    other.transform.Rotate(0, 180, 0);
+                }
+
+                Physics.SyncTransforms();
+                cc.enabled = true;
+            }
+        }
     }
 }
 </file>
@@ -1517,6 +1821,7 @@ public class PauseManager : MonoBehaviour
     public void LoadMainMenu()
     {
         Time.timeScale = 1f;
+        AudioListener.pause = false;
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
         SceneManager.LoadScene("Menu");
@@ -1540,65 +1845,8 @@ public class PauseManager : MonoBehaviour
 }
 </file>
 
-<file path="Assets/_Scripts/LoopTrigger.cs">
-using UnityEngine;
-
-public class LoopTrigger : MonoBehaviour
-{
-    public Transform destinationTrigger;
-    public Transform endgameDestinationTrigger;
-
-    public bool isForwardExit;
-
-    private static float cooldownTimer = 0f;
-
-    private void OnTriggerEnter(Collider other)
-    {
-        if (Time.time < cooldownTimer) return;
-
-        if (other.CompareTag("Player"))
-        {
-            CharacterController cc = other.GetComponent<CharacterController>();
-            if (cc != null)
-            {
-                cooldownTimer = Time.time + 0.2f;
-
-                GameManager.Instance.CheckPlayerChoice(isForwardExit);
-
-                Vector3 localPos = transform.InverseTransformPoint(other.transform.position);
-
-                if (!isForwardExit)
-                {
-                    localPos.x = -localPos.x;
-                    localPos.z = -localPos.z;
-                }
-
-                Transform targetDestination = destinationTrigger;
-
-                if (GameManager.Instance.currentLevel >= GameManager.Instance.winLevel)
-                {
-                    targetDestination = endgameDestinationTrigger;
-                }
-
-                Vector3 worldDestination = targetDestination.TransformPoint(localPos);
-
-                cc.enabled = false;
-                other.transform.position = worldDestination;
-
-                if (!isForwardExit)
-                {
-                    other.transform.Rotate(0, 180, 0);
-                }
-
-                Physics.SyncTransforms();
-                cc.enabled = true;
-            }
-        }
-    }
-}
-</file>
-
 <file path="Assets/_Scripts/GameManager.cs">
+using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
 
@@ -1611,10 +1859,16 @@ public class GameManager : MonoBehaviour
     public int currentLevel = 0;
     public int winLevel = 8;
 
+    [Header("Rhythm Settings (Shuffle Bag)")]
+    [Range(0f, 1f)] 
+    public float anomalyProbability = 0.5f;
+    public int shuffleBagSize = 10; 
+
     [Header("UI")]
     public TMP_Text levelDisplay;
 
     private string currentAnomalyName = "";
+    private List<bool> shuffleBag = new List<bool>();
 
     private void Awake()
     {
@@ -1624,6 +1878,7 @@ public class GameManager : MonoBehaviour
 
     private void Start()
     {
+        RefillShuffleBag();
         GenerateNextLoop();
         UpdateLevelDisplay();
     }
@@ -1651,10 +1906,61 @@ public class GameManager : MonoBehaviour
         {
             currentLevel = 0;
             Debug.Log("Wrong choice. Reset to level 0.");
+            
+            // Resets the bag when the player makes a mistake to restart the rhythm fresh
+            RefillShuffleBag();
         }
 
         GenerateNextLoop();
         UpdateLevelDisplay();
+    }
+
+    private void RefillShuffleBag()
+    {
+        shuffleBag.Clear();
+        
+        // Calculates how many anomalies should be in the bag based on probability
+        int anomalyCount = Mathf.RoundToInt(anomalyProbability * shuffleBagSize);
+
+        for (int i = 0; i < shuffleBagSize; i++)
+        {
+            shuffleBag.Add(i < anomalyCount);
+        }
+        
+        // Shuffles the bag using the Fisher-Yates algorithm
+        for (int i = 0; i < shuffleBag.Count; i++)
+        {
+            bool temp = shuffleBag[i];
+            int randomIndex = Random.Range(i, shuffleBag.Count);
+            shuffleBag[i] = shuffleBag[randomIndex];
+            shuffleBag[randomIndex] = temp;
+        }
+    }
+
+    public void RestartFromDeath()
+    {
+        currentLevel = 0;
+        
+        if (FadeManager.Instance != null)
+        {
+            FadeManager.Instance.FadeAndRestart();
+        }
+        else
+        {
+            UnityEngine.SceneManagement.SceneManager.LoadScene(UnityEngine.SceneManagement.SceneManager.GetActiveScene().name);
+        }
+    }
+
+    private bool PullFromBag()
+    {
+        if (shuffleBag.Count == 0)
+        {
+            RefillShuffleBag();
+        }
+
+        bool nextState = shuffleBag[0];
+        shuffleBag.RemoveAt(0);
+        return nextState;
     }
 
     private void GenerateNextLoop()
@@ -1665,7 +1971,16 @@ public class GameManager : MonoBehaviour
             return;
         }
 
-        hasAnomaly = currentLevel != 0 && Random.value > 0.5f;
+        // Level 0 is always normal and shouldn't consume a ticket from the bag
+        if (currentLevel == 0)
+        {
+            hasAnomaly = false;
+        }
+        else
+        {
+            hasAnomaly = PullFromBag();
+        }
+
         currentAnomalyName = AnomalyController.Instance.SetupLoop(hasAnomaly);
 
         Debug.Log($"Next loop generated. Anomaly: {hasAnomaly} ({currentAnomalyName}). Level: {currentLevel}");

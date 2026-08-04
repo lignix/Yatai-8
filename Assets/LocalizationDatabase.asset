@@ -37,6 +37,9 @@ MonoBehaviour:
   - key: ui_options
     english: Options
     french: Options
+  - key: ui_sens
+    english: Sensitivity
+    french: "Sensibilit\xE9"
   - key: ui_maxfps
     english: Max FPS
     french: FPS max
@@ -46,6 +49,12 @@ MonoBehaviour:
   - key: ui_unlimited
     english: Unlimited
     french: "Illimit\xE9"
+  - key: ui_motion_blur
+    english: Motion Blur
+    french: Flou de mouvement
+  - key: ui_aa
+    english: Anti-Aliasing
+    french: "Anticr\xE9nelage"
   - key: ui_back
     english: Back
     french: Retour

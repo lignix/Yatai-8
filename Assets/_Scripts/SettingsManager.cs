@@ -2,16 +2,30 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
+using UnityEngine.Rendering.Universal;
 
 public class SettingsManager : MonoBehaviour
 {
     [Header("UI Elements")]
     public TMP_Dropdown resolutionDropdown;
     public TMP_Dropdown languageDropdown;
+    
+    [Header("Volume")]
     public Slider volumeSlider;
+    public TMP_Text volumeValueText;
+
     public Toggle fullscreenToggle;
     public Toggle vsyncToggle;
     public TMP_Dropdown fpsDropdown;
+
+    [Header("Nouvelles Options")]
+    public TMP_Dropdown aaDropdown;
+    
+    [Header("Sensibilité")]
+    public Slider sensitivitySlider;
+    public TMP_Text sensitivityValueText;
+    public delegate void SensitivityChangedEvent(float newValue);
+    public static event SensitivityChangedEvent OnSensitivityChanged;
 
     private List<Resolution> filteredResolutions;
     private readonly int[] fpsLimits = { -1, 30, 60, 120, 144 };
@@ -24,6 +38,8 @@ public class SettingsManager : MonoBehaviour
         SetupFullscreen();
         SetupVSync();
         SetupFPS();
+        SetupAA();
+        SetupSensitivity();
     }
 
     private void SetupResolutions()
@@ -40,7 +56,6 @@ public class SettingsManager : MonoBehaviour
             Resolution res = rawResolutions[i];
             string option = res.width + " x " + res.height;
 
-            // Filter out duplicate width x height entries
             if (!options.Contains(option))
             {
                 filteredResolutions.Add(res);
@@ -77,12 +92,22 @@ public class SettingsManager : MonoBehaviour
         float savedVolume = PlayerPrefs.GetFloat("VolumePref", 1f);
         volumeSlider.SetValueWithoutNotify(savedVolume);
         AudioListener.volume = savedVolume;
+        UpdateVolumeText(savedVolume);
     }
 
     public void SetVolume(float volume)
     {
         AudioListener.volume = volume;
         PlayerPrefs.SetFloat("VolumePref", volume);
+        UpdateVolumeText(volume);
+    }
+
+    private void UpdateVolumeText(float volume)
+    {
+        if (volumeValueText != null)
+        {
+            volumeValueText.text = Mathf.RoundToInt(volume * 100f) + "%";
+        }
     }
 
     private void SetupLanguage()
@@ -98,8 +123,6 @@ public class SettingsManager : MonoBehaviour
         if (LocalizationManager.Instance != null)
         {
             LocalizationManager.Instance.SetLanguage(index);
-
-            // Refreshes the dropdown text when the language changes
             UpdateFPSDropdownText();
         }
     }
@@ -141,21 +164,18 @@ public class SettingsManager : MonoBehaviour
         if (fpsDropdown != null)
         {
             UpdateFPSDropdownText();
-
             int savedFPSIndex = PlayerPrefs.GetInt("FPSPref", 0);
             fpsDropdown.SetValueWithoutNotify(savedFPSIndex);
             fpsDropdown.RefreshShownValue();
             SetFPSLimit(savedFPSIndex);
         }
     }
+
     private void UpdateFPSDropdownText()
     {
         if (fpsDropdown != null && fpsDropdown.options.Count > 0 && LocalizationManager.Instance != null)
         {
-            // Replaces the first option's text with the localized string
             fpsDropdown.options[0].text = LocalizationManager.Instance.GetTranslation("ui_unlimited");
-
-            // Forces the displayed text to update immediately if "Unlimited" is currently selected
             if (fpsDropdown.value == 0)
             {
                 fpsDropdown.captionText.text = fpsDropdown.options[0].text;
@@ -169,6 +189,57 @@ public class SettingsManager : MonoBehaviour
         {
             Application.targetFrameRate = fpsLimits[index];
             PlayerPrefs.SetInt("FPSPref", index);
+        }
+    }
+
+    private void SetupAA()
+    {
+        if (aaDropdown != null)
+        {
+            int savedAA = PlayerPrefs.GetInt("AAPref", 1); 
+            aaDropdown.SetValueWithoutNotify(savedAA);
+            aaDropdown.RefreshShownValue();
+            SetAA(savedAA);
+        }
+    }
+
+    public void SetAA(int index)
+    {
+        PlayerPrefs.SetInt("AAPref", index);
+        
+        if (Camera.main != null)
+        {
+            UniversalAdditionalCameraData camData = Camera.main.GetComponent<UniversalAdditionalCameraData>();
+            if (camData != null)
+            {
+                camData.antialiasing = (AntialiasingMode)index;
+            }
+        }
+    }
+
+    private void SetupSensitivity()
+    {
+        if (sensitivitySlider != null)
+        {
+            float savedSens = PlayerPrefs.GetFloat("SensitivityPref", 1f); 
+            sensitivitySlider.SetValueWithoutNotify(savedSens);
+            UpdateSensitivityText(savedSens);
+        }
+    }
+
+    public void SetSensitivity(float value)
+{
+    PlayerPrefs.SetFloat("SensitivityPref", value);
+    UpdateSensitivityText(value);
+    
+    OnSensitivityChanged?.Invoke(value);
+}
+
+    private void UpdateSensitivityText(float value)
+    {
+        if (sensitivityValueText != null)
+        {
+            sensitivityValueText.text = value.ToString("F1");
         }
     }
 }

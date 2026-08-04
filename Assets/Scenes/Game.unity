@@ -26327,9 +26327,25 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 5325539956745362365, guid: c161c85f81874384f97352839ba73e29, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Mode
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5325539956745362365, guid: c161c85f81874384f97352839ba73e29, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 
       objectReference: {fileID: 1869499872}
+    - target: {fileID: 5325539956745362365, guid: c161c85f81874384f97352839ba73e29, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
+      value: CloseOptions
+      objectReference: {fileID: 0}
+    - target: {fileID: 5325539956745362365, guid: c161c85f81874384f97352839ba73e29, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_TargetAssemblyTypeName
+      value: PauseManager, Assembly-CSharp
+      objectReference: {fileID: 0}
+    - target: {fileID: 5325539956745362365, guid: c161c85f81874384f97352839ba73e29, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Arguments.m_ObjectArgumentAssemblyTypeName
+      value: UnityEngine.Object, UnityEngine
+      objectReference: {fileID: 0}
     - target: {fileID: 7479267150625442537, guid: c161c85f81874384f97352839ba73e29, type: 3}
       propertyPath: m_AnchorMax.x
       value: 0
@@ -56018,59 +56034,59 @@ MonoBehaviour:
     anomalyObject: {fileID: 652091458}
     normalObjectToHide: {fileID: 8625898825413988346}
     isUnlocked: 0
-  - databaseIndex: 3
+  - databaseIndex: 4
     anomalyObject: {fileID: 2132589740}
     normalObjectToHide: {fileID: 1681810252}
     isUnlocked: 0
-  - databaseIndex: 4
+  - databaseIndex: 5
     anomalyObject: {fileID: 250194779}
     normalObjectToHide: {fileID: 8625898825413988346}
     isUnlocked: 0
-  - databaseIndex: 5
+  - databaseIndex: 6
     anomalyObject: {fileID: 1231541394}
     normalObjectToHide: {fileID: 1803029405}
     isUnlocked: 0
-  - databaseIndex: 6
+  - databaseIndex: 7
     anomalyObject: {fileID: 992937194}
     normalObjectToHide: {fileID: 0}
     isUnlocked: 0
-  - databaseIndex: 7
+  - databaseIndex: 8
     anomalyObject: {fileID: 814071238}
     normalObjectToHide: {fileID: 0}
     isUnlocked: 0
-  - databaseIndex: 8
+  - databaseIndex: 9
     anomalyObject: {fileID: 95367027}
     normalObjectToHide: {fileID: 0}
     isUnlocked: 0
-  - databaseIndex: 9
+  - databaseIndex: 10
     anomalyObject: {fileID: 1914990896}
     normalObjectToHide: {fileID: 309792570184048075}
     isUnlocked: 0
-  - databaseIndex: 10
+  - databaseIndex: 11
     anomalyObject: {fileID: 0}
     normalObjectToHide: {fileID: 6540262413259172868}
     isUnlocked: 0
-  - databaseIndex: 11
+  - databaseIndex: 12
     anomalyObject: {fileID: 1255097170}
     normalObjectToHide: {fileID: 1456058138}
     isUnlocked: 0
-  - databaseIndex: 12
+  - databaseIndex: 13
     anomalyObject: {fileID: 519407686}
     normalObjectToHide: {fileID: 1111572114}
     isUnlocked: 0
-  - databaseIndex: 13
+  - databaseIndex: 14
     anomalyObject: {fileID: 118075410}
     normalObjectToHide: {fileID: 7637220277652867453}
     isUnlocked: 0
-  - databaseIndex: 14
+  - databaseIndex: 15
     anomalyObject: {fileID: 2108498923}
     normalObjectToHide: {fileID: 1375267976}
     isUnlocked: 0
-  - databaseIndex: 15
+  - databaseIndex: 16
     anomalyObject: {fileID: 680369430}
     normalObjectToHide: {fileID: 3719329807508413428}
     isUnlocked: 0
-  - databaseIndex: 16
+  - databaseIndex: 17
     anomalyObject: {fileID: 631753943}
     normalObjectToHide: {fileID: 989905025}
     isUnlocked: 0

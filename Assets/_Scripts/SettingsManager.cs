@@ -18,10 +18,10 @@ public class SettingsManager : MonoBehaviour
     public Toggle vsyncToggle;
     public TMP_Dropdown fpsDropdown;
 
-    [Header("Nouvelles Options")]
+    [Header("Graphics")]
     public TMP_Dropdown aaDropdown;
     
-    [Header("Sensibilité")]
+    [Header("Sensitivity")]
     public Slider sensitivitySlider;
     public TMP_Text sensitivityValueText;
     public delegate void SensitivityChangedEvent(float newValue);
@@ -61,8 +61,7 @@ public class SettingsManager : MonoBehaviour
                 filteredResolutions.Add(res);
                 options.Add(option);
 
-                if (res.width == Screen.currentResolution.width &&
-                    res.height == Screen.currentResolution.height)
+                if (res.width == Screen.currentResolution.width && res.height == Screen.currentResolution.height)
                 {
                     currentResIndex = filteredResolutions.Count - 1;
                 }
@@ -70,13 +69,11 @@ public class SettingsManager : MonoBehaviour
         }
 
         resolutionDropdown.AddOptions(options);
-
         int savedRes = PlayerPrefs.GetInt("ResolutionPref", currentResIndex);
         if (savedRes >= filteredResolutions.Count) savedRes = currentResIndex;
 
         resolutionDropdown.SetValueWithoutNotify(savedRes);
         resolutionDropdown.RefreshShownValue();
-
         SetResolution(savedRes);
     }
 
@@ -147,9 +144,9 @@ public class SettingsManager : MonoBehaviour
     {
         if (vsyncToggle != null)
         {
-            bool isVSync = PlayerPrefs.GetInt("VSyncPref", 0) == 1;
-            vsyncToggle.SetIsOnWithoutNotify(isVSync);
-            SetVSync(isVSync);
+            bool isSync = PlayerPrefs.GetInt("VSyncPref", 0) == 1;
+            vsyncToggle.SetIsOnWithoutNotify(isSync);
+            SetVSync(isSync);
         }
     }
 
@@ -176,10 +173,7 @@ public class SettingsManager : MonoBehaviour
         if (fpsDropdown != null && fpsDropdown.options.Count > 0 && LocalizationManager.Instance != null)
         {
             fpsDropdown.options[0].text = LocalizationManager.Instance.GetTranslation("ui_unlimited");
-            if (fpsDropdown.value == 0)
-            {
-                fpsDropdown.captionText.text = fpsDropdown.options[0].text;
-            }
+            if (fpsDropdown.value == 0) fpsDropdown.captionText.text = fpsDropdown.options[0].text;
         }
     }
 
@@ -207,9 +201,10 @@ public class SettingsManager : MonoBehaviour
     {
         PlayerPrefs.SetInt("AAPref", index);
         
-        if (Camera.main != null)
+        Camera targetCam = Camera.main != null ? Camera.main : FindAnyObjectByType<Camera>();
+        if (targetCam != null)
         {
-            UniversalAdditionalCameraData camData = Camera.main.GetComponent<UniversalAdditionalCameraData>();
+            UniversalAdditionalCameraData camData = targetCam.GetComponent<UniversalAdditionalCameraData>();
             if (camData != null)
             {
                 camData.antialiasing = (AntialiasingMode)index;
@@ -228,12 +223,11 @@ public class SettingsManager : MonoBehaviour
     }
 
     public void SetSensitivity(float value)
-{
-    PlayerPrefs.SetFloat("SensitivityPref", value);
-    UpdateSensitivityText(value);
-    
-    OnSensitivityChanged?.Invoke(value);
-}
+    {
+        PlayerPrefs.SetFloat("SensitivityPref", value);
+        UpdateSensitivityText(value);
+        OnSensitivityChanged?.Invoke(value);
+    }
 
     private void UpdateSensitivityText(float value)
     {

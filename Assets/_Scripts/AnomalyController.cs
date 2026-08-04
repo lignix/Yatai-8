@@ -4,7 +4,7 @@ using UnityEngine;
 [System.Serializable]
 public class AnomalySceneData
 {
-    public int databaseIndex;
+    [HideInInspector] public int databaseIndex;
     public GameObject anomalyObject;
     public GameObject normalObjectToHide;
     [HideInInspector] public bool isUnlocked;
@@ -14,7 +14,10 @@ public class AnomalyController : MonoBehaviour
 {
     public static AnomalyController Instance;
 
+    [Header("Database Reference")]
     public AnomalyDatabase database;
+
+    [Header("Anomalies List in Scene")]
     public List<AnomalySceneData> anomalies = new List<AnomalySceneData>();
 
     private AnomalySceneData currentAnomaly = null;
@@ -23,6 +26,23 @@ public class AnomalyController : MonoBehaviour
     {
         if (Instance == null) Instance = this;
         else Destroy(gameObject);
+
+        SyncDatabaseIndexes();
+    }
+
+    private void OnValidate()
+    {
+        SyncDatabaseIndexes();
+    }
+
+    private void SyncDatabaseIndexes()
+    {
+        if (anomalies == null) return;
+
+        for (int i = 0; i < anomalies.Count; i++)
+        {
+            anomalies[i].databaseIndex = i;
+        }
     }
 
     private void Start()
@@ -46,7 +66,7 @@ public class AnomalyController : MonoBehaviour
     public string SetupLoop(bool hasAnomaly)
     {
         ResetCurrentAnomaly();
-        if (!hasAnomaly) return "";
+        if (!hasAnomaly || database == null) return "";
 
         List<AnomalySceneData> availableAnomalies = anomalies.FindAll(a => !a.isUnlocked);
         
@@ -60,8 +80,13 @@ public class AnomalyController : MonoBehaviour
         if (currentAnomaly.anomalyObject != null) currentAnomaly.anomalyObject.SetActive(true);
         if (currentAnomaly.normalObjectToHide != null) currentAnomaly.normalObjectToHide.SetActive(false);
 
-        string key = database.anomalyKeys[currentAnomaly.databaseIndex];
-        return LocalizationManager.Instance != null ? LocalizationManager.Instance.GetTranslation(key) : key;
+        if (currentAnomaly.databaseIndex < database.anomalyKeys.Count)
+        {
+            string key = database.anomalyKeys[currentAnomaly.databaseIndex];
+            return LocalizationManager.Instance != null ? LocalizationManager.Instance.GetTranslation(key) : key;
+        }
+
+        return "";
     }
 
     private void ResetCurrentAnomaly()

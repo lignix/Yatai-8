@@ -17,6 +17,7 @@ MonoBehaviour:
   - ano_missing_bench
   - ano_flickering_window
   - ano_ajar_door
+  - ano_brick_wall
   - ano_open_door
   - ano_ac_unit_leak
   - ano_bar_lamp

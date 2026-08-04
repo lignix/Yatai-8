@@ -16,72 +16,168 @@ MonoBehaviour:
   - key: ui_play
     english: Play
     french: Jouer
+    spanish: Jugar
+    german: Spielen
+    japanese: プレイ
+    simplifiedChinese: 游玩
   - key: ui_progress
     english: '{0} / {1} anomalies unlocked'
     french: "{0} / {1} anomalies d\xE9bloqu\xE9es"
+    spanish: '{0} / {1} anomalías desbloqueadas'
+    german: '{0} / {1} Anomalien freigeschaltet'
+    japanese: '{0} / {1} 個の異変を発見'
+    simplifiedChinese: '已解锁 {0} / {1} 个异常'
   - key: ui_volume
     english: Volume
     french: Volume
+    spanish: Volumen
+    german: Lautstärke
+    japanese: 音量
+    simplifiedChinese: 音量
   - key: ui_resolution
     english: Resolution
     french: "R\xE9solution"
+    spanish: Resolución
+    german: Auflösung
+    japanese: 解像度
+    simplifiedChinese: 分辨率
   - key: ui_fullscreen
     english: Fullscreen
     french: "Plein \xE9cran"
+    spanish: Pantalla completa
+    german: Vollbild
+    japanese: フルスクリーン
+    simplifiedChinese: 全屏
   - key: ui_language
     english: Language
     french: Langage
+    spanish: Idioma
+    german: Sprache
+    japanese: 言語
+    simplifiedChinese: 语言
   - key: ui_anomalies
     english: Anomalies
     french: Anomalies
+    spanish: Anomalías
+    german: Anomalien
+    japanese: 異変
+    simplifiedChinese: 异常
   - key: ui_options
     english: Options
     french: Options
+    spanish: Opciones
+    german: Optionen
+    japanese: オプション
+    simplifiedChinese: 选项
   - key: ui_sens
     english: Sensitivity
     french: "Sensibilit\xE9"
+    spanish: Sensibilidad
+    german: Empfindlichkeit
+    japanese: 感度
+    simplifiedChinese: 灵敏度
   - key: ui_maxfps
     english: Max FPS
     french: FPS max
+    spanish: FPS máx.
+    german: Max. FPS
+    japanese: 最大FPS
+    simplifiedChinese: 最大帧数
   - key: ui_vsync
     english: Vsync
     french: Vsync
+    spanish: Vsync
+    german: VSync
+    japanese: 垂直同期
+    simplifiedChinese: 垂直同步
   - key: ui_unlimited
     english: Unlimited
     french: "Illimit\xE9"
+    spanish: Ilimitado
+    german: Unbegrenzt
+    japanese: 無制限
+    simplifiedChinese: 无限制
   - key: ui_motion_blur
     english: Motion Blur
     french: Flou de mouvement
+    spanish: Desenfoque de movimiento
+    german: Bewegungsunschärfe
+    japanese: モーションブラー
+    simplifiedChinese: 动态模糊
   - key: ui_aa
     english: Anti-Aliasing
     french: "Anticr\xE9nelage"
+    spanish: Antialiasing
+    german: Kantenglättung
+    japanese: アンチエイリアス
+    simplifiedChinese: 抗锯齿
   - key: ui_back
     english: Back
     french: Retour
+    spanish: Volver
+    german: Zurück
+    japanese: 戻る
+    simplifiedChinese: 返回
   - key: ui_exit
     english: Exit
     french: Quitter
+    spanish: Salir
+    german: Beenden
+    japanese: 終了
+    simplifiedChinese: 退出
   - key: ui_delete_default
     english: REMOVE PROGRESSION
     french: SUPPRIMER LA PROGRESSION
+    spanish: BORRAR PROGRESO
+    german: FORTSCHRITT LÖSCHEN
+    japanese: 進行状況を削除
+    simplifiedChinese: 删除进度
   - key: ui_delete_confirm
     english: ARE YOU SURE ?
     french: "\xCATES-VOUS S\xDBR ?"
+    spanish: ¿ESTÁS SEGURO?
+    german: BIST DU SICHER?
+    japanese: 本当に削除しますか？
+    simplifiedChinese: 确定要删除吗？
   - key: ui_delete_success
     english: PROGRESSION REMOVED
     french: "PROGRESSION SUPPRIM\xC9E"
+    spanish: PROGRESO BORRADO
+    german: FORTSCHRITT GELÖSCHT
+    japanese: 進行状況を削除しました
+    simplifiedChinese: 进度已删除
   - key: ui_mainmenu
     english: Main Menu
     french: Menu Principal
+    spanish: Menú principal
+    german: Hauptmenü
+    japanese: メインメニュー
+    simplifiedChinese: 主菜单
   - key: ui_resume
     english: Resume
     french: Reprendre
+    spanish: Reanudar
+    german: Fortsetzen
+    japanese: 再開
+    simplifiedChinese: 继续
   - key: ano_missing_bench
     english: Missing bench
     french: Banc manquant
+    spanish: Banco desaparecido
+    german: Fehlende Bank
+    japanese: 消えたベンチ
+    simplifiedChinese: 消失的长椅
   - key: ano_rotated_bench
     english: Rotated bench
     french: "Banc tourn\xE9"
+    spanish: Banco girado
+    german: Gedrehte Bank
+    japanese: 回転したベンチ
+    simplifiedChinese: 旋转的长椅
   - key: ano_flickering_window
     english: Flickering Window
     french: "Fen\xEAtre qui clignotte"
+    spanish: Ventana parpadeante
+    german: Flackerndes Fenster
+    japanese: 点滅する窓
+    simplifiedChinese: 闪烁的窗户

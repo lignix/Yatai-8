@@ -17,22 +17,15 @@ public class PauseManager : MonoBehaviour
     [Header("UI to Hide")]
     public GameObject deleteSaveButton;
 
-    [Header("Player Reference")]
-    public PlayerInput playerInput;
-
     private bool isPaused = false;
 
     private void Start()
     {
         pausePanel.SetActive(false);
-        if (optionsPanel != null)
-            optionsPanel.SetActive(false);
+        if (optionsPanel != null) optionsPanel.SetActive(false);
+        if (deleteSaveButton != null) deleteSaveButton.SetActive(false);
 
-        if (deleteSaveButton != null)
-            deleteSaveButton.SetActive(false);
-
-        Cursor.lockState = CursorLockMode.Locked;
-        Cursor.visible = false;
+        SetCursorState(true);
     }
 
     private void Update()
@@ -68,12 +61,12 @@ public class PauseManager : MonoBehaviour
         Time.timeScale = isPaused ? 0f : 1f;
         AudioListener.pause = isPaused;
 
-        Cursor.lockState = isPaused ? CursorLockMode.None : CursorLockMode.Locked;
-        Cursor.visible = isPaused;
+        SetCursorState(!isPaused);
 
-        if (playerInput != null)
+        PlayerController playerController = FindAnyObjectByType<PlayerController>();
+        if (playerController != null)
         {
-            playerInput.enabled = !isPaused;
+            playerController.enabled = !isPaused;
         }
 
         if (isPaused)
@@ -85,14 +78,12 @@ public class PauseManager : MonoBehaviour
     public void OpenOptions()
     {
         pausePanel.SetActive(false);
-        if (optionsPanel != null)
-            optionsPanel.SetActive(true);
+        if (optionsPanel != null) optionsPanel.SetActive(true);
     }
 
     public void CloseOptions()
     {
-        if (optionsPanel != null)
-            optionsPanel.SetActive(false);
+        if (optionsPanel != null) optionsPanel.SetActive(false);
         pausePanel.SetActive(true);
     }
 
@@ -100,23 +91,26 @@ public class PauseManager : MonoBehaviour
     {
         Time.timeScale = 1f;
         AudioListener.pause = false;
-        Cursor.lockState = CursorLockMode.None;
-        Cursor.visible = true;
+        SetCursorState(false);
         SceneManager.LoadScene("Menu");
+    }
+
+    private void SetCursorState(bool locked)
+    {
+        Cursor.lockState = locked ? CursorLockMode.Locked : CursorLockMode.None;
+        Cursor.visible = !locked;
     }
 
     private void UpdateProgressText()
     {
-        if (progressText == null || database == null)
-            return;
+        if (progressText == null || database == null) return;
 
         List<int> unlockedAnomalies = SaveManager.Load();
         int totalAnomalies = database.anomalyKeys.Count;
 
-        string progressFormat =
-            LocalizationManager.Instance != null
-                ? LocalizationManager.Instance.GetTranslation("ui_progress")
-                : "{0} / {1}";
+        string progressFormat = LocalizationManager.Instance != null
+            ? LocalizationManager.Instance.GetTranslation("ui_progress")
+            : "{0} / {1}";
 
         progressText.text = string.Format(progressFormat, unlockedAnomalies.Count, totalAnomalies);
     }

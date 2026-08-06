@@ -16,8 +16,9 @@ MonoBehaviour:
   - ano_rotated_bench
   - ano_missing_bench
   - ano_flickering_window
-  - ano_ajar_door
   - ano_brick_wall
+  - ano_knocking_door
+  - ano_ajar_door
   - ano_open_door
   - ano_ac_unit_leak
   - ano_bar_lamp
@@ -30,4 +31,6 @@ MonoBehaviour:
   - ano_fallen_cone
   - ano_wrong_sided_yatai
   - ano_blue_chouchin
+  - ano_flickering_chouchin
   - ano_moved_bike
+  - ano_red_glass_jidouhanbaiki

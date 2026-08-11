@@ -48,18 +48,28 @@ Assets/
       ArcadeAnomaly.cs.meta
       ArcadeScreenEffect.cs
       ArcadeScreenEffect.cs.meta
+      CounterAnomaly.cs
+      CounterAnomaly.cs.meta
       DoorSlamAnomaly.cs
       DoorSlamAnomaly.cs.meta
       FallingPoleAnomaly.cs
       FallingPoleAnomaly.cs.meta
+      FlickeringLanternsAnomaly.cs
+      FlickeringLanternsAnomaly.cs.meta
+      KnockingDoorAnomaly.cs
+      KnockingDoorAnomaly.cs.meta
       LightFlicker.cs
       LightFlicker.cs.meta
       RotatingConeAnomaly.cs
       RotatingConeAnomaly.cs.meta
+      TrainPassingByAnomaly.cs
+      TrainPassingByAnomaly.cs.meta
       TrashAvalancheAnomaly.cs
       TrashAvalancheAnomaly.cs.meta
       TrashBagCollisionSound.cs
       TrashBagCollisionSound.cs.meta
+    AchievementManager.cs
+    AchievementManager.cs.meta
     Anomalies.meta
     AnomalyController.cs
     AnomalyController.cs.meta
@@ -95,10 +105,515 @@ Assets/
     SaveManager.cs.meta
     SettingsManager.cs
     SettingsManager.cs.meta
+    SteamManager.cs
+    SteamManager.cs.meta
 </directory_structure>
 
 <files>
 This section contains the contents of the repository's files.
+
+<file path="Assets/_Scripts/AchievementManager.cs">
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using Steamworks;
+
+public class AchievementManager : MonoBehaviour
+{
+    public static AchievementManager Instance;
+
+    private void Awake()
+    {
+        if (Instance == null)
+        {
+            Instance = this;
+            DontDestroyOnLoad(gameObject);
+        }
+        else
+        {
+            Destroy(gameObject);
+        }
+    }
+
+    private IEnumerator Start()
+    {
+        while (!SteamManager.Initialized)
+        {
+            yield return null;
+        }
+
+        CheckAndSyncSaveAchievements();
+    }
+
+    public void CheckAndSyncSaveAchievements()
+    {
+        if (!SteamManager.Initialized) return;
+
+        List<int> unlockedList = SaveManager.Load();
+        int count = unlockedList.Count;
+
+        SteamUserStats.SetStat("stat_anomalies_found", count);
+
+        if (count >= 10) UnlockAchievement("ano_10");
+        if (count >= 20) UnlockAchievement("ano_20");
+        if (count >= 30) UnlockAchievement("ano_30");
+        if (count >= 40) UnlockAchievement("ano_40");
+
+        SteamUserStats.StoreStats();
+    }
+
+    public void UnlockAchievement(string achievementID)
+    {
+        if (!SteamManager.Initialized) return;
+
+        bool isUnlocked;
+        if (SteamUserStats.GetAchievement(achievementID, out isUnlocked) && !isUnlocked)
+        {
+            SteamUserStats.SetAchievement(achievementID);
+            SteamUserStats.StoreStats();
+            Debug.Log($"[Steam] Succès débloqué : {achievementID}");
+        }
+    }
+}
+</file>
+
+<file path="Assets/_Scripts/AchievementManager.cs.meta">
+fileFormatVersion: 2
+guid: 28bdf3296ffd53d4bb21fa4463487c61
+</file>
+
+<file path="Assets/_Scripts/SteamManager.cs">
+using UnityEngine;
+using Steamworks;
+
+[DisallowMultipleComponent]
+public class SteamManager : MonoBehaviour
+{
+    private static SteamManager s_instance;
+    private static bool s_EverInited;
+
+    public static bool Initialized => s_instance != null && s_instance.m_bInitialized;
+
+    private bool m_bInitialized;
+    private SteamAPIWarningMessageHook_t m_SteamAPIWarningMessageHook;
+
+    private static void SteamAPIDebugTextHook(int nSeverity, System.Text.StringBuilder pchDebugText)
+    {
+        Debug.LogWarning(pchDebugText);
+    }
+
+    private void Awake()
+    {
+        if (s_instance != null)
+        {
+            Destroy(gameObject);
+            return;
+        }
+
+        s_instance = this;
+        DontDestroyOnLoad(gameObject);
+
+        if (!Packsize.Test())
+        {
+            Debug.LogError("[Steamworks.NET] Packsize Test failed.");
+            return;
+        }
+
+        if (!DllCheck.Test())
+        {
+            Debug.LogError("[Steamworks.NET] DllCheck Test failed.");
+            return;
+        }
+
+        try
+        {
+            if (SteamAPI.RestartAppIfNecessary((AppId_t)5080810))
+            {
+                Application.Quit();
+                return;
+            }
+        }
+        catch (System.DllNotFoundException e)
+        {
+            Debug.LogError("[Steamworks.NET] Could not load steam_api.dll/so/dylib: " + e);
+            return;
+        }
+
+        m_bInitialized = SteamAPI.Init();
+        if (!m_bInitialized)
+        {
+            Debug.LogError("[Steamworks.NET] SteamAPI_Init() failed.");
+            return;
+        }
+
+        s_EverInited = true;
+    }
+
+    private void OnEnable()
+    {
+        if (s_instance == null) s_instance = this;
+
+        if (!m_bInitialized) return;
+
+        if (m_SteamAPIWarningMessageHook == null)
+        {
+            m_SteamAPIWarningMessageHook = new SteamAPIWarningMessageHook_t(SteamAPIDebugTextHook);
+            SteamClient.SetWarningMessageHook(m_SteamAPIWarningMessageHook);
+        }
+    }
+
+    private void OnDestroy()
+    {
+        if (s_instance != this) return;
+
+        s_instance = null;
+
+        if (!m_bInitialized) return;
+
+        SteamAPI.Shutdown();
+    }
+
+    private void Update()
+    {
+        if (!m_bInitialized) return;
+
+        SteamAPI.RunCallbacks();
+    }
+}
+</file>
+
+<file path="Assets/_Scripts/SteamManager.cs.meta">
+fileFormatVersion: 2
+guid: d967b9578c3c6954481707ca0b1b7b91
+</file>
+
+<file path="Assets/_Scripts/Anomalies/ArcadeAnomaly.cs">
+using System.Collections;
+using UnityEngine;
+
+[RequireComponent(typeof(AudioSource))]
+public class ArcadeAnomaly : MonoBehaviour
+{
+    [Header("References")]
+    public Transform player;
+    public Renderer screenRenderer;
+    public Material screenOffMaterial;
+    public Light roomSpotlight;
+    public AudioSource scareAudioSource;
+
+    [Header("Settings")]
+    public float triggerDistance = 2f;
+    public float scareSoundDelay = 0.2f;
+
+    private AudioSource audioSource;
+    private bool hasTriggered = false;
+    private Material originalScreenMaterial;
+
+    private void Awake()
+    {
+        audioSource = GetComponent<AudioSource>();
+
+        if (screenRenderer != null)
+        {
+            originalScreenMaterial = screenRenderer.material;
+        }
+    }
+
+    private void OnEnable()
+    {
+        hasTriggered = false;
+
+        if (screenRenderer != null && originalScreenMaterial != null)
+        {
+            screenRenderer.material = originalScreenMaterial;
+        }
+
+        if (roomSpotlight != null)
+        {
+            roomSpotlight.enabled = true;
+        }
+
+        ArcadeScreenEffect flickerEffect = GetComponent<ArcadeScreenEffect>();
+        if (flickerEffect != null)
+        {
+            flickerEffect.enabled = true;
+        }
+
+        if (audioSource != null && !audioSource.isPlaying)
+        {
+            audioSource.Play();
+        }
+
+        if (scareAudioSource != null)
+        {
+            scareAudioSource.Stop();
+        }
+    }
+
+    private void OnDisable()
+    {
+        // Prevent the coroutine from running into the next loop if disabled early
+        StopAllCoroutines();
+    }
+
+    private void Update()
+    {
+        if (hasTriggered || player == null) return;
+
+        if (Vector3.Distance(player.position, transform.position) <= triggerDistance)
+        {
+            TurnOffArcade();
+        }
+    }
+
+    private void TurnOffArcade()
+    {
+        hasTriggered = true;
+
+        if (audioSource != null) audioSource.Stop();
+
+        if (screenRenderer != null && screenOffMaterial != null)
+        {
+            screenRenderer.material = screenOffMaterial;
+        }
+
+        if (roomSpotlight != null)
+        {
+            roomSpotlight.enabled = false;
+        }
+
+        ArcadeScreenEffect flickerEffect = GetComponent<ArcadeScreenEffect>();
+        if (flickerEffect != null)
+        {
+            flickerEffect.enabled = false;
+        }
+
+        if (scareAudioSource != null)
+        {
+            StartCoroutine(PlayScareSoundRoutine());
+        }
+    }
+
+    private IEnumerator PlayScareSoundRoutine()
+    {
+        yield return new WaitForSeconds(scareSoundDelay);
+        scareAudioSource.Play();
+    }
+}
+</file>
+
+<file path="Assets/_Scripts/Anomalies/ArcadeAnomaly.cs.meta">
+fileFormatVersion: 2
+guid: c640d10532adbe94b85d15e15c2e6161
+</file>
+
+<file path="Assets/_Scripts/Anomalies/ArcadeScreenEffect.cs">
+using UnityEngine;
+
+public class ArcadeScreenEffect : MonoBehaviour
+{
+    [Header("References")]
+    public Renderer screenRenderer;
+    public Light screenLight;
+
+    [Header("Flicker Settings")]
+    public float minIntensity = 0.6f;
+    public float maxIntensity = 1.4f;
+    public float flickerSpeed = 15f;
+
+    private Material screenMaterial;
+    private Color originalEmissionColor;
+    private float baseLightIntensity;
+
+    private void Start()
+    {
+        if (screenRenderer != null)
+        {
+            // Instantiates the material to avoid modifying the project asset globally
+            screenMaterial = screenRenderer.material;
+
+            if (screenMaterial.HasProperty("_EmissionColor"))
+            {
+                originalEmissionColor = screenMaterial.GetColor("_EmissionColor");
+            }
+        }
+
+        if (screenLight != null)
+        {
+            baseLightIntensity = screenLight.intensity;
+        }
+    }
+
+    private void Update()
+    {
+        // Generates organic noise over time
+        float noise = Mathf.PerlinNoise(Time.time * flickerSpeed, 0f);
+
+        // Maps the noise from 0-1 to the chosen multiplier range
+        float currentMultiplier = Mathf.Lerp(minIntensity, maxIntensity, noise);
+
+        // Applies multiplier to the physical light
+        if (screenLight != null)
+        {
+            screenLight.intensity = baseLightIntensity * currentMultiplier;
+        }
+
+        // Applies multiplier to the material's emission intensity
+        if (screenMaterial != null && screenMaterial.HasProperty("_EmissionColor"))
+        {
+            screenMaterial.SetColor("_EmissionColor", originalEmissionColor * currentMultiplier);
+        }
+    }
+}
+</file>
+
+<file path="Assets/_Scripts/Anomalies/ArcadeScreenEffect.cs.meta">
+fileFormatVersion: 2
+guid: e3f6869ae8d62ed46ba50b2bd5a63fc2
+</file>
+
+<file path="Assets/_Scripts/Anomalies/CounterAnomaly.cs">
+using System.Collections;
+using UnityEngine;
+using TMPro;
+
+[RequireComponent(typeof(TMP_Text))]
+public class CounterAnomaly : MonoBehaviour
+{
+    [Header("Settings")]
+    public float updateInterval = 0.03f;
+
+    private TMP_Text textComponent;
+    private Coroutine counterRoutine;
+    private int currentNumber = 0;
+
+    private void Awake()
+    {
+        textComponent = GetComponent<TMP_Text>();
+    }
+
+    private void OnEnable()
+    {
+        currentNumber = 0;
+        if (textComponent != null)
+        {
+            textComponent.text = "00";
+        }
+
+        counterRoutine = StartCoroutine(RunCounter());
+    }
+
+    private void OnDisable()
+    {
+        if (counterRoutine != null)
+        {
+            StopCoroutine(counterRoutine);
+        }
+    }
+
+    private IEnumerator RunCounter()
+    {
+        while (true)
+        {
+            yield return new WaitForSeconds(updateInterval);
+
+            currentNumber = (currentNumber + 1) % 100;
+            
+            if (textComponent != null)
+            {
+                textComponent.text = currentNumber.ToString("D2");
+            }
+        }
+    }
+}
+</file>
+
+<file path="Assets/_Scripts/Anomalies/CounterAnomaly.cs.meta">
+fileFormatVersion: 2
+guid: 279ae6c8cbd6e0f49aef36158c822a66
+</file>
+
+<file path="Assets/_Scripts/Anomalies/DoorSlamAnomaly.cs">
+using System.Collections;
+using UnityEngine;
+
+[RequireComponent(typeof(AudioSource))]
+public class DoorSlamAnomaly : MonoBehaviour
+{
+    [Header("References")]
+    public Transform player;
+
+    [Header("Settings")]
+    public float triggerDistance = 2f;
+    public Vector3 closedRotation = new Vector3(-90f, 0f, -90f);
+    public float slamSpeed = 25f;
+
+    private AudioSource audioSource;
+    private bool hasTriggered = false;
+    private Quaternion originalRotation;
+
+    private void Awake()
+    {
+        audioSource = GetComponent<AudioSource>();
+
+        // Store the initial rotation so it can be reset in future loops
+        originalRotation = transform.localRotation;
+    }
+
+    private void OnEnable()
+    {
+        // Reset state every time the AnomalyController activates this object
+        hasTriggered = false;
+        transform.localRotation = originalRotation;
+    }
+
+    private void OnDisable()
+    {
+        // Prevent the coroutine from running if the anomaly is disabled mid-animation
+        StopAllCoroutines();
+    }
+
+    private void Update()
+    {
+        if (hasTriggered || player == null) return;
+
+        if (Vector3.Distance(player.position, transform.position) <= triggerDistance)
+        {
+            TriggerSlam();
+        }
+    }
+
+    private void TriggerSlam()
+    {
+        hasTriggered = true;
+
+        if (audioSource != null && audioSource.clip != null)
+        {
+            audioSource.Play();
+        }
+
+        StartCoroutine(SlamRoutine());
+    }
+
+    private IEnumerator SlamRoutine()
+    {
+        Quaternion targetRotation = Quaternion.Euler(closedRotation);
+
+        while (Quaternion.Angle(transform.localRotation, targetRotation) > 0.1f)
+        {
+            transform.localRotation = Quaternion.Lerp(transform.localRotation, targetRotation, Time.deltaTime * slamSpeed);
+            yield return null;
+        }
+
+        transform.localRotation = targetRotation;
+    }
+}
+</file>
+
+<file path="Assets/_Scripts/Anomalies/DoorSlamAnomaly.cs.meta">
+fileFormatVersion: 2
+guid: 94cb332d477ecad428d1a6b56aab1a9e
+</file>
 
 <file path="Assets/_Scripts/Anomalies/FallingPoleAnomaly.cs">
 using UnityEngine;
@@ -190,6 +705,255 @@ fileFormatVersion: 2
 guid: cd9a5af1dec794f4abdf35d2ff128288
 </file>
 
+<file path="Assets/_Scripts/Anomalies/FlickeringLanternsAnomaly.cs">
+using System.Collections.Generic;
+using UnityEngine;
+
+public class FlickeringLanternsAnomaly : MonoBehaviour
+{
+    [Header("References")]
+    public List<Light> lanterneLights = new List<Light>();
+
+    [Header("Detection Settings")]
+    public float triggerDistance = 2.0f;
+
+    [Header("Flicker Settings")]
+    public float minIntensity = 0.2f;
+    public float maxIntensity = 1.5f;
+    public float flickerSpeed = 15f;
+
+    private Transform playerTransform;
+    private bool hasTriggered = false;
+    private Dictionary<Light, float> baseIntensities = new Dictionary<Light, float>();
+
+    private void Awake()
+    {
+        foreach (Light l in lanterneLights)
+        {
+            if (l != null)
+            {
+                baseIntensities[l] = l.intensity;
+            }
+        }
+    }
+
+    private void OnEnable()
+    {
+        hasTriggered = false;
+        
+        foreach (Light l in lanterneLights)
+        {
+            if (l != null && baseIntensities.ContainsKey(l))
+            {
+                l.intensity = baseIntensities[l];
+            }
+        }
+
+        if (playerTransform == null)
+        {
+            GameObject playerObj = GameObject.FindGameObjectWithTag("Player");
+            if (playerObj != null)
+            {
+                playerTransform = playerObj.transform;
+            }
+        }
+    }
+
+    private void Update()
+    {
+        if (playerTransform == null) return;
+
+        if (!hasTriggered)
+        {
+            float distance = Vector3.Distance(playerTransform.position, transform.position);
+            if (distance <= triggerDistance)
+            {
+                hasTriggered = true;
+            }
+        }
+
+        if (hasTriggered)
+        {
+            ApplyFlicker();
+        }
+    }
+
+    private void ApplyFlicker()
+    {
+        for (int i = 0; i < lanterneLights.Count; i++)
+        {
+            Light l = lanterneLights[i];
+            if (l == null) continue;
+
+            float noise = Mathf.PerlinNoise((Time.time + i * 10f) * flickerSpeed, 0f);
+            float currentMultiplier = Mathf.Lerp(minIntensity, maxIntensity, noise);
+
+            if (baseIntensities.TryGetValue(l, out float originalIntensity))
+            {
+                l.intensity = originalIntensity * currentMultiplier;
+            }
+        }
+    }
+
+    private void OnDisable()
+    {
+        hasTriggered = false;
+    }
+}
+</file>
+
+<file path="Assets/_Scripts/Anomalies/FlickeringLanternsAnomaly.cs.meta">
+fileFormatVersion: 2
+guid: 408fcbf277962734a88ad3092d3d04ef
+</file>
+
+<file path="Assets/_Scripts/Anomalies/KnockingDoorAnomaly.cs">
+using System.Collections;
+using UnityEngine;
+
+[RequireComponent(typeof(AudioSource))]
+public class KnockingDoorAnomaly : MonoBehaviour
+{
+    [Header("Audio Settings")]
+    public AudioClip[] knockSounds;
+
+    [Header("Timings")]
+    public float knockInterval = 3.0f;
+
+    [Header("Visual Shake Settings (X Axis)")]
+    public float shakeIntensity = 0.05f;
+    public float shakeDuration = 0.25f;
+
+    private AudioSource audioSource;
+    private Vector3 initialLocalPosition;
+    private Coroutine knockLoopRoutine;
+
+    private void Awake()
+    {
+        audioSource = GetComponent<AudioSource>();
+        initialLocalPosition = transform.localPosition;
+    }
+
+    private void OnEnable()
+    {
+        transform.localPosition = initialLocalPosition;
+        knockLoopRoutine = StartCoroutine(KnockLoop());
+    }
+
+    private void OnDisable()
+    {
+        if (knockLoopRoutine != null)
+        {
+            StopCoroutine(knockLoopRoutine);
+        }
+
+        transform.localPosition = initialLocalPosition;
+    }
+
+    private IEnumerator KnockLoop()
+    {
+        while (true)
+        {
+            yield return new WaitForSeconds(knockInterval);
+
+            PlayRandomKnockSound();
+
+            yield return StartCoroutine(ShakeOnX());
+        }
+    }
+
+    private void PlayRandomKnockSound()
+    {
+        if (audioSource != null && knockSounds != null && knockSounds.Length > 0)
+        {
+            int randomIndex = Random.Range(0, knockSounds.Length);
+            AudioClip selectedClip = knockSounds[randomIndex];
+
+            if (selectedClip != null)
+            {
+                audioSource.PlayOneShot(selectedClip);
+            }
+        }
+    }
+
+    private IEnumerator ShakeOnX()
+    {
+        float timer = 0f;
+
+        while (timer < shakeDuration)
+        {
+            timer += Time.deltaTime;
+
+            float xOffset = Random.Range(-1f, 1f) * shakeIntensity;
+            transform.localPosition = initialLocalPosition + new Vector3(xOffset, 0f, 0f);
+
+            yield return null;
+        }
+
+        transform.localPosition = initialLocalPosition;
+    }
+}
+</file>
+
+<file path="Assets/_Scripts/Anomalies/KnockingDoorAnomaly.cs.meta">
+fileFormatVersion: 2
+guid: dce879628ef974a458f12969ac864bfe
+</file>
+
+<file path="Assets/_Scripts/Anomalies/LightFlicker.cs">
+using System.Collections;
+using UnityEngine;
+
+[RequireComponent(typeof(Renderer))]
+public class LightFlicker : MonoBehaviour
+{
+    [Header("Material References")]
+    public Material lightOnMaterial;
+    public Material lightOffMaterial;
+
+    [Header("Flicker Settings")]
+    public float minDelay = 0.05f;
+    public float maxDelay = 0.3f;
+
+    private Renderer targetRenderer;
+    private bool isLightOn = true;
+
+    private void Awake()
+    {
+        targetRenderer = GetComponent<Renderer>();
+    }
+
+    private void OnEnable()
+    {
+        StartCoroutine(FlickerRoutine());
+    }
+
+    private void OnDisable()
+    {
+        StopAllCoroutines();
+    }
+
+    private IEnumerator FlickerRoutine()
+    {
+        while (true)
+        {
+            // Calculate a random time interval before the next state change
+            float currentDelay = Random.Range(minDelay, maxDelay);
+            yield return new WaitForSeconds(currentDelay);
+
+            // Toggle state and apply material
+            isLightOn = !isLightOn;
+            targetRenderer.material = isLightOn ? lightOnMaterial : lightOffMaterial;
+        }
+    }
+}
+</file>
+
+<file path="Assets/_Scripts/Anomalies/LightFlicker.cs.meta">
+fileFormatVersion: 2
+guid: e7e70bb3ca09627489276a58b773ebc1
+</file>
+
 <file path="Assets/_Scripts/Anomalies/RotatingConeAnomaly.cs">
 using UnityEngine;
 
@@ -207,6 +971,102 @@ public class RotatingConeAnomaly : MonoBehaviour
 <file path="Assets/_Scripts/Anomalies/RotatingConeAnomaly.cs.meta">
 fileFormatVersion: 2
 guid: 07104689711bfd543868be515e7e1f9e
+</file>
+
+<file path="Assets/_Scripts/Anomalies/TrainPassingByAnomaly.cs">
+using System.Collections;
+using UnityEngine;
+
+[RequireComponent(typeof(AudioSource))]
+[RequireComponent(typeof(Collider))]
+public class TrainPassingByAnomaly : MonoBehaviour
+{
+    [Header("Audio")]
+    public AudioClip trainSound;
+
+    [Header("Camera Shake Settings")]
+    public float shakeDuration = 3.0f;
+    public float shakeIntensity = 0.15f;
+    public float shakeSpeed = 25.0f;
+
+    private AudioSource audioSource;
+    private bool hasTriggered = false;
+    private Transform mainCameraTransform;
+
+    private void Awake()
+    {
+        audioSource = GetComponent<AudioSource>();
+        
+        Collider col = GetComponent<Collider>();
+        if (col != null)
+        {
+            col.isTrigger = true;
+        }
+    }
+
+    private void OnEnable()
+    {
+        hasTriggered = false;
+        
+        if (Camera.main != null)
+        {
+            mainCameraTransform = Camera.main.transform;
+        }
+    }
+
+    private void OnTriggerEnter(Collider other)
+    {
+        if (hasTriggered) return;
+
+        if (other.CompareTag("Player"))
+        {
+            hasTriggered = true;
+
+            if (audioSource != null && trainSound != null)
+            {
+                audioSource.PlayOneShot(trainSound);
+            }
+
+            if (mainCameraTransform != null)
+            {
+                StartCoroutine(ShakeCamera());
+            }
+        }
+    }
+
+    private IEnumerator ShakeCamera()
+    {
+        float timer = 0f;
+        Vector3 originalCamLocalPos = mainCameraTransform.localPosition;
+
+        while (timer < shakeDuration)
+        {
+            timer += Time.deltaTime;
+
+            float progress = timer / shakeDuration;
+            float fadeFactor = Mathf.Sin(progress * Mathf.PI);
+
+            float offsetX = (Mathf.PerlinNoise(Time.time * shakeSpeed, 0f) - 0.5f) * 2f * shakeIntensity * fadeFactor;
+            float offsetY = (Mathf.PerlinNoise(0f, Time.time * shakeSpeed) - 0.5f) * 2f * shakeIntensity * fadeFactor;
+
+            mainCameraTransform.localPosition = originalCamLocalPos + new Vector3(offsetX, offsetY, 0f);
+
+            yield return null;
+        }
+
+        mainCameraTransform.localPosition = originalCamLocalPos;
+    }
+
+    private void OnDisable()
+    {
+        hasTriggered = false;
+    }
+}
+</file>
+
+<file path="Assets/_Scripts/Anomalies/TrainPassingByAnomaly.cs.meta">
+fileFormatVersion: 2
+guid: b832e89e58840ef41a7bd00c8111d007
 </file>
 
 <file path="Assets/_Scripts/Anomalies/TrashAvalancheAnomaly.cs">
@@ -365,6 +1225,338 @@ public class TrashBagCollisionSound : MonoBehaviour
 <file path="Assets/_Scripts/Anomalies/TrashBagCollisionSound.cs.meta">
 fileFormatVersion: 2
 guid: 0f284e176f93e6e48b296c1b518a8000
+</file>
+
+<file path="Assets/_Scripts/Anomalies.meta">
+fileFormatVersion: 2
+guid: 83c9242b1e4e10e439f0f7679eab6122
+folderAsset: yes
+DefaultImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant:
+</file>
+
+<file path="Assets/_Scripts/AnomalyController.cs.meta">
+fileFormatVersion: 2
+guid: 849c0d1b644f3de43ad3d5a0338fda7f
+</file>
+
+<file path="Assets/_Scripts/AnomalyDatabase.cs">
+using System.Collections.Generic;
+using UnityEngine;
+
+[CreateAssetMenu(fileName = "AnomalyDatabase", menuName = "Game/Anomaly Database")]
+public class AnomalyDatabase : ScriptableObject
+{
+    public List<string> anomalyKeys = new List<string>();
+}
+</file>
+
+<file path="Assets/_Scripts/AnomalyDatabase.cs.meta">
+fileFormatVersion: 2
+guid: 6e1effec584f5fe469d889fc47318664
+</file>
+
+<file path="Assets/_Scripts/CreditsManager.cs">
+using System.Collections;
+using UnityEngine;
+using UnityEngine.UI;
+using UnityEngine.SceneManagement;
+
+public class CreditsManager : MonoBehaviour
+{
+    [Header("References")]
+    public Image fullScreenImage;
+    public RectTransform creditsPanel;
+    public Behaviour[] componentsToDisable;
+
+    [Header("Timings")]
+    public float fadeToBlackDuration = 2f;
+    public float waitBeforeCredits = 1f;
+    public float delayAfterScroll = 3f;
+
+    [Header("Scrolling Settings")]
+    public float scrollSpeed = 100f;
+    public float endPositionY = 2500f;
+
+    public void StartCreditsSequence()
+    {
+        foreach (Behaviour comp in componentsToDisable)
+        {
+            if (comp != null)
+            {
+                comp.enabled = false;
+            }
+        }
+
+        StartCoroutine(CreditsRoutine());
+    }
+
+    private IEnumerator CreditsRoutine()
+    {
+        if (AchievementManager.Instance != null)
+        {
+            AchievementManager.Instance.UnlockAchievement("end");
+        }
+        float timer = 0f;
+        Color startColor = fullScreenImage.color;
+        Color targetColor = Color.black;
+
+        while (timer < fadeToBlackDuration)
+        {
+            timer += Time.deltaTime;
+            fullScreenImage.color = Color.Lerp(startColor, targetColor, timer / fadeToBlackDuration);
+            yield return null;
+        }
+        fullScreenImage.color = targetColor;
+
+        yield return new WaitForSeconds(waitBeforeCredits);
+
+        if (creditsPanel != null)
+        {
+            creditsPanel.gameObject.SetActive(true);
+
+            while (creditsPanel.anchoredPosition.y < endPositionY)
+            {
+                creditsPanel.anchoredPosition += Vector2.up * (scrollSpeed * Time.deltaTime);
+                yield return null;
+            }
+        }
+
+        yield return new WaitForSeconds(delayAfterScroll);
+
+        SceneManager.LoadScene("Menu");
+    }
+}
+</file>
+
+<file path="Assets/_Scripts/CreditsManager.cs.meta">
+fileFormatVersion: 2
+guid: 008129d65e86ccc43b6f89cad97532dd
+</file>
+
+<file path="Assets/_Scripts/EndgameFade.cs">
+using UnityEngine;
+using UnityEngine.UI;
+
+public class EndgameFade : MonoBehaviour
+{
+    [Header("References")]
+    public Transform player;
+    public Transform fadeTarget;
+    public Image whiteFadeImage;
+
+    [Header("Fade Settings")]
+    public float startFadeDistance = 15f;
+    public float endFadeDistance = 2f;
+
+
+    public CreditsManager creditsManager;
+    private bool isFinished = false;
+
+    private void Start()
+    {
+        if (whiteFadeImage != null)
+        {
+            whiteFadeImage.gameObject.SetActive(true);
+            Color c = whiteFadeImage.color;
+            c.a = 0f;
+            whiteFadeImage.color = c;
+        }
+    }
+
+    private void Update()
+    {
+        if (isFinished || player == null || fadeTarget == null || whiteFadeImage == null) return;
+
+        float distance = Vector3.Distance(player.position, fadeTarget.position);
+
+        float linearAlpha = Mathf.InverseLerp(startFadeDistance, endFadeDistance, distance);
+        float alpha = Mathf.Pow(linearAlpha, 3f);
+
+        Color c = whiteFadeImage.color;
+        c.a = alpha;
+        whiteFadeImage.color = c;
+
+        if (alpha >= 1f)
+        {
+            isFinished = true;
+            TriggerCredits();
+        }
+    }
+
+    private void TriggerCredits()
+    {
+        if (creditsManager != null) creditsManager.StartCreditsSequence();
+    }
+}
+</file>
+
+<file path="Assets/_Scripts/EndgameFade.cs.meta">
+fileFormatVersion: 2
+guid: a1b4f6ce5138ff24ca2f87b20c7faf83
+</file>
+
+<file path="Assets/_Scripts/FadeManager.cs">
+using System.Collections;
+using UnityEngine;
+using UnityEngine.UI;
+using UnityEngine.SceneManagement;
+
+public class FadeManager : MonoBehaviour
+{
+    public static FadeManager Instance;
+
+    [Header("References")]
+    public Image fadeImage;
+
+    [Header("Settings")]
+    public float fadeOutDuration = 1.5f;
+    public float fadeInDuration = 0.1f;
+
+    private void Awake()
+    {
+        if (Instance == null) Instance = this;
+        else Destroy(gameObject);
+    }
+
+    private void Start()
+    {
+        if (fadeImage != null)
+        {
+            fadeImage.gameObject.SetActive(true);
+            fadeImage.color = Color.black;
+        }
+
+        StartCoroutine(StartGameFadeSequence());
+    }
+
+    private IEnumerator StartGameFadeSequence()
+    {
+        float timer = 0f;
+        while (timer < fadeOutDuration)
+        {
+            timer += Time.deltaTime;
+            float alpha = Mathf.Lerp(1f, 0f, timer / fadeOutDuration);
+            
+            if (fadeImage != null)
+            {
+                Color c = fadeImage.color;
+                c.a = alpha;
+                fadeImage.color = c;
+            }
+            yield return null;
+        }
+
+        if (fadeImage != null) fadeImage.gameObject.SetActive(false);
+    }
+
+    public void FadeAndRestart()
+    {
+        StartCoroutine(FadeToSceneSequence(SceneManager.GetActiveScene().name, fadeInDuration));
+    }
+
+    public void FadeAndLoadScene(string sceneName, float duration)
+    {
+        StartCoroutine(FadeToSceneSequence(sceneName, duration));
+    }
+
+    private IEnumerator FadeToSceneSequence(string targetScene, float duration)
+    {
+        if (fadeImage != null) fadeImage.gameObject.SetActive(true);
+
+        float timer = 0f;
+        while (timer < duration)
+        {
+            timer += Time.deltaTime;
+            float alpha = Mathf.Lerp(0f, 1f, timer / duration);
+            
+            if (fadeImage != null)
+            {
+                Color c = fadeImage.color;
+                c.a = alpha;
+                fadeImage.color = c;
+            }
+            yield return null;
+        }
+
+        SceneManager.LoadScene(targetScene);
+    }
+}
+</file>
+
+<file path="Assets/_Scripts/FadeManager.cs.meta">
+fileFormatVersion: 2
+guid: 0fb09a7eb4de1fa4a844bc8246d970b0
+</file>
+
+<file path="Assets/_Scripts/GameManager.cs.meta">
+fileFormatVersion: 2
+guid: c52d63c9e3ac5394e92e9e2b6efc1deb
+</file>
+
+<file path="Assets/_Scripts/LocalizationDatabase.cs.meta">
+fileFormatVersion: 2
+guid: 6b0d4621e9f65ce4ba49fdd2879d9a17
+</file>
+
+<file path="Assets/_Scripts/LocalizationManager.cs.meta">
+fileFormatVersion: 2
+guid: a2b05c80b66aa414e8ce514f5014da4c
+</file>
+
+<file path="Assets/_Scripts/LocalizedText.cs">
+using TMPro;
+using UnityEngine;
+
+[RequireComponent(typeof(TMP_Text))]
+public class LocalizedText : MonoBehaviour
+{
+    public string translationKey;
+    private TMP_Text textComponent;
+
+    private void Start()
+    {
+        textComponent = GetComponent<TMP_Text>();
+        UpdateText();
+        LocalizationManager.LanguageChangedEvent += UpdateText;
+    }
+
+    private void OnDestroy()
+    {
+        LocalizationManager.LanguageChangedEvent -= UpdateText;
+    }
+
+    private void UpdateText()
+    {
+        if (LocalizationManager.Instance != null && textComponent != null)
+        {
+            textComponent.text = LocalizationManager.Instance.GetTranslation(translationKey);
+        }
+    }
+}
+</file>
+
+<file path="Assets/_Scripts/LocalizedText.cs.meta">
+fileFormatVersion: 2
+guid: fad41dc363181034a96410dfdbadfa52
+</file>
+
+<file path="Assets/_Scripts/LoopTrigger.cs.meta">
+fileFormatVersion: 2
+guid: 5b095f7d4fb182b4eae139fda8c93417
+</file>
+
+<file path="Assets/_Scripts/MenuManager.cs.meta">
+fileFormatVersion: 2
+guid: 993b2bced0e1aa24185b8636c6ee4838
+</file>
+
+<file path="Assets/_Scripts/PauseManager.cs.meta">
+fileFormatVersion: 2
+guid: 728a3ebbc10dc6a4ab657eb04b99bfdf
 </file>
 
 <file path="Assets/_Scripts/PlayerController.cs">
@@ -579,723 +1771,6 @@ fileFormatVersion: 2
 guid: 0fd908d732cf8aa4fbcb1e177ef991e1
 </file>
 
-<file path="Assets/_Scripts/Anomalies/ArcadeAnomaly.cs">
-using System.Collections;
-using UnityEngine;
-
-[RequireComponent(typeof(AudioSource))]
-public class ArcadeAnomaly : MonoBehaviour
-{
-    [Header("References")]
-    public Transform player;
-    public Renderer screenRenderer;
-    public Material screenOffMaterial;
-    public Light roomSpotlight;
-    public AudioSource scareAudioSource;
-
-    [Header("Settings")]
-    public float triggerDistance = 2f;
-    public float scareSoundDelay = 0.2f;
-
-    private AudioSource audioSource;
-    private bool hasTriggered = false;
-    private Material originalScreenMaterial;
-
-    private void Awake()
-    {
-        audioSource = GetComponent<AudioSource>();
-
-        if (screenRenderer != null)
-        {
-            originalScreenMaterial = screenRenderer.material;
-        }
-    }
-
-    private void OnEnable()
-    {
-        hasTriggered = false;
-
-        if (screenRenderer != null && originalScreenMaterial != null)
-        {
-            screenRenderer.material = originalScreenMaterial;
-        }
-
-        if (roomSpotlight != null)
-        {
-            roomSpotlight.enabled = true;
-        }
-
-        ArcadeScreenEffect flickerEffect = GetComponent<ArcadeScreenEffect>();
-        if (flickerEffect != null)
-        {
-            flickerEffect.enabled = true;
-        }
-
-        if (audioSource != null && !audioSource.isPlaying)
-        {
-            audioSource.Play();
-        }
-
-        if (scareAudioSource != null)
-        {
-            scareAudioSource.Stop();
-        }
-    }
-
-    private void OnDisable()
-    {
-        // Prevent the coroutine from running into the next loop if disabled early
-        StopAllCoroutines();
-    }
-
-    private void Update()
-    {
-        if (hasTriggered || player == null) return;
-
-        if (Vector3.Distance(player.position, transform.position) <= triggerDistance)
-        {
-            TurnOffArcade();
-        }
-    }
-
-    private void TurnOffArcade()
-    {
-        hasTriggered = true;
-
-        if (audioSource != null) audioSource.Stop();
-
-        if (screenRenderer != null && screenOffMaterial != null)
-        {
-            screenRenderer.material = screenOffMaterial;
-        }
-
-        if (roomSpotlight != null)
-        {
-            roomSpotlight.enabled = false;
-        }
-
-        ArcadeScreenEffect flickerEffect = GetComponent<ArcadeScreenEffect>();
-        if (flickerEffect != null)
-        {
-            flickerEffect.enabled = false;
-        }
-
-        if (scareAudioSource != null)
-        {
-            StartCoroutine(PlayScareSoundRoutine());
-        }
-    }
-
-    private IEnumerator PlayScareSoundRoutine()
-    {
-        yield return new WaitForSeconds(scareSoundDelay);
-        scareAudioSource.Play();
-    }
-}
-</file>
-
-<file path="Assets/_Scripts/Anomalies/ArcadeAnomaly.cs.meta">
-fileFormatVersion: 2
-guid: c640d10532adbe94b85d15e15c2e6161
-</file>
-
-<file path="Assets/_Scripts/Anomalies/ArcadeScreenEffect.cs">
-using UnityEngine;
-
-public class ArcadeScreenEffect : MonoBehaviour
-{
-    [Header("References")]
-    public Renderer screenRenderer;
-    public Light screenLight;
-
-    [Header("Flicker Settings")]
-    public float minIntensity = 0.6f;
-    public float maxIntensity = 1.4f;
-    public float flickerSpeed = 15f;
-
-    private Material screenMaterial;
-    private Color originalEmissionColor;
-    private float baseLightIntensity;
-
-    private void Start()
-    {
-        if (screenRenderer != null)
-        {
-            // Instantiates the material to avoid modifying the project asset globally
-            screenMaterial = screenRenderer.material;
-
-            if (screenMaterial.HasProperty("_EmissionColor"))
-            {
-                originalEmissionColor = screenMaterial.GetColor("_EmissionColor");
-            }
-        }
-
-        if (screenLight != null)
-        {
-            baseLightIntensity = screenLight.intensity;
-        }
-    }
-
-    private void Update()
-    {
-        // Generates organic noise over time
-        float noise = Mathf.PerlinNoise(Time.time * flickerSpeed, 0f);
-
-        // Maps the noise from 0-1 to the chosen multiplier range
-        float currentMultiplier = Mathf.Lerp(minIntensity, maxIntensity, noise);
-
-        // Applies multiplier to the physical light
-        if (screenLight != null)
-        {
-            screenLight.intensity = baseLightIntensity * currentMultiplier;
-        }
-
-        // Applies multiplier to the material's emission intensity
-        if (screenMaterial != null && screenMaterial.HasProperty("_EmissionColor"))
-        {
-            screenMaterial.SetColor("_EmissionColor", originalEmissionColor * currentMultiplier);
-        }
-    }
-}
-</file>
-
-<file path="Assets/_Scripts/Anomalies/ArcadeScreenEffect.cs.meta">
-fileFormatVersion: 2
-guid: e3f6869ae8d62ed46ba50b2bd5a63fc2
-</file>
-
-<file path="Assets/_Scripts/Anomalies/DoorSlamAnomaly.cs">
-using System.Collections;
-using UnityEngine;
-
-[RequireComponent(typeof(AudioSource))]
-public class DoorSlamAnomaly : MonoBehaviour
-{
-    [Header("References")]
-    public Transform player;
-
-    [Header("Settings")]
-    public float triggerDistance = 2f;
-    public Vector3 closedRotation = new Vector3(-90f, 0f, -90f);
-    public float slamSpeed = 25f;
-
-    private AudioSource audioSource;
-    private bool hasTriggered = false;
-    private Quaternion originalRotation;
-
-    private void Awake()
-    {
-        audioSource = GetComponent<AudioSource>();
-
-        // Store the initial rotation so it can be reset in future loops
-        originalRotation = transform.localRotation;
-    }
-
-    private void OnEnable()
-    {
-        // Reset state every time the AnomalyController activates this object
-        hasTriggered = false;
-        transform.localRotation = originalRotation;
-    }
-
-    private void OnDisable()
-    {
-        // Prevent the coroutine from running if the anomaly is disabled mid-animation
-        StopAllCoroutines();
-    }
-
-    private void Update()
-    {
-        if (hasTriggered || player == null) return;
-
-        if (Vector3.Distance(player.position, transform.position) <= triggerDistance)
-        {
-            TriggerSlam();
-        }
-    }
-
-    private void TriggerSlam()
-    {
-        hasTriggered = true;
-
-        if (audioSource != null && audioSource.clip != null)
-        {
-            audioSource.Play();
-        }
-
-        StartCoroutine(SlamRoutine());
-    }
-
-    private IEnumerator SlamRoutine()
-    {
-        Quaternion targetRotation = Quaternion.Euler(closedRotation);
-
-        while (Quaternion.Angle(transform.localRotation, targetRotation) > 0.1f)
-        {
-            transform.localRotation = Quaternion.Lerp(transform.localRotation, targetRotation, Time.deltaTime * slamSpeed);
-            yield return null;
-        }
-
-        transform.localRotation = targetRotation;
-    }
-}
-</file>
-
-<file path="Assets/_Scripts/Anomalies/DoorSlamAnomaly.cs.meta">
-fileFormatVersion: 2
-guid: 94cb332d477ecad428d1a6b56aab1a9e
-</file>
-
-<file path="Assets/_Scripts/Anomalies/LightFlicker.cs">
-using System.Collections;
-using UnityEngine;
-
-[RequireComponent(typeof(Renderer))]
-public class LightFlicker : MonoBehaviour
-{
-    [Header("Material References")]
-    public Material lightOnMaterial;
-    public Material lightOffMaterial;
-
-    [Header("Flicker Settings")]
-    public float minDelay = 0.05f;
-    public float maxDelay = 0.3f;
-
-    private Renderer targetRenderer;
-    private bool isLightOn = true;
-
-    private void Awake()
-    {
-        targetRenderer = GetComponent<Renderer>();
-    }
-
-    private void OnEnable()
-    {
-        StartCoroutine(FlickerRoutine());
-    }
-
-    private void OnDisable()
-    {
-        StopAllCoroutines();
-    }
-
-    private IEnumerator FlickerRoutine()
-    {
-        while (true)
-        {
-            // Calculate a random time interval before the next state change
-            float currentDelay = Random.Range(minDelay, maxDelay);
-            yield return new WaitForSeconds(currentDelay);
-
-            // Toggle state and apply material
-            isLightOn = !isLightOn;
-            targetRenderer.material = isLightOn ? lightOnMaterial : lightOffMaterial;
-        }
-    }
-}
-</file>
-
-<file path="Assets/_Scripts/Anomalies/LightFlicker.cs.meta">
-fileFormatVersion: 2
-guid: e7e70bb3ca09627489276a58b773ebc1
-</file>
-
-<file path="Assets/_Scripts/Anomalies.meta">
-fileFormatVersion: 2
-guid: 83c9242b1e4e10e439f0f7679eab6122
-folderAsset: yes
-DefaultImporter:
-  externalObjects: {}
-  userData: 
-  assetBundleName: 
-  assetBundleVariant:
-</file>
-
-<file path="Assets/_Scripts/AnomalyController.cs.meta">
-fileFormatVersion: 2
-guid: 849c0d1b644f3de43ad3d5a0338fda7f
-</file>
-
-<file path="Assets/_Scripts/AnomalyDatabase.cs">
-using System.Collections.Generic;
-using UnityEngine;
-
-[CreateAssetMenu(fileName = "AnomalyDatabase", menuName = "Game/Anomaly Database")]
-public class AnomalyDatabase : ScriptableObject
-{
-    public List<string> anomalyKeys = new List<string>();
-}
-</file>
-
-<file path="Assets/_Scripts/AnomalyDatabase.cs.meta">
-fileFormatVersion: 2
-guid: 6e1effec584f5fe469d889fc47318664
-</file>
-
-<file path="Assets/_Scripts/CreditsManager.cs">
-using System.Collections;
-using UnityEngine;
-using UnityEngine.UI;
-using UnityEngine.SceneManagement;
-
-public class CreditsManager : MonoBehaviour
-{
-    [Header("References")]
-    public Image fullScreenImage;
-    public RectTransform creditsPanel;
-    public Behaviour[] componentsToDisable;
-
-    [Header("Timings")]
-    public float fadeToBlackDuration = 2f;
-    public float waitBeforeCredits = 1f;
-    public float delayAfterScroll = 3f;
-
-    [Header("Scrolling Settings")]
-    public float scrollSpeed = 100f;
-    public float endPositionY = 2500f;
-
-    public void StartCreditsSequence()
-    {
-        foreach (Behaviour comp in componentsToDisable)
-        {
-            if (comp != null)
-            {
-                comp.enabled = false;
-            }
-        }
-
-        StartCoroutine(CreditsRoutine());
-    }
-
-    private IEnumerator CreditsRoutine()
-    {
-        float timer = 0f;
-        Color startColor = fullScreenImage.color;
-        Color targetColor = Color.black;
-
-        while (timer < fadeToBlackDuration)
-        {
-            timer += Time.deltaTime;
-            fullScreenImage.color = Color.Lerp(startColor, targetColor, timer / fadeToBlackDuration);
-            yield return null;
-        }
-        fullScreenImage.color = targetColor;
-
-        yield return new WaitForSeconds(waitBeforeCredits);
-
-        if (creditsPanel != null)
-        {
-            creditsPanel.gameObject.SetActive(true);
-
-            while (creditsPanel.anchoredPosition.y < endPositionY)
-            {
-                creditsPanel.anchoredPosition += Vector2.up * (scrollSpeed * Time.deltaTime);
-                yield return null;
-            }
-        }
-
-        yield return new WaitForSeconds(delayAfterScroll);
-
-        SceneManager.LoadScene("Menu");
-    }
-}
-</file>
-
-<file path="Assets/_Scripts/CreditsManager.cs.meta">
-fileFormatVersion: 2
-guid: 008129d65e86ccc43b6f89cad97532dd
-</file>
-
-<file path="Assets/_Scripts/EndgameFade.cs">
-using UnityEngine;
-using UnityEngine.UI;
-
-public class EndgameFade : MonoBehaviour
-{
-    [Header("References")]
-    public Transform player;
-    public Transform fadeTarget;
-    public Image whiteFadeImage;
-
-    [Header("Fade Settings")]
-    public float startFadeDistance = 15f;
-    public float endFadeDistance = 2f;
-
-
-    public CreditsManager creditsManager;
-    private bool isFinished = false;
-
-    private void Start()
-    {
-        if (whiteFadeImage != null)
-        {
-            whiteFadeImage.gameObject.SetActive(true);
-            Color c = whiteFadeImage.color;
-            c.a = 0f;
-            whiteFadeImage.color = c;
-        }
-    }
-
-    private void Update()
-    {
-        if (isFinished || player == null || fadeTarget == null || whiteFadeImage == null) return;
-
-        float distance = Vector3.Distance(player.position, fadeTarget.position);
-
-        float linearAlpha = Mathf.InverseLerp(startFadeDistance, endFadeDistance, distance);
-        float alpha = Mathf.Pow(linearAlpha, 3f);
-
-        Color c = whiteFadeImage.color;
-        c.a = alpha;
-        whiteFadeImage.color = c;
-
-        if (alpha >= 1f)
-        {
-            isFinished = true;
-            TriggerCredits();
-        }
-    }
-
-    private void TriggerCredits()
-    {
-        if (creditsManager != null) creditsManager.StartCreditsSequence();
-    }
-}
-</file>
-
-<file path="Assets/_Scripts/EndgameFade.cs.meta">
-fileFormatVersion: 2
-guid: a1b4f6ce5138ff24ca2f87b20c7faf83
-</file>
-
-<file path="Assets/_Scripts/FadeManager.cs">
-using System.Collections;
-using UnityEngine;
-using UnityEngine.UI;
-using UnityEngine.SceneManagement;
-
-public class FadeManager : MonoBehaviour
-{
-    public static FadeManager Instance;
-
-    [Header("References")]
-    public Image fadeImage;
-
-    [Header("Settings")]
-    public float fadeOutDuration = 1.5f;
-    public float fadeInDuration = 0.1f;
-
-    private void Awake()
-    {
-        if (Instance == null) Instance = this;
-        else Destroy(gameObject);
-    }
-
-    private void Start()
-    {
-        if (fadeImage != null)
-        {
-            fadeImage.gameObject.SetActive(true);
-            fadeImage.color = Color.black;
-        }
-
-        StartCoroutine(StartGameFadeSequence());
-    }
-
-    private IEnumerator StartGameFadeSequence()
-    {
-        float timer = 0f;
-        while (timer < fadeOutDuration)
-        {
-            timer += Time.deltaTime;
-            float alpha = Mathf.Lerp(1f, 0f, timer / fadeOutDuration);
-            
-            if (fadeImage != null)
-            {
-                Color c = fadeImage.color;
-                c.a = alpha;
-                fadeImage.color = c;
-            }
-            yield return null;
-        }
-
-        if (fadeImage != null) fadeImage.gameObject.SetActive(false);
-    }
-
-    public void FadeAndRestart()
-    {
-        StartCoroutine(FadeToSceneSequence(SceneManager.GetActiveScene().name, fadeInDuration));
-    }
-
-    public void FadeAndLoadScene(string sceneName, float duration)
-    {
-        StartCoroutine(FadeToSceneSequence(sceneName, duration));
-    }
-
-    private IEnumerator FadeToSceneSequence(string targetScene, float duration)
-    {
-        if (fadeImage != null) fadeImage.gameObject.SetActive(true);
-
-        float timer = 0f;
-        while (timer < duration)
-        {
-            timer += Time.deltaTime;
-            float alpha = Mathf.Lerp(0f, 1f, timer / duration);
-            
-            if (fadeImage != null)
-            {
-                Color c = fadeImage.color;
-                c.a = alpha;
-                fadeImage.color = c;
-            }
-            yield return null;
-        }
-
-        SceneManager.LoadScene(targetScene);
-    }
-}
-</file>
-
-<file path="Assets/_Scripts/FadeManager.cs.meta">
-fileFormatVersion: 2
-guid: 0fb09a7eb4de1fa4a844bc8246d970b0
-</file>
-
-<file path="Assets/_Scripts/GameManager.cs.meta">
-fileFormatVersion: 2
-guid: c52d63c9e3ac5394e92e9e2b6efc1deb
-</file>
-
-<file path="Assets/_Scripts/LocalizationDatabase.cs">
-using System.Collections.Generic;
-using UnityEngine;
-
-[CreateAssetMenu(fileName = "LocalizationDatabase", menuName = "Game/Localization Database")]
-public class LocalizationDatabase : ScriptableObject
-{
-    [System.Serializable]
-    public class Translation
-    {
-        public string key;
-        public string english;
-        public string french;
-    }
-
-    public List<Translation> translations = new List<Translation>();
-}
-</file>
-
-<file path="Assets/_Scripts/LocalizationDatabase.cs.meta">
-fileFormatVersion: 2
-guid: 6b0d4621e9f65ce4ba49fdd2879d9a17
-</file>
-
-<file path="Assets/_Scripts/LocalizationManager.cs">
-using UnityEngine;
-
-public class LocalizationManager : MonoBehaviour
-{
-    public static LocalizationManager Instance;
-
-    public LocalizationDatabase database;
-    public int currentLanguageIndex = 0; // 0 = English, 1 = French
-
-    public delegate void OnLanguageChanged();
-    public static event OnLanguageChanged LanguageChangedEvent;
-
-    private void Awake()
-    {
-        if (Instance == null)
-        {
-            Instance = this;
-            currentLanguageIndex = PlayerPrefs.GetInt("LanguagePref", 0); 
-            DontDestroyOnLoad(gameObject);
-        }
-        else
-        {
-            Destroy(gameObject);
-        }
-    }
-
-    public void SetLanguage(int index)
-    {
-        currentLanguageIndex = index;
-        LanguageChangedEvent?.Invoke();
-    }
-
-    public string GetTranslation(string key)
-    {
-        if (database == null) return key;
-
-        foreach (var t in database.translations)
-        {
-            if (t.key == key)
-            {
-                return currentLanguageIndex == 0 ? t.english : t.french;
-            }
-        }
-        return key; 
-    }
-}
-</file>
-
-<file path="Assets/_Scripts/LocalizationManager.cs.meta">
-fileFormatVersion: 2
-guid: a2b05c80b66aa414e8ce514f5014da4c
-</file>
-
-<file path="Assets/_Scripts/LocalizedText.cs">
-using TMPro;
-using UnityEngine;
-
-[RequireComponent(typeof(TMP_Text))]
-public class LocalizedText : MonoBehaviour
-{
-    public string translationKey;
-    private TMP_Text textComponent;
-
-    private void Start()
-    {
-        textComponent = GetComponent<TMP_Text>();
-        UpdateText();
-        LocalizationManager.LanguageChangedEvent += UpdateText;
-    }
-
-    private void OnDestroy()
-    {
-        LocalizationManager.LanguageChangedEvent -= UpdateText;
-    }
-
-    private void UpdateText()
-    {
-        if (LocalizationManager.Instance != null && textComponent != null)
-        {
-            textComponent.text = LocalizationManager.Instance.GetTranslation(translationKey);
-        }
-    }
-}
-</file>
-
-<file path="Assets/_Scripts/LocalizedText.cs.meta">
-fileFormatVersion: 2
-guid: fad41dc363181034a96410dfdbadfa52
-</file>
-
-<file path="Assets/_Scripts/LoopTrigger.cs.meta">
-fileFormatVersion: 2
-guid: 5b095f7d4fb182b4eae139fda8c93417
-</file>
-
-<file path="Assets/_Scripts/MenuManager.cs.meta">
-fileFormatVersion: 2
-guid: 993b2bced0e1aa24185b8636c6ee4838
-</file>
-
-<file path="Assets/_Scripts/PauseManager.cs.meta">
-fileFormatVersion: 2
-guid: 728a3ebbc10dc6a4ab657eb04b99bfdf
-</file>
-
 <file path="Assets/_Scripts/PlayerFootsteps.cs">
 using UnityEngine;
 
@@ -1409,6 +1884,7 @@ guid: f5f8382d1af8419408468e5b77148ad3
 
 <file path="Assets/_Scripts/SaveManager.cs">
 using System.Collections.Generic;
+using System.IO;
 using UnityEngine;
 
 [System.Serializable]
@@ -1419,31 +1895,55 @@ public class SaveData
 
 public static class SaveManager
 {
-    private const string SAVE_KEY = "AnomalyGameSave_V2";
+    private static string SaveFilePath => Path.Combine(Application.persistentDataPath, "save.json");
 
     public static void Save(List<int> unlockedList)
     {
         SaveData data = new SaveData { unlockedAnomalies = unlockedList };
-        string json = JsonUtility.ToJson(data);
-        PlayerPrefs.SetString(SAVE_KEY, json);
-        PlayerPrefs.Save();
+        string json = JsonUtility.ToJson(data, true);
+
+        try
+        {
+            File.WriteAllText(SaveFilePath, json);
+        }
+        catch (System.Exception e)
+        {
+            Debug.LogError($"Error saving game to JSON: {e.Message}");
+        }
     }
 
     public static List<int> Load()
     {
-        if (PlayerPrefs.HasKey(SAVE_KEY))
+        if (File.Exists(SaveFilePath))
         {
-            string json = PlayerPrefs.GetString(SAVE_KEY);
-            SaveData data = JsonUtility.FromJson<SaveData>(json);
-            return data.unlockedAnomalies;
+            try
+            {
+                string json = File.ReadAllText(SaveFilePath);
+                SaveData data = JsonUtility.FromJson<SaveData>(json);
+                return data != null ? data.unlockedAnomalies : new List<int>();
+            }
+            catch (System.Exception e)
+            {
+                Debug.LogError($"Error loading game from JSON: {e.Message}");
+                return new List<int>();
+            }
         }
         return new List<int>();
     }
 
     public static void DeleteSave()
     {
-        PlayerPrefs.DeleteKey(SAVE_KEY);
-        PlayerPrefs.Save();
+        if (File.Exists(SaveFilePath))
+        {
+            try
+            {
+                File.Delete(SaveFilePath);
+            }
+            catch (System.Exception e)
+            {
+                Debug.LogError($"Error deleting save file: {e.Message}");
+            }
+        }
     }
 }
 </file>
@@ -1458,128 +1958,83 @@ fileFormatVersion: 2
 guid: e8c80499fb745f947acdd17bc4aa31fd
 </file>
 
-<file path="Assets/_Scripts/AnomalyController.cs">
+<file path="Assets/_Scripts/LocalizationDatabase.cs">
 using System.Collections.Generic;
 using UnityEngine;
 
-[System.Serializable]
-public class AnomalySceneData
+[CreateAssetMenu(fileName = "LocalizationDatabase", menuName = "Game/Localization Database")]
+public class LocalizationDatabase : ScriptableObject
 {
-    [HideInInspector] public int databaseIndex;
-    public GameObject anomalyObject;
-    public GameObject normalObjectToHide;
-    [HideInInspector] public bool isUnlocked;
+    [System.Serializable]
+    public class Translation
+    {
+        public string key;
+        public string english;
+        public string french;
+        public string spanish;
+        public string german;
+        public string japanese;
+        public string simplifiedChinese;
+    }
+
+    public List<Translation> translations = new List<Translation>();
 }
+</file>
 
-public class AnomalyController : MonoBehaviour
+<file path="Assets/_Scripts/LocalizationManager.cs">
+using UnityEngine;
+
+public class LocalizationManager : MonoBehaviour
 {
-    public static AnomalyController Instance;
+    public static LocalizationManager Instance;
 
-    [Header("Database Reference")]
-    public AnomalyDatabase database;
+    public LocalizationDatabase database;
+    public int currentLanguageIndex = 0; 
 
-    [Header("Anomalies List in Scene")]
-    public List<AnomalySceneData> anomalies = new List<AnomalySceneData>();
-
-    private AnomalySceneData currentAnomaly = null;
+    public delegate void OnLanguageChanged();
+    public static event OnLanguageChanged LanguageChangedEvent;
 
     private void Awake()
     {
-        if (Instance == null) Instance = this;
-        else Destroy(gameObject);
-
-        SyncDatabaseIndexes();
-    }
-
-    private void OnValidate()
-    {
-        SyncDatabaseIndexes();
-    }
-
-    private void SyncDatabaseIndexes()
-    {
-        if (anomalies == null) return;
-
-        for (int i = 0; i < anomalies.Count; i++)
+        if (Instance == null)
         {
-            anomalies[i].databaseIndex = i;
+            Instance = this;
+            currentLanguageIndex = PlayerPrefs.GetInt("LanguagePref", 0); 
+            DontDestroyOnLoad(gameObject);
+        }
+        else
+        {
+            Destroy(gameObject);
         }
     }
 
-    private void Start()
+    public void SetLanguage(int index)
     {
-        LoadUnlockedAnomalies();
+        currentLanguageIndex = index;
+        LanguageChangedEvent?.Invoke();
     }
 
-    private void LoadUnlockedAnomalies()
+    public string GetTranslation(string key)
     {
-        List<int> savedUnlocks = SaveManager.Load();
-        
-        foreach (var anomaly in anomalies)
+        if (database == null) return key;
+
+        foreach (var t in database.translations)
         {
-            if (savedUnlocks.Contains(anomaly.databaseIndex))
+            if (t.key == key)
             {
-                anomaly.isUnlocked = true;
+                switch (currentLanguageIndex)
+                {
+                    case 0: return t.english;
+                    case 1: return t.french;
+                    case 2: return string.IsNullOrEmpty(t.spanish) ? t.english : t.spanish;
+                    case 3: return string.IsNullOrEmpty(t.german) ? t.english : t.german;
+                    case 4: return string.IsNullOrEmpty(t.japanese) ? t.english : t.japanese;
+                    case 5: return string.IsNullOrEmpty(t.simplifiedChinese) ? t.english : t.simplifiedChinese;
+                    default: return t.english;
+                }
             }
         }
-    }
-
-    public string SetupLoop(bool hasAnomaly)
-    {
-        ResetCurrentAnomaly();
-        if (!hasAnomaly || database == null) return "";
-
-        List<AnomalySceneData> availableAnomalies = anomalies.FindAll(a => !a.isUnlocked);
-        
-        if (availableAnomalies.Count == 0)
-        {
-            availableAnomalies = anomalies; 
-        }
-
-        currentAnomaly = availableAnomalies[Random.Range(0, availableAnomalies.Count)];
-
-        if (currentAnomaly.anomalyObject != null) currentAnomaly.anomalyObject.SetActive(true);
-        if (currentAnomaly.normalObjectToHide != null) currentAnomaly.normalObjectToHide.SetActive(false);
-
-        if (currentAnomaly.databaseIndex < database.anomalyKeys.Count)
-        {
-            string key = database.anomalyKeys[currentAnomaly.databaseIndex];
-            return LocalizationManager.Instance != null ? LocalizationManager.Instance.GetTranslation(key) : key;
-        }
-
-        return "";
-    }
-
-    private void ResetCurrentAnomaly()
-    {
-        if (currentAnomaly != null)
-        {
-            if (currentAnomaly.anomalyObject != null) currentAnomaly.anomalyObject.SetActive(false);
-            if (currentAnomaly.normalObjectToHide != null) currentAnomaly.normalObjectToHide.SetActive(true);
-            currentAnomaly = null;
-        }
-    }
-
-    public void UnlockCurrentAnomaly()
-    {
-        if (currentAnomaly != null && !currentAnomaly.isUnlocked)
-        {
-            currentAnomaly.isUnlocked = true;
-            SaveAllProgress();
-        }
-    }
-
-    public void SaveAllProgress()
-    {
-        List<int> unlockedIndexes = new List<int>();
-        foreach (var anomaly in anomalies)
-        {
-            if (anomaly.isUnlocked)
-            {
-                unlockedIndexes.Add(anomaly.databaseIndex);
-            }
-        }
-        SaveManager.Save(unlockedIndexes);
+        return key; 
     }
 }
 </file>
@@ -1758,6 +2213,137 @@ public class MenuManager : MonoBehaviour
         {
             RefreshAnomalyList();
         }
+    }
+}
+</file>
+
+<file path="Assets/_Scripts/AnomalyController.cs">
+using System.Collections.Generic;
+using UnityEngine;
+
+[System.Serializable]
+public class AnomalySceneData
+{
+    [HideInInspector] public int databaseIndex;
+    public GameObject anomalyObject;
+    public GameObject normalObjectToHide;
+    [HideInInspector] public bool isUnlocked;
+}
+
+public class AnomalyController : MonoBehaviour
+{
+    public static AnomalyController Instance;
+
+    [Header("Database Reference")]
+    public AnomalyDatabase database;
+
+    [Header("Anomalies List in Scene")]
+    public List<AnomalySceneData> anomalies = new List<AnomalySceneData>();
+
+    private AnomalySceneData currentAnomaly = null;
+
+    private void Awake()
+    {
+        if (Instance == null) Instance = this;
+        else Destroy(gameObject);
+
+        SyncDatabaseIndexes();
+    }
+
+    private void OnValidate()
+    {
+        SyncDatabaseIndexes();
+    }
+
+    private void SyncDatabaseIndexes()
+    {
+        if (anomalies == null) return;
+
+        for (int i = 0; i < anomalies.Count; i++)
+        {
+            anomalies[i].databaseIndex = i;
+        }
+    }
+
+    private void Start()
+    {
+        LoadUnlockedAnomalies();
+    }
+
+    private void LoadUnlockedAnomalies()
+    {
+        List<int> savedUnlocks = SaveManager.Load();
+
+        foreach (var anomaly in anomalies)
+        {
+            if (savedUnlocks.Contains(anomaly.databaseIndex))
+            {
+                anomaly.isUnlocked = true;
+            }
+        }
+    }
+
+    public string SetupLoop(bool hasAnomaly)
+    {
+        ResetCurrentAnomaly();
+        if (!hasAnomaly || database == null) return "";
+
+        List<AnomalySceneData> availableAnomalies = anomalies.FindAll(a => !a.isUnlocked);
+
+        if (availableAnomalies.Count == 0)
+        {
+            availableAnomalies = anomalies;
+        }
+
+        currentAnomaly = availableAnomalies[Random.Range(0, availableAnomalies.Count)];
+
+        if (currentAnomaly.anomalyObject != null) currentAnomaly.anomalyObject.SetActive(true);
+        if (currentAnomaly.normalObjectToHide != null) currentAnomaly.normalObjectToHide.SetActive(false);
+
+        if (currentAnomaly.databaseIndex < database.anomalyKeys.Count)
+        {
+            string key = database.anomalyKeys[currentAnomaly.databaseIndex];
+            return LocalizationManager.Instance != null ? LocalizationManager.Instance.GetTranslation(key) : key;
+        }
+
+        return "";
+    }
+
+    private void ResetCurrentAnomaly()
+    {
+        if (currentAnomaly != null)
+        {
+            if (currentAnomaly.anomalyObject != null) currentAnomaly.anomalyObject.SetActive(false);
+            if (currentAnomaly.normalObjectToHide != null) currentAnomaly.normalObjectToHide.SetActive(true);
+            currentAnomaly = null;
+        }
+    }
+
+    public void UnlockCurrentAnomaly()
+    {
+        if (currentAnomaly != null && !currentAnomaly.isUnlocked)
+        {
+            currentAnomaly.isUnlocked = true;
+            SaveAllProgress();
+
+            if (AchievementManager.Instance != null)
+            {
+                AchievementManager.Instance.CheckAndSyncSaveAchievements();
+            }
+        }
+    }
+
+    public void SaveAllProgress()
+    {
+        List<int> unlockedIndexes = new List<int>();
+        foreach (var anomaly in anomalies)
+        {
+            if (anomaly.isUnlocked)
+            {
+                unlockedIndexes.Add(anomaly.databaseIndex);
+            }
+        }
+        SaveManager.Save(unlockedIndexes);
     }
 }
 </file>

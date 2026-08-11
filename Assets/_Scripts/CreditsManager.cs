@@ -34,6 +34,10 @@ public class CreditsManager : MonoBehaviour
 
     private IEnumerator CreditsRoutine()
     {
+        if (AchievementManager.Instance != null)
+        {
+            AchievementManager.Instance.UnlockAchievement("end");
+        }
         float timer = 0f;
         Color startColor = fullScreenImage.color;
         Color targetColor = Color.black;

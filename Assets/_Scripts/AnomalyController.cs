@@ -53,7 +53,7 @@ public class AnomalyController : MonoBehaviour
     private void LoadUnlockedAnomalies()
     {
         List<int> savedUnlocks = SaveManager.Load();
-        
+
         foreach (var anomaly in anomalies)
         {
             if (savedUnlocks.Contains(anomaly.databaseIndex))
@@ -69,10 +69,10 @@ public class AnomalyController : MonoBehaviour
         if (!hasAnomaly || database == null) return "";
 
         List<AnomalySceneData> availableAnomalies = anomalies.FindAll(a => !a.isUnlocked);
-        
+
         if (availableAnomalies.Count == 0)
         {
-            availableAnomalies = anomalies; 
+            availableAnomalies = anomalies;
         }
 
         currentAnomaly = availableAnomalies[Random.Range(0, availableAnomalies.Count)];
@@ -105,6 +105,11 @@ public class AnomalyController : MonoBehaviour
         {
             currentAnomaly.isUnlocked = true;
             SaveAllProgress();
+
+            if (AchievementManager.Instance != null)
+            {
+                AchievementManager.Instance.CheckAndSyncSaveAchievements();
+            }
         }
     }
 

@@ -8,7 +8,10 @@ public class CreditsManager : MonoBehaviour
     [Header("References")]
     public Image fullScreenImage;
     public RectTransform creditsPanel;
-    public Behaviour[] componentsToDisable;
+    
+    [Header("UI Elements")]
+    public GameObject skipButton; 
+    private CanvasGroup skipButtonCanvasGroup;
 
     [Header("Timings")]
     public float fadeToBlackDuration = 2f;
@@ -19,16 +22,30 @@ public class CreditsManager : MonoBehaviour
     public float scrollSpeed = 100f;
     public float endPositionY = 2500f;
 
+    private float initialVolume;
+
+    private void Start()
+    {
+        if (skipButton != null)
+        {
+            skipButtonCanvasGroup = skipButton.GetComponent<CanvasGroup>();
+            
+            if (skipButtonCanvasGroup == null)
+            {
+                skipButtonCanvasGroup = skipButton.AddComponent<CanvasGroup>();
+            }
+
+            skipButtonCanvasGroup.alpha = 0f;
+            skipButtonCanvasGroup.interactable = false;
+            skipButtonCanvasGroup.blocksRaycasts = false;
+            
+            skipButton.SetActive(false);
+        }
+    }
+
     public void StartCreditsSequence()
     {
-        foreach (Behaviour comp in componentsToDisable)
-        {
-            if (comp != null)
-            {
-                comp.enabled = false;
-            }
-        }
-
+        initialVolume = AudioListener.volume;
         StartCoroutine(CreditsRoutine());
     }
 
@@ -38,17 +55,41 @@ public class CreditsManager : MonoBehaviour
         {
             AchievementManager.Instance.UnlockAchievement("end");
         }
+        
         float timer = 0f;
         Color startColor = fullScreenImage.color;
         Color targetColor = Color.black;
 
+        if (skipButton != null)
+        {
+            skipButton.SetActive(true);
+        }
+
         while (timer < fadeToBlackDuration)
         {
             timer += Time.deltaTime;
-            fullScreenImage.color = Color.Lerp(startColor, targetColor, timer / fadeToBlackDuration);
+            float progress = timer / fadeToBlackDuration;
+            
+            fullScreenImage.color = Color.Lerp(startColor, targetColor, progress);
+            AudioListener.volume = Mathf.Lerp(initialVolume, 0f, progress);
+
+            if (skipButtonCanvasGroup != null)
+            {
+                skipButtonCanvasGroup.alpha = progress;
+            }
+
             yield return null;
         }
+        
         fullScreenImage.color = targetColor;
+        AudioListener.volume = 0f;
+
+        if (skipButtonCanvasGroup != null)
+        {
+            skipButtonCanvasGroup.alpha = 1f;
+            skipButtonCanvasGroup.interactable = true;
+            skipButtonCanvasGroup.blocksRaycasts = true;
+        }
 
         yield return new WaitForSeconds(waitBeforeCredits);
 
@@ -65,6 +106,18 @@ public class CreditsManager : MonoBehaviour
 
         yield return new WaitForSeconds(delayAfterScroll);
 
+        LoadMenu();
+    }
+
+    public void SkipCredits()
+    {
+        StopAllCoroutines();
+        LoadMenu();
+    }
+
+    private void LoadMenu()
+    {
+        AudioListener.volume = initialVolume;
         SceneManager.LoadScene("Menu");
     }
 }

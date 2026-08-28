@@ -48,6 +48,8 @@ Assets/
       ArcadeAnomaly.cs.meta
       ArcadeScreenEffect.cs
       ArcadeScreenEffect.cs.meta
+      BycicleBellAnomaly.cs
+      BycicleBellAnomaly.cs.meta
       CounterAnomaly.cs
       CounterAnomaly.cs.meta
       DoorSlamAnomaly.cs
@@ -60,6 +62,8 @@ Assets/
       KnockingDoorAnomaly.cs.meta
       LightFlicker.cs
       LightFlicker.cs.meta
+      RamenAnomaly.cs
+      RamenAnomaly.cs.meta
       RotatingConeAnomaly.cs
       RotatingConeAnomaly.cs.meta
       TrainPassingByAnomaly.cs
@@ -111,181 +115,6 @@ Assets/
 
 <files>
 This section contains the contents of the repository's files.
-
-<file path="Assets/_Scripts/AchievementManager.cs">
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-using Steamworks;
-
-public class AchievementManager : MonoBehaviour
-{
-    public static AchievementManager Instance;
-
-    private void Awake()
-    {
-        if (Instance == null)
-        {
-            Instance = this;
-            DontDestroyOnLoad(gameObject);
-        }
-        else
-        {
-            Destroy(gameObject);
-        }
-    }
-
-    private IEnumerator Start()
-    {
-        while (!SteamManager.Initialized)
-        {
-            yield return null;
-        }
-
-        CheckAndSyncSaveAchievements();
-    }
-
-    public void CheckAndSyncSaveAchievements()
-    {
-        if (!SteamManager.Initialized) return;
-
-        List<int> unlockedList = SaveManager.Load();
-        int count = unlockedList.Count;
-
-        SteamUserStats.SetStat("stat_anomalies_found", count);
-
-        if (count >= 10) UnlockAchievement("ano_10");
-        if (count >= 20) UnlockAchievement("ano_20");
-        if (count >= 30) UnlockAchievement("ano_30");
-        if (count >= 40) UnlockAchievement("ano_40");
-
-        SteamUserStats.StoreStats();
-    }
-
-    public void UnlockAchievement(string achievementID)
-    {
-        if (!SteamManager.Initialized) return;
-
-        bool isUnlocked;
-        if (SteamUserStats.GetAchievement(achievementID, out isUnlocked) && !isUnlocked)
-        {
-            SteamUserStats.SetAchievement(achievementID);
-            SteamUserStats.StoreStats();
-            Debug.Log($"[Steam] Succès débloqué : {achievementID}");
-        }
-    }
-}
-</file>
-
-<file path="Assets/_Scripts/AchievementManager.cs.meta">
-fileFormatVersion: 2
-guid: 28bdf3296ffd53d4bb21fa4463487c61
-</file>
-
-<file path="Assets/_Scripts/SteamManager.cs">
-using UnityEngine;
-using Steamworks;
-
-[DisallowMultipleComponent]
-public class SteamManager : MonoBehaviour
-{
-    private static SteamManager s_instance;
-    private static bool s_EverInited;
-
-    public static bool Initialized => s_instance != null && s_instance.m_bInitialized;
-
-    private bool m_bInitialized;
-    private SteamAPIWarningMessageHook_t m_SteamAPIWarningMessageHook;
-
-    private static void SteamAPIDebugTextHook(int nSeverity, System.Text.StringBuilder pchDebugText)
-    {
-        Debug.LogWarning(pchDebugText);
-    }
-
-    private void Awake()
-    {
-        if (s_instance != null)
-        {
-            Destroy(gameObject);
-            return;
-        }
-
-        s_instance = this;
-        DontDestroyOnLoad(gameObject);
-
-        if (!Packsize.Test())
-        {
-            Debug.LogError("[Steamworks.NET] Packsize Test failed.");
-            return;
-        }
-
-        if (!DllCheck.Test())
-        {
-            Debug.LogError("[Steamworks.NET] DllCheck Test failed.");
-            return;
-        }
-
-        try
-        {
-            if (SteamAPI.RestartAppIfNecessary((AppId_t)5080810))
-            {
-                Application.Quit();
-                return;
-            }
-        }
-        catch (System.DllNotFoundException e)
-        {
-            Debug.LogError("[Steamworks.NET] Could not load steam_api.dll/so/dylib: " + e);
-            return;
-        }
-
-        m_bInitialized = SteamAPI.Init();
-        if (!m_bInitialized)
-        {
-            Debug.LogError("[Steamworks.NET] SteamAPI_Init() failed.");
-            return;
-        }
-
-        s_EverInited = true;
-    }
-
-    private void OnEnable()
-    {
-        if (s_instance == null) s_instance = this;
-
-        if (!m_bInitialized) return;
-
-        if (m_SteamAPIWarningMessageHook == null)
-        {
-            m_SteamAPIWarningMessageHook = new SteamAPIWarningMessageHook_t(SteamAPIDebugTextHook);
-            SteamClient.SetWarningMessageHook(m_SteamAPIWarningMessageHook);
-        }
-    }
-
-    private void OnDestroy()
-    {
-        if (s_instance != this) return;
-
-        s_instance = null;
-
-        if (!m_bInitialized) return;
-
-        SteamAPI.Shutdown();
-    }
-
-    private void Update()
-    {
-        if (!m_bInitialized) return;
-
-        SteamAPI.RunCallbacks();
-    }
-}
-</file>
-
-<file path="Assets/_Scripts/SteamManager.cs.meta">
-fileFormatVersion: 2
-guid: d967b9578c3c6954481707ca0b1b7b91
-</file>
 
 <file path="Assets/_Scripts/Anomalies/ArcadeAnomaly.cs">
 using System.Collections;
@@ -470,6 +299,127 @@ public class ArcadeScreenEffect : MonoBehaviour
 <file path="Assets/_Scripts/Anomalies/ArcadeScreenEffect.cs.meta">
 fileFormatVersion: 2
 guid: e3f6869ae8d62ed46ba50b2bd5a63fc2
+</file>
+
+<file path="Assets/_Scripts/Anomalies/BycicleBellAnomaly.cs">
+using System.Collections;
+using UnityEngine;
+
+[RequireComponent(typeof(AudioSource))]
+public class BicycleBellAnomaly : MonoBehaviour
+{
+    [Header("References")]
+    public Collider triggerZone;
+
+    [Header("Timing Settings")]
+    public float ringInterval = 5.0f;
+
+    [Header("Shake Settings")]
+    public float shakeIntensity = 0.02f;
+    public float shakeDuration = 1.0f;
+    public float rotationShakeAngle = 2.0f;
+
+    private AudioSource audioSource;
+    private Vector3 initialLocalPosition;
+    private Quaternion initialLocalRotation;
+    private bool hasTriggered = false;
+
+    private void Awake()
+    {
+        audioSource = GetComponent<AudioSource>();
+        
+        initialLocalPosition = transform.localPosition;
+        initialLocalRotation = transform.localRotation;
+
+        if (triggerZone != null)
+        {
+            triggerZone.isTrigger = true;
+            TriggerListener listener = triggerZone.gameObject.AddComponent<TriggerListener>();
+            listener.onTrigger = HandlePlayerEnter;
+        }
+        else
+        {
+            Debug.LogWarning("NO TRIGGER");
+        }
+    }
+
+    private void OnEnable()
+    {
+        hasTriggered = false;
+        transform.localPosition = initialLocalPosition;
+        transform.localRotation = initialLocalRotation;
+    }
+
+    private void OnDisable()
+    {
+        StopAllCoroutines();
+        transform.localPosition = initialLocalPosition;
+        transform.localRotation = initialLocalRotation;
+    }
+
+    private void HandlePlayerEnter(Collider other)
+    {
+        if (hasTriggered) return;
+
+        if (other.CompareTag("Player"))
+        {
+            hasTriggered = true;
+            StartCoroutine(RingLoopRoutine());
+        }
+    }
+
+    private IEnumerator RingLoopRoutine()
+    {
+        while (true)
+        {
+            if (audioSource != null)
+            {
+                audioSource.Play();
+            }
+
+            yield return StartCoroutine(ShakeRoutine());
+
+            yield return new WaitForSeconds(Mathf.Max(0, ringInterval - shakeDuration));
+        }
+    }
+
+    private IEnumerator ShakeRoutine()
+    {
+        float timer = 0f;
+
+        while (timer < shakeDuration)
+        {
+            timer += Time.deltaTime;
+
+            float xOffset = Random.Range(-1f, 1f) * shakeIntensity;
+            float zOffset = Random.Range(-1f, 1f) * shakeIntensity;
+            transform.localPosition = initialLocalPosition + new Vector3(xOffset, 0f, zOffset);
+            
+            float rotOffset = Random.Range(-rotationShakeAngle, rotationShakeAngle);
+            transform.localRotation = initialLocalRotation * Quaternion.Euler(0f, 0f, rotOffset);
+
+            yield return null;
+        }
+
+        transform.localPosition = initialLocalPosition;
+        transform.localRotation = initialLocalRotation;
+    }
+
+    private class TriggerListener : MonoBehaviour
+    {
+        public System.Action<Collider> onTrigger;
+
+        private void OnTriggerEnter(Collider other)
+        {
+            onTrigger?.Invoke(other);
+        }
+    }
+}
+</file>
+
+<file path="Assets/_Scripts/Anomalies/BycicleBellAnomaly.cs.meta">
+fileFormatVersion: 2
+guid: 20bba59496810b24da72c5d2949c6a9b
 </file>
 
 <file path="Assets/_Scripts/Anomalies/CounterAnomaly.cs">
@@ -954,6 +904,92 @@ fileFormatVersion: 2
 guid: e7e70bb3ca09627489276a58b773ebc1
 </file>
 
+<file path="Assets/_Scripts/Anomalies/RamenAnomaly.cs">
+using UnityEngine;
+using UnityEngine.InputSystem;
+
+[RequireComponent(typeof(AudioSource))]
+public class RamenAnomaly : MonoBehaviour
+{
+    [Header("References")]
+    public Transform player;
+    
+    [Header("Settings")]
+    public float interactDistance = 2.5f;
+
+    private AudioSource audioSource;
+    private bool hasBeenEaten = false;
+
+    private void Awake()
+    {
+        audioSource = GetComponent<AudioSource>();
+        audioSource.playOnAwake = false; 
+    }
+
+    private void OnEnable()
+    {
+        hasBeenEaten = false;
+        
+        if (player == null)
+        {
+            GameObject playerObj = GameObject.FindGameObjectWithTag("Player");
+            if (playerObj != null) player = playerObj.transform;
+        }
+    }
+
+    private void Update()
+    {
+        if (hasBeenEaten || player == null) return;
+
+        if (Vector3.Distance(player.position, transform.position) <= interactDistance)
+        {
+            bool interactPressed = false;
+            
+            if (Keyboard.current != null)
+            {
+                if (Keyboard.current.eKey.wasPressedThisFrame || Keyboard.current.fKey.wasPressedThisFrame)
+                {
+                    interactPressed = true;
+                }
+            }
+            
+            if (Mouse.current != null)
+            {
+                if (Mouse.current.leftButton.wasPressedThisFrame)
+                {
+                    interactPressed = true;
+                }
+            }
+
+            if (interactPressed)
+            {
+                EatRamen();
+            }
+        }
+    }
+
+    private void EatRamen()
+    {
+        hasBeenEaten = true;
+
+        if (audioSource != null && audioSource.clip != null)
+        {
+            audioSource.Play();
+        }
+
+        if (AchievementManager.Instance != null)
+        {
+            AchievementManager.Instance.UnlockAchievement("eat");
+        }
+    }
+}
+</file>
+
+<file path="Assets/_Scripts/Anomalies/RamenAnomaly.cs.meta">
+fileFormatVersion: 2
+guid: 038cf47bc205ce749b877ae7598fb83b
+</file>
+
 <file path="Assets/_Scripts/Anomalies/RotatingConeAnomaly.cs">
 using UnityEngine;
 
@@ -1227,6 +1263,76 @@ fileFormatVersion: 2
 guid: 0f284e176f93e6e48b296c1b518a8000
 </file>
 
+<file path="Assets/_Scripts/AchievementManager.cs">
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using Steamworks;
+
+public class AchievementManager : MonoBehaviour
+{
+    public static AchievementManager Instance;
+
+    private void Awake()
+    {
+        if (Instance == null)
+        {
+            Instance = this;
+            DontDestroyOnLoad(gameObject);
+        }
+        else
+        {
+            Destroy(gameObject);
+        }
+    }
+
+    private IEnumerator Start()
+    {
+        while (!SteamManager.Initialized)
+        {
+            yield return null;
+        }
+
+        CheckAndSyncSaveAchievements();
+    }
+
+    public void CheckAndSyncSaveAchievements()
+    {
+        if (!SteamManager.Initialized) return;
+
+        List<int> unlockedList = SaveManager.Load();
+        int count = unlockedList.Count;
+
+        SteamUserStats.SetStat("stat_anomalies_found", count);
+
+        if (count >= 10) UnlockAchievement("ano_10");
+        if (count >= 20) UnlockAchievement("ano_20");
+        if (count >= 30) UnlockAchievement("ano_30");
+        if (count >= 40) UnlockAchievement("ano_40");
+
+        SteamUserStats.StoreStats();
+    }
+
+    public void UnlockAchievement(string achievementID)
+    {
+        if (!SteamManager.Initialized) return;
+
+        bool isUnlocked;
+        if (SteamUserStats.GetAchievement(achievementID, out isUnlocked) && !isUnlocked)
+        {
+            SteamUserStats.SetAchievement(achievementID);
+            SteamUserStats.StoreStats();
+            Debug.Log($"[Steam] Succès débloqué : {achievementID}");
+        }
+    }
+}
+</file>
+
+<file path="Assets/_Scripts/AchievementManager.cs.meta">
+fileFormatVersion: 2
+guid: 28bdf3296ffd53d4bb21fa4463487c61
+</file>
+
 <file path="Assets/_Scripts/Anomalies.meta">
 fileFormatVersion: 2
 guid: 83c9242b1e4e10e439f0f7679eab6122
@@ -1259,79 +1365,6 @@ fileFormatVersion: 2
 guid: 6e1effec584f5fe469d889fc47318664
 </file>
 
-<file path="Assets/_Scripts/CreditsManager.cs">
-using System.Collections;
-using UnityEngine;
-using UnityEngine.UI;
-using UnityEngine.SceneManagement;
-
-public class CreditsManager : MonoBehaviour
-{
-    [Header("References")]
-    public Image fullScreenImage;
-    public RectTransform creditsPanel;
-    public Behaviour[] componentsToDisable;
-
-    [Header("Timings")]
-    public float fadeToBlackDuration = 2f;
-    public float waitBeforeCredits = 1f;
-    public float delayAfterScroll = 3f;
-
-    [Header("Scrolling Settings")]
-    public float scrollSpeed = 100f;
-    public float endPositionY = 2500f;
-
-    public void StartCreditsSequence()
-    {
-        foreach (Behaviour comp in componentsToDisable)
-        {
-            if (comp != null)
-            {
-                comp.enabled = false;
-            }
-        }
-
-        StartCoroutine(CreditsRoutine());
-    }
-
-    private IEnumerator CreditsRoutine()
-    {
-        if (AchievementManager.Instance != null)
-        {
-            AchievementManager.Instance.UnlockAchievement("end");
-        }
-        float timer = 0f;
-        Color startColor = fullScreenImage.color;
-        Color targetColor = Color.black;
-
-        while (timer < fadeToBlackDuration)
-        {
-            timer += Time.deltaTime;
-            fullScreenImage.color = Color.Lerp(startColor, targetColor, timer / fadeToBlackDuration);
-            yield return null;
-        }
-        fullScreenImage.color = targetColor;
-
-        yield return new WaitForSeconds(waitBeforeCredits);
-
-        if (creditsPanel != null)
-        {
-            creditsPanel.gameObject.SetActive(true);
-
-            while (creditsPanel.anchoredPosition.y < endPositionY)
-            {
-                creditsPanel.anchoredPosition += Vector2.up * (scrollSpeed * Time.deltaTime);
-                yield return null;
-            }
-        }
-
-        yield return new WaitForSeconds(delayAfterScroll);
-
-        SceneManager.LoadScene("Menu");
-    }
-}
-</file>
-
 <file path="Assets/_Scripts/CreditsManager.cs.meta">
 fileFormatVersion: 2
 guid: 008129d65e86ccc43b6f89cad97532dd
@@ -1347,23 +1380,28 @@ public class EndgameFade : MonoBehaviour
     public Transform player;
     public Transform fadeTarget;
     public Image whiteFadeImage;
+    public CreditsManager creditsManager;
 
     [Header("Fade Settings")]
     public float startFadeDistance = 15f;
     public float endFadeDistance = 2f;
+    public float fadeSmoothing = 3f; 
 
-
-    public CreditsManager creditsManager;
     private bool isFinished = false;
+    private float currentAlpha = 0f;
+    private PlayerController playerController;
 
     private void Start()
     {
         if (whiteFadeImage != null)
         {
             whiteFadeImage.gameObject.SetActive(true);
-            Color c = whiteFadeImage.color;
-            c.a = 0f;
-            whiteFadeImage.color = c;
+            SetImageAlpha(0f);
+        }
+
+        if (player != null)
+        {
+            playerController = player.GetComponent<PlayerController>();
         }
     }
 
@@ -1373,23 +1411,40 @@ public class EndgameFade : MonoBehaviour
 
         float distance = Vector3.Distance(player.position, fadeTarget.position);
 
-        float linearAlpha = Mathf.InverseLerp(startFadeDistance, endFadeDistance, distance);
-        float alpha = Mathf.Pow(linearAlpha, 3f);
+        float targetAlpha = Mathf.InverseLerp(startFadeDistance, endFadeDistance, distance);
+        
+        targetAlpha = Mathf.SmoothStep(0f, 1f, targetAlpha);
 
-        Color c = whiteFadeImage.color;
-        c.a = alpha;
-        whiteFadeImage.color = c;
+        currentAlpha = Mathf.Lerp(currentAlpha, targetAlpha, Time.deltaTime * fadeSmoothing);
 
-        if (alpha >= 1f)
+        SetImageAlpha(currentAlpha);
+
+        if (currentAlpha >= 0.98f)
         {
             isFinished = true;
-            TriggerCredits();
+            SetImageAlpha(1f);
+            TriggerEndgame();
         }
     }
 
-    private void TriggerCredits()
+    private void SetImageAlpha(float alpha)
     {
-        if (creditsManager != null) creditsManager.StartCreditsSequence();
+        Color c = whiteFadeImage.color;
+        c.a = alpha;
+        whiteFadeImage.color = c;
+    }
+
+    private void TriggerEndgame()
+    {
+        if (playerController != null)
+        {
+            playerController.enabled = false;
+        }
+
+        if (creditsManager != null) 
+        {
+            creditsManager.StartCreditsSequence();
+        }
     }
 }
 </file>
@@ -1602,7 +1657,7 @@ public class PlayerController : MonoBehaviour
     private float verticalVelocity;
     private float cameraPitch = 0.0f;
     
-    private bool isNoclipActive = false;
+    public bool isNoclipActive = false;
     private float noclipRotX = 0f;
     private float noclipRotY = 0f;
     private float currentNoclipRotX = 0f;
@@ -1786,16 +1841,24 @@ public class PlayerFootsteps : MonoBehaviour
     public float sprintSpeedThreshold = 5.0f;
 
     private CharacterController controller;
+    private PlayerController playerController;
     private float stepTimer;
 
     private void Start()
     {
         controller = GetComponent<CharacterController>();
+        playerController = GetComponent<PlayerController>();
         stepTimer = walkStepInterval;
     }
 
     private void Update()
     {
+        if (playerController != null && (!playerController.enabled || playerController.isNoclipActive))
+        {
+            stepTimer = walkStepInterval;
+            return;
+        }
+
         if (controller != null && controller.isGrounded && controller.velocity.magnitude > 0.1f)
         {
             stepTimer -= Time.deltaTime;
@@ -1825,7 +1888,6 @@ public class PlayerFootsteps : MonoBehaviour
         if (footstepSounds.Length > 0 && audioSource != null)
         {
             int randomIndex = Random.Range(0, footstepSounds.Length);
-
             audioSource.pitch = Random.Range(0.9f, 1.1f);
             audioSource.PlayOneShot(footstepSounds[randomIndex]);
         }
@@ -1882,72 +1944,6 @@ fileFormatVersion: 2
 guid: f5f8382d1af8419408468e5b77148ad3
 </file>
 
-<file path="Assets/_Scripts/SaveManager.cs">
-using System.Collections.Generic;
-using System.IO;
-using UnityEngine;
-
-[System.Serializable]
-public class SaveData
-{
-    public List<int> unlockedAnomalies = new List<int>();
-}
-
-public static class SaveManager
-{
-    private static string SaveFilePath => Path.Combine(Application.persistentDataPath, "save.json");
-
-    public static void Save(List<int> unlockedList)
-    {
-        SaveData data = new SaveData { unlockedAnomalies = unlockedList };
-        string json = JsonUtility.ToJson(data, true);
-
-        try
-        {
-            File.WriteAllText(SaveFilePath, json);
-        }
-        catch (System.Exception e)
-        {
-            Debug.LogError($"Error saving game to JSON: {e.Message}");
-        }
-    }
-
-    public static List<int> Load()
-    {
-        if (File.Exists(SaveFilePath))
-        {
-            try
-            {
-                string json = File.ReadAllText(SaveFilePath);
-                SaveData data = JsonUtility.FromJson<SaveData>(json);
-                return data != null ? data.unlockedAnomalies : new List<int>();
-            }
-            catch (System.Exception e)
-            {
-                Debug.LogError($"Error loading game from JSON: {e.Message}");
-                return new List<int>();
-            }
-        }
-        return new List<int>();
-    }
-
-    public static void DeleteSave()
-    {
-        if (File.Exists(SaveFilePath))
-        {
-            try
-            {
-                File.Delete(SaveFilePath);
-            }
-            catch (System.Exception e)
-            {
-                Debug.LogError($"Error deleting save file: {e.Message}");
-            }
-        }
-    }
-}
-</file>
-
 <file path="Assets/_Scripts/SaveManager.cs.meta">
 fileFormatVersion: 2
 guid: ee5573890d8e6634d99e8349e671d81a
@@ -1956,6 +1952,186 @@ guid: ee5573890d8e6634d99e8349e671d81a
 <file path="Assets/_Scripts/SettingsManager.cs.meta">
 fileFormatVersion: 2
 guid: e8c80499fb745f947acdd17bc4aa31fd
+</file>
+
+<file path="Assets/_Scripts/SteamManager.cs">
+using UnityEngine;
+using Steamworks;
+
+[DisallowMultipleComponent]
+public class SteamManager : MonoBehaviour
+{
+    private static SteamManager s_instance;
+
+    public static bool Initialized => s_instance != null && s_instance.m_bInitialized;
+
+    private bool m_bInitialized;
+    private SteamAPIWarningMessageHook_t m_SteamAPIWarningMessageHook;
+
+    private static void SteamAPIDebugTextHook(int nSeverity, System.Text.StringBuilder pchDebugText)
+    {
+        Debug.LogWarning(pchDebugText);
+    }
+
+    private void Awake()
+    {
+        if (s_instance != null)
+        {
+            Destroy(gameObject);
+            return;
+        }
+
+        s_instance = this;
+        DontDestroyOnLoad(gameObject);
+
+        if (!Packsize.Test())
+        {
+            Debug.LogError("[Steamworks.NET] Packsize Test failed.");
+            return;
+        }
+
+        if (!DllCheck.Test())
+        {
+            Debug.LogError("[Steamworks.NET] DllCheck Test failed.");
+            return;
+        }
+
+        try
+        {
+            if (SteamAPI.RestartAppIfNecessary((AppId_t)5080810))
+            {
+                Application.Quit();
+                return;
+            }
+        }
+        catch (System.DllNotFoundException e)
+        {
+            Debug.LogError("[Steamworks.NET] Could not load steam_api.dll/so/dylib: " + e);
+            return;
+        }
+
+        m_bInitialized = SteamAPI.Init();
+        if (!m_bInitialized)
+        {
+            Debug.LogError("[Steamworks.NET] SteamAPI_Init() failed.");
+            return;
+        }
+    }
+
+    private void OnEnable()
+    {
+        if (s_instance == null) s_instance = this;
+
+        if (!m_bInitialized) return;
+
+        if (m_SteamAPIWarningMessageHook == null)
+        {
+            m_SteamAPIWarningMessageHook = new SteamAPIWarningMessageHook_t(SteamAPIDebugTextHook);
+            SteamClient.SetWarningMessageHook(m_SteamAPIWarningMessageHook);
+        }
+    }
+
+    private void OnDestroy()
+    {
+        if (s_instance != this) return;
+
+        s_instance = null;
+
+        if (!m_bInitialized) return;
+
+        SteamAPI.Shutdown();
+    }
+
+    private void Update()
+    {
+        if (!m_bInitialized) return;
+
+        SteamAPI.RunCallbacks();
+    }
+}
+</file>
+
+<file path="Assets/_Scripts/SteamManager.cs.meta">
+fileFormatVersion: 2
+guid: d967b9578c3c6954481707ca0b1b7b91
+</file>
+
+<file path="Assets/_Scripts/CreditsManager.cs">
+using System.Collections;
+using UnityEngine;
+using UnityEngine.UI;
+using UnityEngine.SceneManagement;
+
+public class CreditsManager : MonoBehaviour
+{
+    [Header("References")]
+    public Image fullScreenImage;
+    public RectTransform creditsPanel;
+    public Behaviour[] componentsToDisable;
+
+    [Header("Timings")]
+    public float fadeToBlackDuration = 2f;
+    public float waitBeforeCredits = 1f;
+    public float delayAfterScroll = 3f;
+
+    [Header("Scrolling Settings")]
+    public float scrollSpeed = 100f;
+    public float endPositionY = 2500f;
+
+    public void StartCreditsSequence()
+    {
+        foreach (Behaviour comp in componentsToDisable)
+        {
+            if (comp != null)
+            {
+                comp.enabled = false;
+            }
+        }
+
+        StartCoroutine(CreditsRoutine());
+    }
+
+    private IEnumerator CreditsRoutine()
+    {
+        if (AchievementManager.Instance != null)
+        {
+            AchievementManager.Instance.UnlockAchievement("end");
+        }
+        float timer = 0f;
+        Color startColor = fullScreenImage.color;
+        Color targetColor = Color.black;
+
+        while (timer < fadeToBlackDuration)
+        {
+            timer += Time.deltaTime;
+            fullScreenImage.color = Color.Lerp(startColor, targetColor, timer / fadeToBlackDuration);
+            yield return null;
+        }
+        fullScreenImage.color = targetColor;
+
+        yield return new WaitForSeconds(waitBeforeCredits);
+
+        if (creditsPanel != null)
+        {
+            creditsPanel.gameObject.SetActive(true);
+
+            while (creditsPanel.anchoredPosition.y < endPositionY)
+            {
+                creditsPanel.anchoredPosition += Vector2.up * (scrollSpeed * Time.deltaTime);
+                yield return null;
+            }
+        }
+
+        yield return new WaitForSeconds(delayAfterScroll);
+
+        SceneManager.LoadScene("Menu");
+    }
+    public void SkipCredits()
+    {
+        StopAllCoroutines();
+        SceneManager.LoadScene("Menu");
+    }
+}
 </file>
 
 <file path="Assets/_Scripts/LocalizationDatabase.cs">
@@ -2217,6 +2393,130 @@ public class MenuManager : MonoBehaviour
 }
 </file>
 
+<file path="Assets/_Scripts/SaveManager.cs">
+using System.Collections.Generic;
+using System.IO;
+using UnityEngine;
+
+[System.Serializable]
+public class SaveData
+{
+    public List<int> unlockedAnomalies = new List<int>();
+}
+
+public static class SaveManager
+{
+    private static string SaveFilePath => Path.Combine(Application.persistentDataPath, "save.json");
+
+    public static void Save(List<int> unlockedList)
+    {
+        SaveData data = new SaveData { unlockedAnomalies = unlockedList };
+        string json = JsonUtility.ToJson(data, true);
+
+        try
+        {
+            File.WriteAllText(SaveFilePath, json);
+        }
+        catch (System.Exception e)
+        {
+            Debug.LogError($"Error saving game to JSON: {e.Message}");
+        }
+    }
+
+    public static List<int> Load()
+    {
+        if (File.Exists(SaveFilePath))
+        {
+            try
+            {
+                string json = File.ReadAllText(SaveFilePath);
+                SaveData data = JsonUtility.FromJson<SaveData>(json);
+                return data != null ? data.unlockedAnomalies : new List<int>();
+            }
+            catch (System.Exception e)
+            {
+                Debug.LogError($"Error loading game from JSON: {e.Message}");
+                return new List<int>();
+            }
+        }
+        return new List<int>();
+    }
+
+    public static void DeleteSave()
+    {
+        if (File.Exists(SaveFilePath))
+        {
+            try
+            {
+                File.Delete(SaveFilePath);
+            }
+            catch (System.Exception e)
+            {
+                Debug.LogError($"Error deleting save file: {e.Message}");
+            }
+        }
+    }
+}
+</file>
+
+<file path="Assets/_Scripts/LoopTrigger.cs">
+using UnityEngine;
+
+public class LoopTrigger : MonoBehaviour
+{
+    public Transform destinationTrigger;
+    public Transform endgameDestinationTrigger;
+
+    public bool isForwardExit;
+
+    private static float cooldownTimer = 0f;
+
+    private void OnTriggerEnter(Collider other)
+    {
+        if (Time.time < cooldownTimer) return;
+
+        if (other.CompareTag("Player"))
+        {
+            CharacterController cc = other.GetComponent<CharacterController>();
+            if (cc != null)
+            {
+                cooldownTimer = Time.time + 0.2f;
+
+                GameManager.Instance.CheckPlayerChoice(isForwardExit);
+
+                Vector3 localPos = transform.InverseTransformPoint(other.transform.position);
+
+                if (!isForwardExit)
+                {
+                    localPos.x = -localPos.x;
+                    localPos.z = -localPos.z;
+                }
+
+                Transform targetDestination = destinationTrigger;
+
+                if (GameManager.Instance.currentLevel >= GameManager.Instance.winLevel)
+                {
+                    targetDestination = endgameDestinationTrigger;
+                }
+
+                Vector3 worldDestination = targetDestination.TransformPoint(localPos);
+
+                cc.enabled = false;
+                other.transform.position = worldDestination;
+
+                if (!isForwardExit)
+                {
+                    other.transform.Rotate(0, 180, 0);
+                }
+
+                Physics.SyncTransforms();
+                cc.enabled = true;
+            }
+        }
+    }
+}
+</file>
+
 <file path="Assets/_Scripts/AnomalyController.cs">
 using System.Collections.Generic;
 using UnityEngine;
@@ -2344,64 +2644,6 @@ public class AnomalyController : MonoBehaviour
             }
         }
         SaveManager.Save(unlockedIndexes);
-    }
-}
-</file>
-
-<file path="Assets/_Scripts/LoopTrigger.cs">
-using UnityEngine;
-
-public class LoopTrigger : MonoBehaviour
-{
-    public Transform destinationTrigger;
-    public Transform endgameDestinationTrigger;
-
-    public bool isForwardExit;
-
-    private static float cooldownTimer = 0f;
-
-    private void OnTriggerEnter(Collider other)
-    {
-        if (Time.time < cooldownTimer) return;
-
-        if (other.CompareTag("Player"))
-        {
-            CharacterController cc = other.GetComponent<CharacterController>();
-            if (cc != null)
-            {
-                cooldownTimer = Time.time + 0.2f;
-
-                GameManager.Instance.CheckPlayerChoice(isForwardExit);
-
-                Vector3 localPos = transform.InverseTransformPoint(other.transform.position);
-
-                if (!isForwardExit)
-                {
-                    localPos.x = -localPos.x;
-                    localPos.z = -localPos.z;
-                }
-
-                Transform targetDestination = destinationTrigger;
-
-                if (GameManager.Instance.currentLevel >= GameManager.Instance.winLevel)
-                {
-                    targetDestination = endgameDestinationTrigger;
-                }
-
-                Vector3 worldDestination = targetDestination.TransformPoint(localPos);
-
-                cc.enabled = false;
-                other.transform.position = worldDestination;
-
-                if (!isForwardExit)
-                {
-                    other.transform.Rotate(0, 180, 0);
-                }
-
-                Physics.SyncTransforms();
-                cc.enabled = true;
-            }
-        }
     }
 }
 </file>

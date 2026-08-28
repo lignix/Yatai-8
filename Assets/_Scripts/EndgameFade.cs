@@ -7,23 +7,28 @@ public class EndgameFade : MonoBehaviour
     public Transform player;
     public Transform fadeTarget;
     public Image whiteFadeImage;
+    public CreditsManager creditsManager;
 
     [Header("Fade Settings")]
     public float startFadeDistance = 15f;
     public float endFadeDistance = 2f;
+    public float fadeSmoothing = 3f; 
 
-
-    public CreditsManager creditsManager;
     private bool isFinished = false;
+    private float currentAlpha = 0f;
+    private PlayerController playerController;
 
     private void Start()
     {
         if (whiteFadeImage != null)
         {
             whiteFadeImage.gameObject.SetActive(true);
-            Color c = whiteFadeImage.color;
-            c.a = 0f;
-            whiteFadeImage.color = c;
+            SetImageAlpha(0f);
+        }
+
+        if (player != null)
+        {
+            playerController = player.GetComponent<PlayerController>();
         }
     }
 
@@ -33,22 +38,39 @@ public class EndgameFade : MonoBehaviour
 
         float distance = Vector3.Distance(player.position, fadeTarget.position);
 
-        float linearAlpha = Mathf.InverseLerp(startFadeDistance, endFadeDistance, distance);
-        float alpha = Mathf.Pow(linearAlpha, 3f);
+        float targetAlpha = Mathf.InverseLerp(startFadeDistance, endFadeDistance, distance);
+        
+        targetAlpha = Mathf.SmoothStep(0f, 1f, targetAlpha);
 
-        Color c = whiteFadeImage.color;
-        c.a = alpha;
-        whiteFadeImage.color = c;
+        currentAlpha = Mathf.Lerp(currentAlpha, targetAlpha, Time.deltaTime * fadeSmoothing);
 
-        if (alpha >= 1f)
+        SetImageAlpha(currentAlpha);
+
+        if (currentAlpha >= 0.98f)
         {
             isFinished = true;
-            TriggerCredits();
+            SetImageAlpha(1f);
+            TriggerEndgame();
         }
     }
 
-    private void TriggerCredits()
+    private void SetImageAlpha(float alpha)
     {
-        if (creditsManager != null) creditsManager.StartCreditsSequence();
+        Color c = whiteFadeImage.color;
+        c.a = alpha;
+        whiteFadeImage.color = c;
+    }
+
+    private void TriggerEndgame()
+    {
+        if (playerController != null)
+        {
+            playerController.enabled = false;
+        }
+
+        if (creditsManager != null) 
+        {
+            creditsManager.StartCreditsSequence();
+        }
     }
 }

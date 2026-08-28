@@ -12,16 +12,24 @@ public class PlayerFootsteps : MonoBehaviour
     public float sprintSpeedThreshold = 5.0f;
 
     private CharacterController controller;
+    private PlayerController playerController;
     private float stepTimer;
 
     private void Start()
     {
         controller = GetComponent<CharacterController>();
+        playerController = GetComponent<PlayerController>();
         stepTimer = walkStepInterval;
     }
 
     private void Update()
     {
+        if (playerController != null && (!playerController.enabled || playerController.isNoclipActive))
+        {
+            stepTimer = walkStepInterval;
+            return;
+        }
+
         if (controller != null && controller.isGrounded && controller.velocity.magnitude > 0.1f)
         {
             stepTimer -= Time.deltaTime;
@@ -51,7 +59,6 @@ public class PlayerFootsteps : MonoBehaviour
         if (footstepSounds.Length > 0 && audioSource != null)
         {
             int randomIndex = Random.Range(0, footstepSounds.Length);
-
             audioSource.pitch = Random.Range(0.9f, 1.1f);
             audioSource.PlayOneShot(footstepSounds[randomIndex]);
         }

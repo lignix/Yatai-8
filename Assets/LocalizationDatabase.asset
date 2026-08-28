@@ -18,166 +18,173 @@ MonoBehaviour:
     french: Jouer
     spanish: Jugar
     german: Spielen
-    japanese: プレイ
-    simplifiedChinese: 游玩
+    japanese: "\u30D7\u30EC\u30A4"
+    simplifiedChinese: "\u6E38\u73A9"
   - key: ui_progress
     english: '{0} / {1} anomalies unlocked'
     french: "{0} / {1} anomalies d\xE9bloqu\xE9es"
-    spanish: '{0} / {1} anomalías desbloqueadas'
+    spanish: "{0} / {1} anomal\xEDas desbloqueadas"
     german: '{0} / {1} Anomalien freigeschaltet'
-    japanese: '{0} / {1} 個の異変を発見'
-    simplifiedChinese: '已解锁 {0} / {1} 个异常'
+    japanese: "{0} / {1} \u500B\u306E\u7570\u5909\u3092\u767A\u898B"
+    simplifiedChinese: "\u5DF2\u89E3\u9501 {0} / {1} \u4E2A\u5F02\u5E38"
   - key: ui_volume
     english: Volume
     french: Volume
     spanish: Volumen
-    german: Lautstärke
-    japanese: 音量
-    simplifiedChinese: 音量
+    german: "Lautst\xE4rke"
+    japanese: "\u97F3\u91CF"
+    simplifiedChinese: "\u97F3\u91CF"
   - key: ui_resolution
     english: Resolution
     french: "R\xE9solution"
-    spanish: Resolución
-    german: Auflösung
-    japanese: 解像度
-    simplifiedChinese: 分辨率
+    spanish: "Resoluci\xF3n"
+    german: "Aufl\xF6sung"
+    japanese: "\u89E3\u50CF\u5EA6"
+    simplifiedChinese: "\u5206\u8FA8\u7387"
   - key: ui_fullscreen
     english: Fullscreen
     french: "Plein \xE9cran"
     spanish: Pantalla completa
     german: Vollbild
-    japanese: フルスクリーン
-    simplifiedChinese: 全屏
+    japanese: "\u30D5\u30EB\u30B9\u30AF\u30EA\u30FC\u30F3"
+    simplifiedChinese: "\u5168\u5C4F"
   - key: ui_language
     english: Language
     french: Langage
     spanish: Idioma
     german: Sprache
-    japanese: 言語
-    simplifiedChinese: 语言
+    japanese: "\u8A00\u8A9E"
+    simplifiedChinese: "\u8BED\u8A00"
   - key: ui_anomalies
     english: Anomalies
     french: Anomalies
-    spanish: Anomalías
+    spanish: "Anomal\xEDas"
     german: Anomalien
-    japanese: 異変
-    simplifiedChinese: 异常
+    japanese: "\u7570\u5909"
+    simplifiedChinese: "\u5F02\u5E38"
   - key: ui_options
     english: Options
     french: Options
     spanish: Opciones
     german: Optionen
-    japanese: オプション
-    simplifiedChinese: 选项
+    japanese: "\u30AA\u30D7\u30B7\u30E7\u30F3"
+    simplifiedChinese: "\u9009\u9879"
   - key: ui_sens
     english: Sensitivity
     french: "Sensibilit\xE9"
     spanish: Sensibilidad
     german: Empfindlichkeit
-    japanese: 感度
-    simplifiedChinese: 灵敏度
+    japanese: "\u611F\u5EA6"
+    simplifiedChinese: "\u7075\u654F\u5EA6"
   - key: ui_maxfps
     english: Max FPS
     french: FPS max
-    spanish: FPS máx.
+    spanish: "FPS m\xE1x."
     german: Max. FPS
-    japanese: 最大FPS
-    simplifiedChinese: 最大帧数
+    japanese: "\u6700\u5927FPS"
+    simplifiedChinese: "\u6700\u5927\u5E27\u6570"
   - key: ui_vsync
     english: Vsync
     french: Vsync
     spanish: Vsync
     german: VSync
-    japanese: 垂直同期
-    simplifiedChinese: 垂直同步
+    japanese: "\u5782\u76F4\u540C\u671F"
+    simplifiedChinese: "\u5782\u76F4\u540C\u6B65"
   - key: ui_unlimited
     english: Unlimited
     french: "Illimit\xE9"
     spanish: Ilimitado
     german: Unbegrenzt
-    japanese: 無制限
-    simplifiedChinese: 无限制
+    japanese: "\u7121\u5236\u9650"
+    simplifiedChinese: "\u65E0\u9650\u5236"
   - key: ui_motion_blur
     english: Motion Blur
     french: Flou de mouvement
     spanish: Desenfoque de movimiento
-    german: Bewegungsunschärfe
-    japanese: モーションブラー
-    simplifiedChinese: 动态模糊
+    german: "Bewegungsunsch\xE4rfe"
+    japanese: "\u30E2\u30FC\u30B7\u30E7\u30F3\u30D6\u30E9\u30FC"
+    simplifiedChinese: "\u52A8\u6001\u6A21\u7CCA"
   - key: ui_aa
     english: Anti-Aliasing
     french: "Anticr\xE9nelage"
     spanish: Antialiasing
-    german: Kantenglättung
-    japanese: アンチエイリアス
-    simplifiedChinese: 抗锯齿
+    german: "Kantengl\xE4ttung"
+    japanese: "\u30A2\u30F3\u30C1\u30A8\u30A4\u30EA\u30A2\u30B9"
+    simplifiedChinese: "\u6297\u952F\u9F7F"
   - key: ui_back
     english: Back
     french: Retour
     spanish: Volver
-    german: Zurück
-    japanese: 戻る
-    simplifiedChinese: 返回
+    german: "Zur\xFCck"
+    japanese: "\u623B\u308B"
+    simplifiedChinese: "\u8FD4\u56DE"
   - key: ui_exit
     english: Exit
     french: Quitter
     spanish: Salir
     german: Beenden
-    japanese: 終了
-    simplifiedChinese: 退出
+    japanese: "\u7D42\u4E86"
+    simplifiedChinese: "\u9000\u51FA"
+  - key: ui_skip
+    english: Skip
+    french: Passer
+    spanish: 
+    german: 
+    japanese: 
+    simplifiedChinese: 
   - key: ui_delete_default
     english: REMOVE PROGRESSION
     french: SUPPRIMER LA PROGRESSION
     spanish: BORRAR PROGRESO
-    german: FORTSCHRITT LÖSCHEN
-    japanese: 進行状況を削除
-    simplifiedChinese: 删除进度
+    german: "FORTSCHRITT L\xD6SCHEN"
+    japanese: "\u9032\u884C\u72B6\u6CC1\u3092\u524A\u9664"
+    simplifiedChinese: "\u5220\u9664\u8FDB\u5EA6"
   - key: ui_delete_confirm
     english: ARE YOU SURE ?
     french: "\xCATES-VOUS S\xDBR ?"
-    spanish: ¿ESTÁS SEGURO?
+    spanish: "\xBFEST\xC1S SEGURO?"
     german: BIST DU SICHER?
-    japanese: 本当に削除しますか？
-    simplifiedChinese: 确定要删除吗？
+    japanese: "\u672C\u5F53\u306B\u524A\u9664\u3057\u307E\u3059\u304B\uFF1F"
+    simplifiedChinese: "\u786E\u5B9A\u8981\u5220\u9664\u5417\uFF1F"
   - key: ui_delete_success
     english: PROGRESSION REMOVED
     french: "PROGRESSION SUPPRIM\xC9E"
     spanish: PROGRESO BORRADO
-    german: FORTSCHRITT GELÖSCHT
-    japanese: 進行状況を削除しました
-    simplifiedChinese: 进度已删除
+    german: "FORTSCHRITT GEL\xD6SCHT"
+    japanese: "\u9032\u884C\u72B6\u6CC1\u3092\u524A\u9664\u3057\u307E\u3057\u305F"
+    simplifiedChinese: "\u8FDB\u5EA6\u5DF2\u5220\u9664"
   - key: ui_mainmenu
     english: Main Menu
     french: Menu Principal
-    spanish: Menú principal
-    german: Hauptmenü
-    japanese: メインメニュー
-    simplifiedChinese: 主菜单
+    spanish: "Men\xFA principal"
+    german: "Hauptmen\xFC"
+    japanese: "\u30E1\u30A4\u30F3\u30E1\u30CB\u30E5\u30FC"
+    simplifiedChinese: "\u4E3B\u83DC\u5355"
   - key: ui_resume
     english: Resume
     french: Reprendre
     spanish: Reanudar
     german: Fortsetzen
-    japanese: 再開
-    simplifiedChinese: 继续
+    japanese: "\u518D\u958B"
+    simplifiedChinese: "\u7EE7\u7EED"
   - key: ano_missing_bench
     english: Missing bench
     french: Banc manquant
     spanish: Banco desaparecido
     german: Fehlende Bank
-    japanese: 消えたベンチ
-    simplifiedChinese: 消失的长椅
+    japanese: "\u6D88\u3048\u305F\u30D9\u30F3\u30C1"
+    simplifiedChinese: "\u6D88\u5931\u7684\u957F\u6905"
   - key: ano_rotated_bench
     english: Rotated bench
     french: "Banc tourn\xE9"
     spanish: Banco girado
     german: Gedrehte Bank
-    japanese: 回転したベンチ
-    simplifiedChinese: 旋转的长椅
+    japanese: "\u56DE\u8EE2\u3057\u305F\u30D9\u30F3\u30C1"
+    simplifiedChinese: "\u65CB\u8F6C\u7684\u957F\u6905"
   - key: ano_flickering_window
     english: Flickering Window
     french: "Fen\xEAtre qui clignotte"
     spanish: Ventana parpadeante
     german: Flackerndes Fenster
-    japanese: 点滅する窓
-    simplifiedChinese: 闪烁的窗户
+    japanese: "\u70B9\u6EC5\u3059\u308B\u7A93"
+    simplifiedChinese: "\u95EA\u70C1\u7684\u7A97\u6237"

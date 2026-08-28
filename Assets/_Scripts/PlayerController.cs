@@ -40,7 +40,7 @@ public class PlayerController : MonoBehaviour
     private float verticalVelocity;
     private float cameraPitch = 0.0f;
     
-    private bool isNoclipActive = false;
+    public bool isNoclipActive = false;
     private float noclipRotX = 0f;
     private float noclipRotY = 0f;
     private float currentNoclipRotX = 0f;

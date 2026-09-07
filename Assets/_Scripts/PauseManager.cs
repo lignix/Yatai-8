@@ -32,6 +32,12 @@ public class PauseManager : MonoBehaviour
     {
         if (Keyboard.current != null && Keyboard.current.escapeKey.wasPressedThisFrame)
         {
+            if (DigicodeManager.Instance != null && DigicodeManager.Instance.keypadPanel.activeSelf)
+            {
+                DigicodeManager.Instance.CloseKeypad();
+                return;
+            }
+            
             if (optionsPanel != null && optionsPanel.activeSelf)
             {
                 CloseOptions();

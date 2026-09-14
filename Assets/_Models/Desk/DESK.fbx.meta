@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: 37b4ae9c8eaf1c143a6d11a846e81cb5
+guid: 56ca42bddb73db941b1d4d61c4266188
 ModelImporter:
   serializedVersion: 24200
   internalIDToNameTable: []
@@ -7,63 +7,8 @@ ModelImporter:
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
-      name: I_HighSchool_0001_Bikini_0001
-    second: {fileID: 2100000, guid: cca739662f61bfc4da190a0a359030ed, type: 2}
-  - first:
-      type: UnityEngine:Material
-      assembly: UnityEngine.CoreModule
-      name: I_HighSchool_0001_Cardigan_0001
-    second: {fileID: 2100000, guid: f41c90c56a0440247aad71dcae72a164, type: 2}
-  - first:
-      type: UnityEngine:Material
-      assembly: UnityEngine.CoreModule
-      name: I_HighSchool_0001_Coat_0001
-    second: {fileID: 2100000, guid: 9bcf7450e02c08447989968e645c5e8f, type: 2}
-  - first:
-      type: UnityEngine:Material
-      assembly: UnityEngine.CoreModule
-      name: I_HighSchool_0001_Necktie_0001
-    second: {fileID: 2100000, guid: ddd1126f34795504baec483b34d70ee0, type: 2}
-  - first:
-      type: UnityEngine:Material
-      assembly: UnityEngine.CoreModule
-      name: I_HighSchool_0001_Shirt_0001
-    second: {fileID: 2100000, guid: 73643d20ed749984dafc84903eeb4ee6, type: 2}
-  - first:
-      type: UnityEngine:Material
-      assembly: UnityEngine.CoreModule
-      name: I_HighSchool_0001_Shoes_0001
-    second: {fileID: 2100000, guid: 88cb6bdcbf0c2f247b883bd23a4b93fb, type: 2}
-  - first:
-      type: UnityEngine:Material
-      assembly: UnityEngine.CoreModule
-      name: I_HighSchool_0001_Skirt_0001
-    second: {fileID: 2100000, guid: 0b36a6edeec35d84b901bd695a793b29, type: 2}
-  - first:
-      type: UnityEngine:Material
-      assembly: UnityEngine.CoreModule
-      name: I_HighSchool_0001_Socks_0001
-    second: {fileID: 2100000, guid: 8812993df950ceb4c8988d2413b4cbba, type: 2}
-  - first:
-      type: UnityEngine:Material
-      assembly: UnityEngine.CoreModule
-      name: I_JF7M_eyes_AA_0005
-    second: {fileID: 2100000, guid: ef4a4e5e177d4a4419099682d3ab3c24, type: 2}
-  - first:
-      type: UnityEngine:Material
-      assembly: UnityEngine.CoreModule
-      name: I_YF7MHairSMA_0_001
-    second: {fileID: 2100000, guid: 11a8d02758a1ac44fb72a78a6e9728e7, type: 2}
-  - first:
-      type: UnityEngine:Material
-      assembly: UnityEngine.CoreModule
-      name: body
-    second: {fileID: 2100000, guid: 29a25965df3dfe4439d8ac2285a27d52, type: 2}
-  - first:
-      type: UnityEngine:Material
-      assembly: UnityEngine.CoreModule
-      name: head
-    second: {fileID: 2100000, guid: 084ba1c9d49f79e4f8f717075697d9c0, type: 2}
+      name: DefaultMaterial
+    second: {fileID: 2100000, guid: d076e93e50adc9e4a99dadbe6e8b35fa, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0
@@ -82,7 +27,7 @@ ModelImporter:
     animationDoRetargetingWarnings: 0
     importAnimatedCustomProperties: 0
     importConstraints: 0
-    animationCompression: 3
+    animationCompression: 1
     animationRotationError: 0.5
     animationPositionError: 0.5
     animationScaleError: 0.5
@@ -93,7 +38,7 @@ ModelImporter:
     isReadable: 0
   meshes:
     lODScreenPercentages: []
-    globalScale: 1
+    globalScale: 35
     meshCompression: 0
     addColliders: 0
     useSRGBMaterialColor: 1
@@ -151,16 +96,16 @@ ModelImporter:
     armStretch: 0.05
     legStretch: 0.05
     feetSpacing: 0
-    globalScale: 1
+    globalScale: 0.35
     rootMotionBoneName: 
     hasTranslationDoF: 0
-    hasExtraRoot: 1
+    hasExtraRoot: 0
     skeletonHasParents: 1
   lastHumanDescriptionAvatarSource: {instanceID: 0}
   autoGenerateAvatarMappingIfUnspecified: 1
-  animationType: 3
+  animationType: 2
   humanoidOversampling: 1
-  avatarSetup: 1
+  avatarSetup: 0
   addHumanoidExtraRootOnlyWhenUsingAvatar: 1
   importBlendShapeDeformPercent: 1
   remapMaterialsIfMaterialImportModeIsNone: 0

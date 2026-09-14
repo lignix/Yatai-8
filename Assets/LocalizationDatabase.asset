@@ -167,6 +167,13 @@ MonoBehaviour:
     german: Fortsetzen
     japanese: "\u518D\u958B"
     simplifiedChinese: "\u7EE7\u7EED"
+  - key: ui_keypad_format
+    english: YY/MM/DD
+    french: AA/MM/JJ
+    spanish: AA/MM/DD
+    german: JJ/MM/TT
+    japanese: YY/MM/DD
+    simplifiedChinese: YY/MM/DD
   - key: ano_missing_bench
     english: Missing bench
     french: Banc manquant
@@ -188,3 +195,10 @@ MonoBehaviour:
     german: Flackerndes Fenster
     japanese: "\u70B9\u6EC5\u3059\u308B\u7A93"
     simplifiedChinese: "\u95EA\u70C1\u7684\u7A97\u6237"
+  - key: ano_heavenly_door
+    english: Heavenly door
+    french: 
+    spanish: 
+    german: 
+    japanese: 
+    simplifiedChinese: 

@@ -17,7 +17,8 @@ public class DigicodeManager : MonoBehaviour
     public AudioClip successClip;
 
     [Header("Door Settings")]
-    public string secretCode = "123456";
+    public string secretCode = "260315";
+    public string placeholderKey = "ui_keypad_format"; // traduction key
     public Transform secretDoor;
     public Vector3 openRotation = new Vector3(-90f, 0f, 30f);
     [Tooltip("Vitesse de rotation de la porte")]
@@ -66,6 +67,10 @@ public class DigicodeManager : MonoBehaviour
 
         if (currentInput.Length < 6)
         {
+            if (currentInput.Length == 0)
+            {
+                displayCode.color = Color.white;
+            }
             currentInput += digit;
             displayCode.text = currentInput;
         }
@@ -80,8 +85,17 @@ public class DigicodeManager : MonoBehaviour
     private void ClearInputSilent()
     {
         currentInput = "";
-        displayCode.text = currentInput;
-        displayCode.color = Color.white;
+
+        if (LocalizationManager.Instance != null)
+        {
+            displayCode.text = LocalizationManager.Instance.GetTranslation(placeholderKey);
+        }
+        else
+        {
+            displayCode.text = "AA/MM/JJ";
+        }
+
+        displayCode.color = Color.gray;
     }
 
     public void ValidateOrClose()

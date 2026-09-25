@@ -18,155 +18,155 @@ MonoBehaviour:
     french: Jouer
     spanish: Jugar
     german: Spielen
-    japanese: "\u30D7\u30EC\u30A4"
-    simplifiedChinese: "\u6E38\u73A9"
+    japanese: プレイ
+    simplifiedChinese: 游玩
   - key: ui_progress
     english: '{0} / {1} anomalies unlocked'
-    french: "{0} / {1} anomalies d\xE9bloqu\xE9es"
-    spanish: "{0} / {1} anomal\xEDas desbloqueadas"
+    french: "{0} / {1} anomalies débloquées"
+    spanish: "{0} / {1} anomalías desbloqueadas"
     german: '{0} / {1} Anomalien freigeschaltet'
-    japanese: "{0} / {1} \u500B\u306E\u7570\u5909\u3092\u767A\u898B"
-    simplifiedChinese: "\u5DF2\u89E3\u9501 {0} / {1} \u4E2A\u5F02\u5E38"
+    japanese: "{0} / {1} 個の異変を発見"
+    simplifiedChinese: 已解锁 {0} / {1} 个异常
   - key: ui_volume
     english: Volume
     french: Volume
     spanish: Volumen
-    german: "Lautst\xE4rke"
-    japanese: "\u97F3\u91CF"
-    simplifiedChinese: "\u97F3\u91CF"
+    german: Lautstärke
+    japanese: 音量
+    simplifiedChinese: 音量
   - key: ui_resolution
     english: Resolution
-    french: "R\xE9solution"
-    spanish: "Resoluci\xF3n"
-    german: "Aufl\xF6sung"
-    japanese: "\u89E3\u50CF\u5EA6"
-    simplifiedChinese: "\u5206\u8FA8\u7387"
+    french: Résolution
+    spanish: Resolución
+    german: Auflösung
+    japanese: 解像度
+    simplifiedChinese: 分辨率
   - key: ui_fullscreen
     english: Fullscreen
-    french: "Plein \xE9cran"
+    french: Plein écran
     spanish: Pantalla completa
     german: Vollbild
-    japanese: "\u30D5\u30EB\u30B9\u30AF\u30EA\u30FC\u30F3"
-    simplifiedChinese: "\u5168\u5C4F"
+    japanese: フルスクリーン
+    simplifiedChinese: 全屏
   - key: ui_language
     english: Language
     french: Langage
     spanish: Idioma
     german: Sprache
-    japanese: "\u8A00\u8A9E"
-    simplifiedChinese: "\u8BED\u8A00"
+    japanese: 言語
+    simplifiedChinese: 语言
   - key: ui_anomalies
     english: Anomalies
     french: Anomalies
-    spanish: "Anomal\xEDas"
+    spanish: Anomalías
     german: Anomalien
-    japanese: "\u7570\u5909"
-    simplifiedChinese: "\u5F02\u5E38"
+    japanese: 異変
+    simplifiedChinese: 异常
   - key: ui_options
     english: Options
     french: Options
     spanish: Opciones
     german: Optionen
-    japanese: "\u30AA\u30D7\u30B7\u30E7\u30F3"
-    simplifiedChinese: "\u9009\u9879"
+    japanese: オプション
+    simplifiedChinese: 选项
   - key: ui_sens
     english: Sensitivity
-    french: "Sensibilit\xE9"
+    french: Sensibilité
     spanish: Sensibilidad
     german: Empfindlichkeit
-    japanese: "\u611F\u5EA6"
-    simplifiedChinese: "\u7075\u654F\u5EA6"
+    japanese: 感度
+    simplifiedChinese: 灵敏度
   - key: ui_maxfps
     english: Max FPS
     french: FPS max
-    spanish: "FPS m\xE1x."
+    spanish: FPS máx.
     german: Max. FPS
-    japanese: "\u6700\u5927FPS"
-    simplifiedChinese: "\u6700\u5927\u5E27\u6570"
+    japanese: 最大FPS
+    simplifiedChinese: 最大帧数
   - key: ui_vsync
     english: Vsync
     french: Vsync
     spanish: Vsync
     german: VSync
-    japanese: "\u5782\u76F4\u540C\u671F"
-    simplifiedChinese: "\u5782\u76F4\u540C\u6B65"
+    japanese: 垂直同期
+    simplifiedChinese: 垂直同步
   - key: ui_unlimited
     english: Unlimited
-    french: "Illimit\xE9"
+    french: Illimité
     spanish: Ilimitado
     german: Unbegrenzt
-    japanese: "\u7121\u5236\u9650"
-    simplifiedChinese: "\u65E0\u9650\u5236"
+    japanese: 無制限
+    simplifiedChinese: 无限制
   - key: ui_motion_blur
     english: Motion Blur
     french: Flou de mouvement
     spanish: Desenfoque de movimiento
-    german: "Bewegungsunsch\xE4rfe"
-    japanese: "\u30E2\u30FC\u30B7\u30E7\u30F3\u30D6\u30E9\u30FC"
-    simplifiedChinese: "\u52A8\u6001\u6A21\u7CCA"
+    german: Bewegungsunschärfe
+    japanese: モーションブラー
+    simplifiedChinese: 动态模糊
   - key: ui_aa
     english: Anti-Aliasing
-    french: "Anticr\xE9nelage"
+    french: Anticrénelage
     spanish: Antialiasing
-    german: "Kantengl\xE4ttung"
-    japanese: "\u30A2\u30F3\u30C1\u30A8\u30A4\u30EA\u30A2\u30B9"
-    simplifiedChinese: "\u6297\u952F\u9F7F"
+    german: Kantenglättung
+    japanese: アンチエイリアス
+    simplifiedChinese: 抗锯齿
   - key: ui_back
     english: Back
     french: Retour
     spanish: Volver
-    german: "Zur\xFCck"
-    japanese: "\u623B\u308B"
-    simplifiedChinese: "\u8FD4\u56DE"
+    german: Zurück
+    japanese: 戻る
+    simplifiedChinese: 返回
   - key: ui_exit
     english: Exit
     french: Quitter
     spanish: Salir
     german: Beenden
-    japanese: "\u7D42\u4E86"
-    simplifiedChinese: "\u9000\u51FA"
+    japanese: 終了
+    simplifiedChinese: 退出
   - key: ui_skip
     english: Skip
     french: Passer
-    spanish: 
-    german: 
-    japanese: 
-    simplifiedChinese: 
+    spanish: Saltar
+    german: Überspringen
+    japanese: スキップ
+    simplifiedChinese: 跳过
   - key: ui_delete_default
     english: REMOVE PROGRESSION
     french: SUPPRIMER LA PROGRESSION
     spanish: BORRAR PROGRESO
-    german: "FORTSCHRITT L\xD6SCHEN"
-    japanese: "\u9032\u884C\u72B6\u6CC1\u3092\u524A\u9664"
-    simplifiedChinese: "\u5220\u9664\u8FDB\u5EA6"
+    german: FORTSCHRITT LÖSCHEN
+    japanese: 進行状況を削除
+    simplifiedChinese: 删除进度
   - key: ui_delete_confirm
     english: ARE YOU SURE ?
-    french: "\xCATES-VOUS S\xDBR ?"
-    spanish: "\xBFEST\xC1S SEGURO?"
+    french: ÊTES-VOUS SÛR ?
+    spanish: ¿ESTÁS SEGURO?
     german: BIST DU SICHER?
-    japanese: "\u672C\u5F53\u306B\u524A\u9664\u3057\u307E\u3059\u304B\uFF1F"
-    simplifiedChinese: "\u786E\u5B9A\u8981\u5220\u9664\u5417\uFF1F"
+    japanese: 本当に削除しますか？
+    simplifiedChinese: 确定要删除吗？
   - key: ui_delete_success
     english: PROGRESSION REMOVED
-    french: "PROGRESSION SUPPRIM\xC9E"
+    french: PROGRESSION SUPPRIMÉE
     spanish: PROGRESO BORRADO
-    german: "FORTSCHRITT GEL\xD6SCHT"
-    japanese: "\u9032\u884C\u72B6\u6CC1\u3092\u524A\u9664\u3057\u307E\u3057\u305F"
-    simplifiedChinese: "\u8FDB\u5EA6\u5DF2\u5220\u9664"
+    german: FORTSCHRITT GELÖSCHT
+    japanese: 進行状況を削除しました
+    simplifiedChinese: 进度已删除
   - key: ui_mainmenu
     english: Main Menu
     french: Menu Principal
-    spanish: "Men\xFA principal"
-    german: "Hauptmen\xFC"
-    japanese: "\u30E1\u30A4\u30F3\u30E1\u30CB\u30E5\u30FC"
-    simplifiedChinese: "\u4E3B\u83DC\u5355"
+    spanish: Menú principal
+    german: Hauptmenü
+    japanese: メインメニュー
+    simplifiedChinese: 主菜单
   - key: ui_resume
     english: Resume
     french: Reprendre
     spanish: Reanudar
     german: Fortsetzen
-    japanese: "\u518D\u958B"
-    simplifiedChinese: "\u7EE7\u7EED"
+    japanese: 再開
+    simplifiedChinese: 继续
   - key: ui_keypad_format
     english: YY/MM/DD
     french: AA/MM/JJ
@@ -179,33 +179,250 @@ MonoBehaviour:
     french: Banc manquant
     spanish: Banco desaparecido
     german: Fehlende Bank
-    japanese: "\u6D88\u3048\u305F\u30D9\u30F3\u30C1"
-    simplifiedChinese: "\u6D88\u5931\u7684\u957F\u6905"
+    japanese: 消えたベンチ
+    simplifiedChinese: 消失的长椅
   - key: ano_rotated_bench
     english: Rotated bench
-    french: "Banc tourn\xE9"
+    french: Banc tourné
     spanish: Banco girado
     german: Gedrehte Bank
-    japanese: "\u56DE\u8EE2\u3057\u305F\u30D9\u30F3\u30C1"
-    simplifiedChinese: "\u65CB\u8F6C\u7684\u957F\u6905"
+    japanese: 回転したベンチ
+    simplifiedChinese: 旋转的长椅
+  - key: ano_moved_trashcan
+    english: Moved trashcan
+    french: Poubelle déplacée
+    spanish: Papelera movida
+    german: Verschobener Mülleimer
+    japanese: 移動したゴミ箱
+    simplifiedChinese: 移动的垃圾桶
+  - key: ano_moved_bike
+    english: Moved bike
+    french: Vélo déplacé
+    spanish: Bicicleta movida
+    german: Verschobenes Fahrrad
+    japanese: 移動した自転車
+    simplifiedChinese: 移动的自行车
+  - key: ano_fallen_cone
+    english: Fallen cone
+    french: Cône renversé
+    spanish: Cono caído
+    german: Umgefallener Kegel
+    japanese: 倒れたコーン
+    simplifiedChinese: 倒下的路障
+  - key: ano_rotating_cone
+    english: Rotating cone
+    french: Cône tournant
+    spanish: Cono giratorio
+    german: Rotierender Kegel
+    japanese: 回転するコーン
+    simplifiedChinese: 旋转的路障
+  - key: ano_brick_wall
+    english: Brick wall
+    french: Mur de briques
+    spanish: Pared de ladrillos
+    german: Backsteinmauer
+    japanese: レンガの壁
+    simplifiedChinese: 砖墙
+  - key: ano_knocking_door
+    english: Knocking door
+    french: Frappement à la porte
+    spanish: Puerta tocando
+    german: Klopfende Tür
+    japanese: ドアをノックする音
+    simplifiedChinese: 敲门声
+  - key: ano_ajar_door
+    english: Ajar door
+    french: Porte entrouverte
+    spanish: Puerta entreabierta
+    german: Angelehnte Tür
+    japanese: 半開きのドア
+    simplifiedChinese: 半掩的门
+  - key: ano_open_door
+    english: Open door
+    french: Porte ouverte
+    spanish: Puerta abierta
+    german: Offene Tür
+    japanese: 開いたドア
+    simplifiedChinese: 敞开的门
   - key: ano_flickering_window
     english: Flickering Window
-    french: "Fen\xEAtre qui clignotte"
+    french: Fenêtre qui clignote
     spanish: Ventana parpadeante
     german: Flackerndes Fenster
-    japanese: "\u70B9\u6EC5\u3059\u308B\u7A93"
-    simplifiedChinese: "\u95EA\u70C1\u7684\u7A97\u6237"
+    japanese: 点滅する窓
+    simplifiedChinese: 闪烁的窗户
   - key: ano_heavenly_door
     english: Heavenly door
-    french: 
-    spanish: 
-    german: 
-    japanese: 
-    simplifiedChinese: 
+    french: Porte céleste
+    spanish: Puerta celestial
+    german: Himmlische Tür
+    japanese: 天国のドア
+    simplifiedChinese: 天国之门
+  - key: ano_neon_off
+    english: Neon off
+    french: Néon éteint
+    spanish: Neón apagado
+    german: Neonlicht aus
+    japanese: 消えたネオン
+    simplifiedChinese: 熄灭的霓虹灯
+  - key: ano_blue_chouchin
+    english: Blue lantern
+    french: Lanterne bleue
+    spanish: Linterna azul
+    german: Blaue Laterne
+    japanese: 青い提灯
+    simplifiedChinese: 蓝色灯笼
+  - key: ano_flickering_chouchin
+    english: Flickering lantern
+    french: Lanterne clignotante
+    spanish: Linterna parpadeante
+    german: Flackernde Laterne
+    japanese: 点滅する提灯
+    simplifiedChinese: 闪烁的灯笼
+  - key: ano_red_glass_jidouhanbaiki
+    english: Red vending machine
+    french: Distributeur rouge
+    spanish: Máquina expendedora roja
+    german: Roter Automat
+    japanese: 赤い自販機
+    simplifiedChinese: 红色自动售货机
+  - key: ano_orange_jidouhanbaiki
+    english: Orange vending machine
+    french: Distributeur orange
+    spanish: Máquina expendedora naranja
+    german: Oranger Automat
+    japanese: オレンジ色の自販機
+    simplifiedChinese: 橙色自动售货机
+  - key: ano_off_jidouhanbaiki
+    english: Off vending machine
+    french: Distributeur éteint
+    spanish: Máquina expendedora apagada
+    german: Ausgeschalteter Automat
+    japanese: 消えた自販機
+    simplifiedChinese: 熄灭的自动售货机
+  - key: ano_bar_lamp
+    english: Extra bar lamp
+    french: Lampe de bar apparue
+    spanish: Lámpara de bar extra
+    german: Zusätzliche Barlampe
+    japanese: 謎のバーのランプ
+    simplifiedChinese: 多出的酒吧灯
+  - key: ano_counter_screen
+    english: Glitched counter
+    french: Compteur déréglé
+    spanish: Contador fallido
+    german: Verrückt spielender Zähler
+    japanese: バグったカウンター
+    simplifiedChinese: 乱码的计数器
+  - key: ano_trash_avalanche
+    english: Trash avalanche
+    french: Avalanche de déchets
+    spanish: Avalancha de basura
+    german: Mülllawine
+    japanese: ゴミの雪崩
+    simplifiedChinese: 垃圾雪崩
+  - key: ano_duck_avalanche
+    english: Duck avalanche
+    french: Avalanche de canards
+    spanish: Avalancha de patos
+    german: Entenlawine
+    japanese: アヒルの雪崩
+    simplifiedChinese: 鸭子雪崩
+  - key: ano_falling_pole
+    english: Falling pole
+    french: Poteau qui tombe
+    spanish: Poste cayendo
+    german: Fallender Mast
+    japanese: 倒れる電柱
+    simplifiedChinese: 倒下的电线杆
+  - key: ano_ac_unit_leak
+    english: AC unit leak
+    french: Fuite de climatisation
+    spanish: Fuga de aire acondicionado
+    german: Klimaanlagenleck
+    japanese: エアコンの水漏れ
+    simplifiedChinese: 空调漏水
+  - key: ano_train_passing
+    english: Train passing
+    french: Passage d'un train
+    spanish: Tren pasando
+    german: Vorbeifahrender Zug
+    japanese: 通過する電車
+    simplifiedChinese: 经过的火车
+  - key: ano_bike_ringing
+    english: Bike bell ringing
+    french: Sonnette de vélo
+    spanish: Timbre de bicicleta
+    german: Fahrradklingel
+    japanese: 自転車のベル
+    simplifiedChinese: 自行车铃声
+  - key: ano_wrong_sided_yatai
+    english: Reversed yatai
+    french: Yatai à l'envers
+    spanish: Yatai invertido
+    german: Umgedrehter Yatai
+    japanese: 逆向きの屋台
+    simplifiedChinese: 反向的屋台
+  - key: ano_missing_yatai_props
+    english: Missing yatai props
+    french: Objets du yatai manquants
+    spanish: Objetos del yatai desaparecidos
+    german: Fehlende Yatai-Requisiten
+    japanese: 消えた屋台の道具
+    simplifiedChinese: 消失的屋台物品
+  - key: ano_extra_ramen
+    english: Extra ramen
+    french: Bol de ramen en plus
+    spanish: Ramen extra
+    german: Zusätzliche Ramen
+    japanese: 増えたラーメン
+    simplifiedChinese: 多出的拉面
+  - key: ano_window_silouhette
+    english: Window silhouette
+    french: Silhouette à la fenêtre
+    spanish: Silueta en la ventana
+    german: Fenstersilhouette
+    japanese: 窓のシルエット
+    simplifiedChinese: 窗户上的人影
   - key: ano_graduation_poster
     english: Graduation poster
-    french: "Poster de remise de dipl\xF4me "
-    spanish: 
-    german: 
-    japanese: 
-    simplifiedChinese: 
+    french: Poster de remise de diplôme
+    spanish: Cartel de graduación
+    german: Abschlussplakat
+    japanese: 卒業式のポスター
+    simplifiedChinese: 毕业海报
+  - key: ano_fallen_phone
+    english: Broken phone
+    french: Téléphone brisé
+    spanish: Teléfono roto
+    german: Kaputtes Telefon
+    japanese: 壊れたスマートフォン
+    simplifiedChinese: 摔碎的手机
+  - key: ano_diploma
+    english: Stained diploma
+    french: Diplôme taché
+    spanish: Diploma manchado
+    german: Beflecktes Diplom
+    japanese: 汚れた卒業証書
+    simplifiedChinese: 弄脏的毕业证书
+  - key: ano_missing_poster
+    english: Missing photo
+    french: Photo manquante
+    spanish: Foto desaparecida
+    german: Fehlendes Foto
+    japanese: 消えた顔写真
+    simplifiedChinese: 消失的照片
+  - key: ano_plume_cat
+    english: Plume posters
+    french: Affiches de Plume
+    spanish: Carteles de Plume
+    german: Plume-Poster
+    japanese: プルームのポスター
+    simplifiedChinese: Plume的海报
+  - key: ano_uma_cat
+    english: Uma posters
+    french: Affiches de Uma
+    spanish: Carteles de Uma
+    german: Uma-Poster
+    japanese: ウマのポスター
+    simplifiedChinese: Uma的海报

@@ -13,39 +13,39 @@ MonoBehaviour:
   m_Name: AnomalyDatabase
   m_EditorClassIdentifier: Assembly-CSharp::AnomalyDatabase
   anomalyKeys:
-  - ano_rotated_bench
   - ano_missing_bench
-  - ano_flickering_window
+  - ano_rotated_bench
+  - ano_moved_trashcan
+  - ano_moved_bike
+  - ano_fallen_cone
+  - ano_rotating_cone
   - ano_brick_wall
   - ano_knocking_door
   - ano_ajar_door
   - ano_open_door
-  - ano_ac_unit_leak
-  - ano_bar_lamp
-  - ano_trash_avalanche
-  - ano_duck_avalanche
+  - ano_flickering_window
+  - ano_heavenly_door
   - ano_neon_off
-  - ano_falling_pole
-  - ano_missing_yatai_props
-  - ano_rotating_cone
-  - ano_fallen_cone
-  - ano_wrong_sided_yatai
   - ano_blue_chouchin
   - ano_flickering_chouchin
-  - ano_moved_bike
   - ano_red_glass_jidouhanbaiki
   - ano_orange_jidouhanbaiki
   - ano_off_jidouhanbaiki
-  - ano_moved_trashcan
-  - ano_train_passing
+  - ano_bar_lamp
   - ano_counter_screen
-  - ano_extra_ramen
+  - ano_trash_avalanche
+  - ano_duck_avalanche
+  - ano_falling_pole
+  - ano_ac_unit_leak
+  - ano_train_passing
   - ano_bike_ringing
-  - ano_heavenly_door
+  - ano_wrong_sided_yatai
+  - ano_missing_yatai_props
+  - ano_extra_ramen
+  - ano_window_silouhette
   - ano_graduation_poster
   - ano_fallen_phone
   - ano_diploma
   - ano_missing_poster
   - ano_plume_cat
   - ano_uma_cat
-  - ano_window_silouhette

@@ -13,6 +13,7 @@ public class MenuManager : MonoBehaviour
     public GameObject mainPanel;
     public GameObject optionsPanel;
     public GameObject anomaliesPanel;
+    public GameObject howToPlayPanel;
 
     [Header("Anomalies Menu")]
     public TMP_Text progressText;
@@ -31,17 +32,38 @@ public class MenuManager : MonoBehaviour
 
     public void ShowPanel(GameObject panelToShow)
     {
-        mainPanel.SetActive(false);
-        optionsPanel.SetActive(false);
-        anomaliesPanel.SetActive(false);
+        if (mainPanel != null) mainPanel.SetActive(false);
+        if (optionsPanel != null) optionsPanel.SetActive(false);
+        if (anomaliesPanel != null) anomaliesPanel.SetActive(false);
+        if (howToPlayPanel != null) howToPlayPanel.SetActive(false);
 
-        panelToShow.SetActive(true);
+        if (panelToShow != null) panelToShow.SetActive(true);
         ResetDeleteButton();
 
         if (panelToShow == anomaliesPanel)
         {
             RefreshAnomalyList();
         }
+    }
+
+    public void OpenHowToPlay()
+    {
+        ShowPanel(howToPlayPanel);
+    }
+
+    public void OpenOptions()
+    {
+        ShowPanel(optionsPanel);
+    }
+
+    public void OpenAnomalies()
+    {
+        ShowPanel(anomaliesPanel);
+    }
+
+    public void BackToMainMenu()
+    {
+        ShowPanel(mainPanel);
     }
 
     public void PlayGame()
@@ -167,7 +189,7 @@ public class MenuManager : MonoBehaviour
     private void OnLanguageChanged()
     {
         ResetDeleteButton();
-        if (anomaliesPanel.activeSelf)
+        if (anomaliesPanel != null && anomaliesPanel.activeSelf)
         {
             RefreshAnomalyList();
         }

@@ -454,6 +454,13 @@ MonoBehaviour:
     german: "Spielanleitung"
     japanese: "遊び方"
     simplifiedChinese: "玩法说明"
+  - key: ui_how_to_play_title_question
+    english: "How to Play?"
+    french: "Comment jouer ?"
+    spanish: "¿Cómo jugar?"
+    german: "Spielanleitung?"
+    japanese: "遊び方？"
+    simplifiedChinese: "玩法说明？"
   - key: ui_how_to_play_text
     english: "1. Observe your surroundings carefully.\n2. If you find an anomaly, turn back immediately.\n3. If you don't find any anomalies, keep moving forward.\n4. Reach the end to break the loop."
     french: "1. Observez attentivement votre environnement.\n2. Si vous trouvez une anomalie, faites demi-tour immédiatement.\n3. Si vous ne trouvez aucune anomalie, continuez d'avancer.\n4. Atteignez la fin pour briser la boucle."

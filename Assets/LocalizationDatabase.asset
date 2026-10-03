@@ -433,6 +433,13 @@ MonoBehaviour:
     german: Gehende Studentin
     japanese: "\u6B69\u304F\u5973\u751F\u5F92"
     simplifiedChinese: "\u884C\u8D70\u7684\u5973\u5B66\u751F"
+  - key: ano_giant_head
+    english: "Giant Head"
+    french: "Tête Géante"
+    spanish: "Cabeza Gigante"
+    german: "Riesiger Kopf"
+    japanese: "巨大な頭"
+    simplifiedChinese: "巨大头颅"
   - key: ui_secret_letter
     english: "If you are reading this, you have broken the loop...\nI don't know how long I've been wandering in this hallway. Today should have been my graduation day. But the train passes endlessly, and my mind crumbles a bit more with each cycle. The 'anomalies' you encountered... they are my tearing memories.\nThank you for paying attention to me. Thank you for finding me.\nNow, walk through the door and don't look back. Flee before this place claims you too."
     french: "Si tu lis ceci, c'est que tu as réussi à briser la boucle...\nJe ne sais plus depuis combien de temps j'erre dans ce couloir. Aujourd'hui aurait dû être le jour de ma remise de diplôme. Mais le train passe inlassablement, et mon esprit s'effrite un peu plus à chaque cycle. Les \"anomalies\" que tu as croisées... ce sont mes souvenirs qui se déchirent.\nMerci d'avoir fait attention à moi. Merci de m'avoir trouvée.\nMaintenant, franchis la porte et ne te retourne pas. Fuis avant que cet endroit ne te garde toi aussi."

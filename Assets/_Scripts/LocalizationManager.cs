@@ -15,12 +15,37 @@ public class LocalizationManager : MonoBehaviour
         if (Instance == null)
         {
             Instance = this;
-            currentLanguageIndex = PlayerPrefs.GetInt("LanguagePref", 0); 
+            
+            // if first time running game
+            if (!PlayerPrefs.HasKey("LanguagePref"))
+            {
+                currentLanguageIndex = GetSystemLanguageIndex();
+                PlayerPrefs.SetInt("LanguagePref", currentLanguageIndex);
+            }
+            else
+            {
+                currentLanguageIndex = PlayerPrefs.GetInt("LanguagePref", 0); 
+            }
+            
             DontDestroyOnLoad(gameObject);
         }
         else
         {
             Destroy(gameObject);
+        }
+    }
+
+    private int GetSystemLanguageIndex()
+    {
+        switch (Application.systemLanguage)
+        {
+            case SystemLanguage.French: return 1;
+            case SystemLanguage.Spanish: return 2;
+            case SystemLanguage.German: return 3;
+            case SystemLanguage.Japanese: return 4;
+            case SystemLanguage.ChineseSimplified: return 5;
+            case SystemLanguage.Chinese: return 5;
+            default: return 0;
         }
     }
 

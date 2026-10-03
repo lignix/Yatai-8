@@ -1,6 +1,7 @@
 using System.Collections;
 using UnityEngine;
 using TMPro;
+using UnityEngine.InputSystem;
 
 public class DigicodeManager : MonoBehaviour
 {
@@ -18,16 +19,16 @@ public class DigicodeManager : MonoBehaviour
 
     [Header("Door Settings")]
     public string secretCode = "260315";
-    public string placeholderKey = "ui_keypad_format"; // traduction key
+    public string placeholderKey = "ui_keypad_format";
     public Transform secretDoor;
     public Vector3 openRotation = new Vector3(-90f, 0f, 30f);
-    [Tooltip("Vitesse de rotation de la porte")]
     public float openSpeed = 100f;
     public AudioSource doorAudioSource;
     public AudioClip doorOpenClip;
 
     private string currentInput = "";
     private PlayerController playerController;
+    private PauseManager pauseManager;
     private bool isSolved = false;
 
     private void Awake()
@@ -35,13 +36,30 @@ public class DigicodeManager : MonoBehaviour
         Instance = this;
         if (keypadPanel != null) keypadPanel.SetActive(false);
     }
+    
+    private void Start()
+    {
+        pauseManager = FindAnyObjectByType<PauseManager>();
+    }
+
+    private void Update()
+    {
+        if (keypadPanel != null && keypadPanel.activeSelf && !isSolved)
+        {
+            if (Keyboard.current != null && Keyboard.current.escapeKey.wasPressedThisFrame)
+            {
+                CloseKeypad();
+            }
+        }
+    }
 
     public void OpenKeypad(PlayerController player)
     {
         if (isSolved) return;
 
         playerController = player;
-        playerController.enabled = false;
+        if (playerController != null) playerController.enabled = false;
+        if (pauseManager != null) pauseManager.enabled = false;
 
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
@@ -59,6 +77,7 @@ public class DigicodeManager : MonoBehaviour
         Cursor.visible = false;
 
         if (playerController != null) playerController.enabled = true;
+        if (pauseManager != null) pauseManager.enabled = true;
     }
 
     public void AddDigit(string digit)

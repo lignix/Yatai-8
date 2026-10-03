@@ -8,6 +8,7 @@ public class EndgameFade : MonoBehaviour
     public Transform fadeTarget;
     public Image whiteFadeImage;
     public CreditsManager creditsManager;
+    private Transform mainCameraTransform;
 
     [Header("Fade Settings")]
     public float startFadeDistance = 15f;
@@ -30,6 +31,11 @@ public class EndgameFade : MonoBehaviour
         {
             playerController = player.GetComponent<PlayerController>();
         }
+
+        if (Camera.main != null)
+        {
+            mainCameraTransform = Camera.main.transform;
+        }
     }
 
     private void Update()
@@ -38,15 +44,33 @@ public class EndgameFade : MonoBehaviour
 
         float distance = Vector3.Distance(player.position, fadeTarget.position);
 
-        float targetAlpha = Mathf.InverseLerp(startFadeDistance, endFadeDistance, distance);
-        
-        targetAlpha = Mathf.SmoothStep(0f, 1f, targetAlpha);
+        float baseAlpha = Mathf.InverseLerp(startFadeDistance, endFadeDistance, distance);
+        baseAlpha = Mathf.SmoothStep(0f, 1f, baseAlpha);
+
+        float targetAlpha = baseAlpha;
+
+        if (distance > endFadeDistance && mainCameraTransform != null)
+        {
+            Vector3 directionToTarget = (fadeTarget.position - mainCameraTransform.position).normalized;
+            
+            float lookDot = Vector3.Dot(mainCameraTransform.forward, directionToTarget);
+            
+            float lookFactor = Mathf.Clamp01((lookDot + 1f) / 2f);
+
+            lookFactor = Mathf.Pow(lookFactor, 2f);
+
+            targetAlpha = baseAlpha * lookFactor;
+        }
+        else if (distance <= endFadeDistance)
+        {
+            targetAlpha = 1f;
+        }
 
         currentAlpha = Mathf.Lerp(currentAlpha, targetAlpha, Time.deltaTime * fadeSmoothing);
 
         SetImageAlpha(currentAlpha);
 
-        if (currentAlpha >= 0.98f)
+        if (currentAlpha >= 0.98f && distance <= endFadeDistance)
         {
             isFinished = true;
             SetImageAlpha(1f);

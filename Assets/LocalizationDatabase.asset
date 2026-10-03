@@ -433,3 +433,31 @@ MonoBehaviour:
     german: Gehende Studentin
     japanese: "\u6B69\u304F\u5973\u751F\u5F92"
     simplifiedChinese: "\u884C\u8D70\u7684\u5973\u5B66\u751F"
+  - key: ui_secret_letter
+    english: "If you are reading this, you have broken the loop...\nI don't know how long I've been wandering in this hallway. Today should have been my graduation day. But the train passes endlessly, and my mind crumbles a bit more with each cycle. The 'anomalies' you encountered... they are my tearing memories.\nThank you for paying attention to me. Thank you for finding me.\nNow, walk through the door and don't look back. Flee before this place claims you too."
+    french: "Si tu lis ceci, c'est que tu as réussi à briser la boucle...\nJe ne sais plus depuis combien de temps j'erre dans ce couloir. Aujourd'hui aurait dû être le jour de ma remise de diplôme. Mais le train passe inlassablement, et mon esprit s'effrite un peu plus à chaque cycle. Les \"anomalies\" que tu as croisées... ce sont mes souvenirs qui se déchirent.\nMerci d'avoir fait attention à moi. Merci de m'avoir trouvée.\nMaintenant, franchis la porte et ne te retourne pas. Fuis avant que cet endroit ne te garde toi aussi."
+    spanish: "Si estás leyendo esto, has logrado romper el bucle...\nNo sé cuánto tiempo llevo vagando por este pasillo. Hoy debería haber sido mi día de graduación. Pero el tren pasa sin fin, y mi mente se desmorona un poco más con cada ciclo. Las \"anomalías\" que encontraste... son mis recuerdos desgarrándose.\nGracias por prestarme atención. Gracias por encontrarme.\nAhora, cruza la puerta y no mires atrás. Huye antes de que este lugar te atrape a ti también."
+    german: "Wenn du dies liest, hast du die Schleife durchbrochen...\nIch weiß nicht, wie lange ich schon in diesem Flur umherirre. Heute hätte mein Abschlusstag sein sollen. Aber der Zug fährt endlos vorbei, und mein Verstand zerbröckelt mit jedem Zyklus ein wenig mehr. Die \"Anomalien\", denen du begegnet bist... das sind meine zerreißenden Erinnerungen.\nDanke, dass du auf mich geachtet hast. Danke, dass du mich gefunden hast.\nGeh jetzt durch die Tür und sieh nicht zurück. Flieh, bevor dieser Ort auch dich für immer behält."
+    japanese: "これを読んでいるなら、あなたはループを壊すことに成功したのね…\nこの廊下をどれくらい彷徨っているのか、もう分からない。今日は私の卒業式のはずだった。でも電車は絶え間なく通り過ぎ、私の心はループのたびに崩れていく。あなたが遭遇した『異変』…それは引き裂かれた私の記憶。\n私に気付いてくれてありがとう。私を見つけてくれてありがとう。\nさあ、ドアを抜けて、決して振り返らないで。あなたもこの場所に囚われてしまう前に逃げて。"
+    simplifiedChinese: "如果你在读这封信，说明你已经打破了循环……\n我不知道在这条走廊里徘徊了多久。今天本该是我的毕业典礼。但列车无休止地经过，我的理智在每一次循环中逐渐崩塌。你所遇到的“异常”……那是我支离破碎的记忆。\n谢谢你的留意。谢谢你找到了我。\n现在，穿过那扇门，千万不要回头。在这个地方将你也吞噬之前，快逃吧。"
+  - key: ui_close_paper
+    english: "Click or press ESC to close"
+    french: "Cliquez ou appuyez sur Échap pour fermer"
+    spanish: "Haz clic o pulsa ESC para cerrar"
+    german: "Klicken oder ESC drücken zum Schließen"
+    japanese: "クリックまたはESCキーで閉じる"
+    simplifiedChinese: "点击或按 ESC 关闭"
+  - key: ui_how_to_play_title
+    english: "How to Play"
+    french: "Comment jouer"
+    spanish: "Cómo jugar"
+    german: "Spielanleitung"
+    japanese: "遊び方"
+    simplifiedChinese: "玩法说明"
+  - key: ui_how_to_play_text
+    english: "1. Observe your surroundings carefully.\n2. If you find an anomaly, turn back immediately.\n3. If you don't find any anomalies, keep moving forward.\n4. Reach the end to break the loop."
+    french: "1. Observez attentivement votre environnement.\n2. Si vous trouvez une anomalie, faites demi-tour immédiatement.\n3. Si vous ne trouvez aucune anomalie, continuez d'avancer.\n4. Atteignez la fin pour briser la boucle."
+    spanish: "1. Observa tu entorno con atención.\n2. Si encuentras una anomalía, da la vuelta inmediatamente.\n3. Si no encuentras ninguna anomalía, sigue avanzando.\n4. Llega al final para romper el bucle."
+    german: "1. Beobachte deine Umgebung genau.\n2. Wenn du eine Anomalie findest, dreh sofort um.\n3. Wenn du keine Anomalien findest, geh weiter vorwärts.\n4. Erreiche das Ende, um die Schleife zu brechen."
+    japanese: "１．周囲をよく観察してください。\n２．異変を見つけたら、すぐに引き返してください。\n３．異変が見つからなければ、そのまま進んでください。\n４．最後までたどり着き、ループを壊してください。"
+    simplifiedChinese: "1. 仔细观察周围环境。\n2. 如果发现异常，请立即回头。\n3. 如果没有发现异常，请继续前进。\n4. 到达终点以打破循环。"

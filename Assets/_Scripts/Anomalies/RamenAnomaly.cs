@@ -38,7 +38,7 @@ public class RamenAnomaly : MonoBehaviour
         {
             bool interactPressed = false;
             
-            if (Keyboard.current != null)
+            if (Keyboard.current != null && !PauseManager.Instance.isPaused)
             {
                 if (Keyboard.current.eKey.wasPressedThisFrame || Keyboard.current.fKey.wasPressedThisFrame)
                 {
@@ -46,7 +46,7 @@ public class RamenAnomaly : MonoBehaviour
                 }
             }
             
-            if (Mouse.current != null)
+            if (Mouse.current != null && !PauseManager.Instance.isPaused)
             {
                 if (Mouse.current.leftButton.wasPressedThisFrame)
                 {

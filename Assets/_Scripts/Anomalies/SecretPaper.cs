@@ -54,13 +54,13 @@ public class SecretPaper : MonoBehaviour
                 
                 if (Keyboard.current != null)
                 {
-                    if (Keyboard.current.eKey.wasPressedThisFrame || Keyboard.current.fKey.wasPressedThisFrame)
+                    if (!pauseManager.isPaused && (Keyboard.current.eKey.wasPressedThisFrame || Keyboard.current.fKey.wasPressedThisFrame))
                     {
                         interactPressed = true;
                     }
                 }
                 
-                if (Mouse.current != null) 
+                if (!pauseManager.isPaused && Mouse.current != null) 
                 {
                     if (Mouse.current.leftButton.wasPressedThisFrame) 
                     {
@@ -78,12 +78,12 @@ public class SecretPaper : MonoBehaviour
         {
             bool exitPressed = false;
 
-            if (Keyboard.current != null && Keyboard.current.escapeKey.wasPressedThisFrame)
+            if (!pauseManager.isPaused && Keyboard.current != null && Keyboard.current.escapeKey.wasPressedThisFrame)
             {
                 exitPressed = true;
             }
             
-            if (Mouse.current != null && Mouse.current.leftButton.wasPressedThisFrame)
+            if (!pauseManager.isPaused && Mouse.current != null && Mouse.current.leftButton.wasPressedThisFrame)
             {
                 exitPressed = true;
             }

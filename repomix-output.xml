@@ -52,12 +52,18 @@ Assets/
       BycicleBellAnomaly.cs.meta
       CounterAnomaly.cs
       CounterAnomaly.cs.meta
+      DisableLight.cs
+      DisableLight.cs.meta
       DoorSlamAnomaly.cs
       DoorSlamAnomaly.cs.meta
       FallingPoleAnomaly.cs
       FallingPoleAnomaly.cs.meta
       FlickeringLanternsAnomaly.cs
       FlickeringLanternsAnomaly.cs.meta
+      GiantHeadAnomaly.cs
+      GiantHeadAnomaly.cs.meta
+      HidingInDoorAnomaly.cs
+      HidingInDoorAnomaly.cs.meta
       KnockingDoorAnomaly.cs
       KnockingDoorAnomaly.cs.meta
       LightFlicker.cs
@@ -66,12 +72,16 @@ Assets/
       RamenAnomaly.cs.meta
       RotatingConeAnomaly.cs
       RotatingConeAnomaly.cs.meta
+      SecretPaper.cs
+      SecretPaper.cs.meta
       TrainPassingByAnomaly.cs
       TrainPassingByAnomaly.cs.meta
       TrashAvalancheAnomaly.cs
       TrashAvalancheAnomaly.cs.meta
       TrashBagCollisionSound.cs
       TrashBagCollisionSound.cs.meta
+      WaypointWalker.cs
+      WaypointWalker.cs.meta
     AchievementManager.cs
     AchievementManager.cs.meta
     Anomalies.meta
@@ -81,6 +91,10 @@ Assets/
     AnomalyDatabase.cs.meta
     CreditsManager.cs
     CreditsManager.cs.meta
+    DigicodeInteract.cs
+    DigicodeInteract.cs.meta
+    DigicodeManager.cs
+    DigicodeManager.cs.meta
     EndgameFade.cs
     EndgameFade.cs.meta
     FadeManager.cs
@@ -107,6 +121,8 @@ Assets/
     RoomReverb.cs.meta
     SaveManager.cs
     SaveManager.cs.meta
+    SecretRoomAmbiance.cs
+    SecretRoomAmbiance.cs.meta
     SettingsManager.cs
     SettingsManager.cs.meta
     SteamManager.cs
@@ -483,6 +499,35 @@ fileFormatVersion: 2
 guid: 279ae6c8cbd6e0f49aef36158c822a66
 </file>
 
+<file path="Assets/_Scripts/Anomalies/DisableLight.cs">
+using UnityEngine;
+
+public class DisableLight : MonoBehaviour
+{
+    public Light lightSource;
+
+    private void OnEnable()
+    {
+        if (lightSource != null)
+        {
+            lightSource.enabled = false;
+        }
+    }
+    private void OnDisable()
+    {
+        if (lightSource != null)
+        {
+            lightSource.enabled = true;
+        }
+    }
+}
+</file>
+
+<file path="Assets/_Scripts/Anomalies/DisableLight.cs.meta">
+fileFormatVersion: 2
+guid: 872cd8a6e24cbcc4db951824e27bfc5e
+</file>
+
 <file path="Assets/_Scripts/Anomalies/DoorSlamAnomaly.cs">
 using System.Collections;
 using UnityEngine;
@@ -757,6 +802,146 @@ fileFormatVersion: 2
 guid: 408fcbf277962734a88ad3092d3d04ef
 </file>
 
+<file path="Assets/_Scripts/Anomalies/GiantHeadAnomaly.cs">
+using System.Collections;
+using UnityEngine;
+
+[RequireComponent(typeof(AudioSource))]
+public class GiantHeadAnomaly : MonoBehaviour
+{
+    [Header("References")]
+    public Transform headTransform; 
+
+    [Header("Settings")]
+    public float moveDistanceX = 2f;
+    public float moveDuration = 0.5f;
+
+    private AudioSource audioSource;
+    private Vector3 initialLocalPosition;
+    private bool hasTriggered = false;
+
+    private void Awake()
+    {
+        audioSource = GetComponent<AudioSource>();
+        audioSource.playOnAwake = false;
+
+        if (headTransform != null)
+        {
+            initialLocalPosition = headTransform.localPosition;
+        }
+
+        // S'assure que ce GameObject a bien un Trigger
+        Collider col = GetComponent<Collider>();
+        if (col != null) col.isTrigger = true;
+    }
+
+    private void OnEnable()
+    {
+        hasTriggered = false;
+        if (headTransform != null)
+        {
+            headTransform.localPosition = initialLocalPosition;
+        }
+    }
+
+    private void OnDisable()
+    {
+        StopAllCoroutines();
+    }
+
+    private void OnTriggerEnter(Collider other)
+    {
+        if (hasTriggered) return;
+
+        if (other.CompareTag("Player"))
+        {
+            hasTriggered = true;
+            
+            if (audioSource != null)
+            {
+                audioSource.Play();
+            }
+
+            if (headTransform != null)
+            {
+                StartCoroutine(LungeHeadRoutine());
+            }
+        }
+    }
+
+    private IEnumerator LungeHeadRoutine()
+    {
+        Vector3 startPos = headTransform.localPosition;
+        Vector3 targetPos = startPos + new Vector3(moveDistanceX, 0f, 0f);
+        float timer = 0f;
+
+        while (timer < moveDuration)
+        {
+            timer += Time.deltaTime;
+            float progress = timer / moveDuration;
+            
+            float easeOutProgress = Mathf.Sin(progress * Mathf.PI * 0.5f);
+            
+            headTransform.localPosition = Vector3.Lerp(startPos, targetPos, easeOutProgress);
+            
+            yield return null;
+        }
+
+        headTransform.localPosition = targetPos;
+    }
+}
+</file>
+
+<file path="Assets/_Scripts/Anomalies/GiantHeadAnomaly.cs.meta">
+fileFormatVersion: 2
+guid: a0f426a65bfc94645a300c5d9cb4f766
+</file>
+
+<file path="Assets/_Scripts/Anomalies/HidingInDoorAnomaly.cs">
+using System.Collections;
+using UnityEngine;
+
+public class HidingInDoorAnomaly : MonoBehaviour
+{
+    private bool hasTriggered = false;
+    public GameObject student;
+    
+    [Tooltip("Vitesse de déplacement de l'étudiante")]
+    public float moveSpeed = 2f; 
+
+    private void OnTriggerEnter(Collider other)
+    {
+        if (!hasTriggered && other.CompareTag("Player"))
+        {
+            if (student != null)
+            {
+                StartCoroutine(SmoothMoveRoutine());
+            }
+            hasTriggered = true;
+        }
+    }
+
+    private IEnumerator SmoothMoveRoutine()
+    {
+        Vector3 startPos = student.transform.position;
+        Vector3 targetPos = startPos + new Vector3(0f, 0f, 1f);
+
+        while (Vector3.Distance(student.transform.position, targetPos) > 0.01f)
+        {
+            student.transform.position = Vector3.MoveTowards(student.transform.position, targetPos, moveSpeed * Time.deltaTime);
+            yield return null;
+        }
+
+        student.transform.position = targetPos;
+    }
+}
+</file>
+
+<file path="Assets/_Scripts/Anomalies/HidingInDoorAnomaly.cs.meta">
+fileFormatVersion: 2
+guid: 8c31294638364a94e836580cff66621c
+</file>
+
 <file path="Assets/_Scripts/Anomalies/KnockingDoorAnomaly.cs">
 using System.Collections;
 using UnityEngine;
@@ -945,7 +1130,7 @@ public class RamenAnomaly : MonoBehaviour
         {
             bool interactPressed = false;
             
-            if (Keyboard.current != null)
+            if (Keyboard.current != null && !isPaused)
             {
                 if (Keyboard.current.eKey.wasPressedThisFrame || Keyboard.current.fKey.wasPressedThisFrame)
                 {
@@ -953,7 +1138,7 @@ public class RamenAnomaly : MonoBehaviour
                 }
             }
             
-            if (Mouse.current != null)
+            if (Mouse.current != null && !isPaused)
             {
                 if (Mouse.current.leftButton.wasPressedThisFrame)
                 {
@@ -1007,6 +1192,149 @@ public class RotatingConeAnomaly : MonoBehaviour
 <file path="Assets/_Scripts/Anomalies/RotatingConeAnomaly.cs.meta">
 fileFormatVersion: 2
 guid: 07104689711bfd543868be515e7e1f9e
+</file>
+
+<file path="Assets/_Scripts/Anomalies/SecretPaper.cs">
+using UnityEngine;
+using UnityEngine.InputSystem;
+
+public class SecretPaper : MonoBehaviour
+{
+    [Header("References")]
+    public Transform player;
+    public GameObject paperUIPanel;
+    public PlayerController playerController;
+    public PauseManager pauseManager;
+    public CreditsManager creditsManager;
+
+    [Header("Audio")]
+    public AudioSource pickupSound;
+
+    [Header("Settings")]
+    public float interactDistance = 1f;
+
+    private bool isReading = false;
+    private bool hasBeenRead = false;
+
+    private void OnEnable()
+    {
+        if (player == null)
+        {
+            GameObject playerObj = GameObject.FindGameObjectWithTag("Player");
+            if (playerObj != null) 
+            {
+                player = playerObj.transform;
+                playerController = playerObj.GetComponent<PlayerController>();
+            }
+        }
+        
+        if (pauseManager == null)
+        {
+            pauseManager = FindAnyObjectByType<PauseManager>();
+        }
+        
+        if (creditsManager == null)
+        {
+            creditsManager = FindAnyObjectByType<CreditsManager>();
+        }
+    }
+
+    private void Update()
+    {
+        if (player == null) return;
+
+        if (!isReading && !hasBeenRead) 
+        {
+            if (Vector3.Distance(player.position, transform.position) <= interactDistance)
+            {
+                bool interactPressed = false;
+                
+                if (Keyboard.current != null)
+                {
+                    if (!isPaused && (Keyboard.current.eKey.wasPressedThisFrame || Keyboard.current.fKey.wasPressedThisFrame))
+                    {
+                        interactPressed = true;
+                    }
+                }
+                
+                if (!isPaused && Mouse.current != null) 
+                {
+                    if (Mouse.current.leftButton.wasPressedThisFrame) 
+                    {
+                        interactPressed = true; 
+                    }
+                }
+
+                if (interactPressed) 
+                {
+                    ReadPaper();
+                }
+            }
+        }
+        else if (isReading)
+        {
+            bool exitPressed = false;
+
+            if (!isPaused && Keyboard.current != null && Keyboard.current.escapeKey.wasPressedThisFrame)
+            {
+                exitPressed = true;
+            }
+            
+            if (!isPaused && Mouse.current != null && Mouse.current.leftButton.wasPressedThisFrame)
+            {
+                exitPressed = true;
+            }
+
+            if (exitPressed)
+            {
+                CloseAndRollCredits();
+            }
+        }
+    }
+
+    private void ReadPaper()
+    {
+        isReading = true;
+        hasBeenRead = true;
+
+        if (pickupSound != null)
+        {
+            pickupSound.Play();
+        }
+
+        if (paperUIPanel != null) paperUIPanel.SetActive(true);
+
+        if (playerController != null) playerController.enabled = false;
+        if (pauseManager != null) pauseManager.enabled = false;
+    }
+
+    private void CloseAndRollCredits()
+    {
+        isReading = false;
+        if (paperUIPanel != null) paperUIPanel.SetActive(false);
+        
+        if (AchievementManager.Instance != null)
+        {
+            AchievementManager.Instance.UnlockAchievement("secret_end");
+        }
+
+        EndgameFade endgameFade = FindAnyObjectByType<EndgameFade>();
+        if (endgameFade != null)
+        {
+            endgameFade.enabled = false;
+        }
+
+        if (creditsManager != null)
+        {
+            creditsManager.StartCreditsSequence();
+        }
+    }
+}
+</file>
+
+<file path="Assets/_Scripts/Anomalies/SecretPaper.cs.meta">
+fileFormatVersion: 2
+guid: a8d7e775235f267429f28c01473c0fd7
 </file>
 
 <file path="Assets/_Scripts/Anomalies/TrainPassingByAnomaly.cs">
@@ -1263,6 +1591,75 @@ fileFormatVersion: 2
 guid: 0f284e176f93e6e48b296c1b518a8000
 </file>
 
+<file path="Assets/_Scripts/Anomalies/WaypointWalker.cs">
+using UnityEngine;
+
+public class WaypointWalker : MonoBehaviour
+{
+    public Transform[] waypoints;
+    public float moveSpeed = 2f;
+    public float turnSpeed = 8f; 
+    
+    private int currentPoint = 0;
+    private Animator anim;
+
+    void Awake()
+    {
+        anim = GetComponent<Animator>();
+    }
+
+    void OnEnable()
+    {
+        currentPoint = 0;
+        
+        if (waypoints.Length > 0 && waypoints[0] != null)
+        {
+            transform.position = waypoints[0].position;
+            transform.rotation = waypoints[0].rotation;
+        }
+
+        if (anim != null)
+        {
+            anim.SetBool("IsWalking", true);
+        }
+    }
+
+    void Update()
+    {
+        if (waypoints.Length == 0 || currentPoint >= waypoints.Length) return;
+
+        Transform target = waypoints[currentPoint];
+        
+        transform.position = Vector3.MoveTowards(transform.position, target.position, moveSpeed * Time.deltaTime);
+
+        Vector3 direction = (target.position - transform.position).normalized;
+        if (direction != Vector3.zero)
+        {
+            Quaternion lookRotation = Quaternion.LookRotation(new Vector3(direction.x, 0f, direction.z));
+            transform.rotation = Quaternion.Slerp(transform.rotation, lookRotation, Time.deltaTime * turnSpeed);
+        }
+
+        if (Vector3.Distance(transform.position, target.position) < 0.05f)
+        {
+            currentPoint++;
+
+            if (currentPoint >= waypoints.Length)
+            {
+                if (anim != null)
+                {
+                    anim.SetBool("IsWalking", false);
+                }
+            }
+        }
+    }
+}
+</file>
+
+<file path="Assets/_Scripts/Anomalies/WaypointWalker.cs.meta">
+fileFormatVersion: 2
+guid: 0ff2c39b59516c9418f0c654a9cb6a65
+</file>
+
 <file path="Assets/_Scripts/AchievementManager.cs">
 using System.Collections;
 using System.Collections.Generic;
@@ -1370,83 +1767,61 @@ fileFormatVersion: 2
 guid: 008129d65e86ccc43b6f89cad97532dd
 </file>
 
-<file path="Assets/_Scripts/EndgameFade.cs">
+<file path="Assets/_Scripts/DigicodeInteract.cs">
 using UnityEngine;
-using UnityEngine.UI;
+using UnityEngine.InputSystem;
 
-public class EndgameFade : MonoBehaviour
+public class DigicodeInteract : MonoBehaviour
 {
-    [Header("References")]
-    public Transform player;
-    public Transform fadeTarget;
-    public Image whiteFadeImage;
-    public CreditsManager creditsManager;
-
-    [Header("Fade Settings")]
-    public float startFadeDistance = 15f;
-    public float endFadeDistance = 2f;
-    public float fadeSmoothing = 3f; 
-
-    private bool isFinished = false;
-    private float currentAlpha = 0f;
+    public float interactDistance = 2.5f;
+    private Transform player;
     private PlayerController playerController;
 
-    private void Start()
+    private void OnEnable()
     {
-        if (whiteFadeImage != null)
+        if (player == null)
         {
-            whiteFadeImage.gameObject.SetActive(true);
-            SetImageAlpha(0f);
-        }
-
-        if (player != null)
-        {
-            playerController = player.GetComponent<PlayerController>();
+            GameObject p = GameObject.FindGameObjectWithTag("Player");
+            if (p != null)
+            {
+                player = p.transform;
+                playerController = p.GetComponent<PlayerController>();
+            }
         }
     }
 
     private void Update()
     {
-        if (isFinished || player == null || fadeTarget == null || whiteFadeImage == null) return;
+        if (player == null || DigicodeManager.Instance == null) return;
+        if (DigicodeManager.Instance.keypadPanel.activeSelf) return;
 
-        float distance = Vector3.Distance(player.position, fadeTarget.position);
-
-        float targetAlpha = Mathf.InverseLerp(startFadeDistance, endFadeDistance, distance);
-        
-        targetAlpha = Mathf.SmoothStep(0f, 1f, targetAlpha);
-
-        currentAlpha = Mathf.Lerp(currentAlpha, targetAlpha, Time.deltaTime * fadeSmoothing);
-
-        SetImageAlpha(currentAlpha);
-
-        if (currentAlpha >= 0.98f)
+        if (Vector3.Distance(player.position, transform.position) <= interactDistance)
         {
-            isFinished = true;
-            SetImageAlpha(1f);
-            TriggerEndgame();
-        }
-    }
+            bool interactPressed = false;
 
-    private void SetImageAlpha(float alpha)
-    {
-        Color c = whiteFadeImage.color;
-        c.a = alpha;
-        whiteFadeImage.color = c;
-    }
+            if (!isPaused && Keyboard.current != null && (Keyboard.current.eKey.wasPressedThisFrame || Keyboard.current.fKey.wasPressedThisFrame))
+                interactPressed = true;
+                
+            if (!isPaused && Mouse.current != null && Mouse.current.leftButton.wasPressedThisFrame)
+                interactPressed = true;
 
-    private void TriggerEndgame()
-    {
-        if (playerController != null)
-        {
-            playerController.enabled = false;
-        }
-
-        if (creditsManager != null) 
-        {
-            creditsManager.StartCreditsSequence();
+            if (interactPressed)
+            {
+                DigicodeManager.Instance.OpenKeypad(playerController);
+            }
         }
     }
 }
+</file>
+
+<file path="Assets/_Scripts/DigicodeInteract.cs.meta">
+fileFormatVersion: 2
+guid: 8b01bfef2adfad94e8dabc64aadbfadb
+</file>
+
+<file path="Assets/_Scripts/DigicodeManager.cs.meta">
+fileFormatVersion: 2
+guid: 246521d536c47094cb400d7650638da4
 </file>
 
 <file path="Assets/_Scripts/EndgameFade.cs.meta">
@@ -1612,6 +1987,286 @@ guid: 993b2bced0e1aa24185b8636c6ee4838
 <file path="Assets/_Scripts/PauseManager.cs.meta">
 fileFormatVersion: 2
 guid: 728a3ebbc10dc6a4ab657eb04b99bfdf
+</file>
+
+<file path="Assets/_Scripts/PlayerController.cs.meta">
+fileFormatVersion: 2
+guid: 0fd908d732cf8aa4fbcb1e177ef991e1
+</file>
+
+<file path="Assets/_Scripts/PlayerFootsteps.cs.meta">
+fileFormatVersion: 2
+guid: 72fb10457fccc6947911034423f1301f
+</file>
+
+<file path="Assets/_Scripts/RoomReverb.cs">
+using UnityEngine;
+
+[RequireComponent(typeof(BoxCollider))]
+public class RoomReverb : MonoBehaviour
+{
+    [Header("Reverb Settings")]
+    public AudioReverbPreset roomPreset = AudioReverbPreset.StoneCorridor;
+
+    private AudioReverbFilter playerReverb;
+
+    private void OnTriggerEnter(Collider other)
+    {
+        // Activates and configures the reverb filter when the player enters the room
+        if (other.CompareTag("Player"))
+        {
+            playerReverb = other.GetComponentInChildren<AudioReverbFilter>();
+
+            if (playerReverb == null)
+            {
+                playerReverb = other.gameObject.AddComponent<AudioReverbFilter>();
+            }
+
+            playerReverb.reverbPreset = roomPreset;
+            playerReverb.enabled = true;
+        }
+    }
+
+    private void OnTriggerExit(Collider other)
+    {
+        // Disables the reverb effect as soon as the player leaves the BoxCollider
+        if (other.CompareTag("Player") && playerReverb != null)
+        {
+            playerReverb.enabled = false;
+        }
+    }
+}
+</file>
+
+<file path="Assets/_Scripts/RoomReverb.cs.meta">
+fileFormatVersion: 2
+guid: f5f8382d1af8419408468e5b77148ad3
+</file>
+
+<file path="Assets/_Scripts/SaveManager.cs.meta">
+fileFormatVersion: 2
+guid: ee5573890d8e6634d99e8349e671d81a
+</file>
+
+<file path="Assets/_Scripts/SecretRoomAmbiance.cs">
+using System.Collections;
+using UnityEngine;
+
+public class SecretRoomAmbiance : MonoBehaviour
+{
+    public AudioSource[] outsideSounds;
+
+    public AudioSource classroomAmbiance;
+
+    [Header("Settings")]
+    public float fadeDuration = 2.5f;
+
+    public GameObject blockerCollider;
+    private bool hasTriggered = false;
+
+    private void Start()
+    {
+        if (blockerCollider != null)
+        {
+            blockerCollider.SetActive(false);
+        }
+    }
+
+    private void OnTriggerEnter(Collider other)
+    {
+        if (!hasTriggered && other.CompareTag("Player"))
+        {
+            hasTriggered = true;
+            StartCoroutine(TransitionAmbianceRoutine());
+            if (blockerCollider != null)
+            {
+                blockerCollider.SetActive(true);
+            }
+        }
+    }
+
+    private IEnumerator TransitionAmbianceRoutine()
+    {
+        float classTargetVol = 0f;
+        if (classroomAmbiance != null)
+        {
+            classTargetVol = classroomAmbiance.volume;
+            classroomAmbiance.volume = 0f;
+            classroomAmbiance.Play();
+        }
+
+        float[] startVolumes = new float[outsideSounds.Length];
+        for (int i = 0; i < outsideSounds.Length; i++)
+        {
+            if (outsideSounds[i] != null) 
+            {
+                startVolumes[i] = outsideSounds[i].volume;
+            }
+        }
+
+        float timer = 0f;
+        while (timer < fadeDuration)
+        {
+            timer += Time.deltaTime;
+            float progress = timer / fadeDuration;
+
+            for (int i = 0; i < outsideSounds.Length; i++)
+            {
+                if (outsideSounds[i] != null)
+                {
+                    outsideSounds[i].volume = Mathf.Lerp(startVolumes[i], 0f, progress);
+                }
+            }
+
+            if (classroomAmbiance != null)
+            {
+                classroomAmbiance.volume = Mathf.Lerp(0f, classTargetVol, progress);
+            }
+
+            yield return null;
+        }
+
+        foreach (AudioSource audio in outsideSounds)
+        {
+            if (audio != null) audio.Stop();
+        }
+    }
+}
+</file>
+
+<file path="Assets/_Scripts/SecretRoomAmbiance.cs.meta">
+fileFormatVersion: 2
+guid: 1c548bd53a49b644693c67fafbc8bd24
+</file>
+
+<file path="Assets/_Scripts/SettingsManager.cs.meta">
+fileFormatVersion: 2
+guid: e8c80499fb745f947acdd17bc4aa31fd
+</file>
+
+<file path="Assets/_Scripts/SteamManager.cs">
+using UnityEngine;
+using Steamworks;
+
+[DisallowMultipleComponent]
+public class SteamManager : MonoBehaviour
+{
+    private static SteamManager s_instance;
+
+    public static bool Initialized => s_instance != null && s_instance.m_bInitialized;
+
+    private bool m_bInitialized;
+    private SteamAPIWarningMessageHook_t m_SteamAPIWarningMessageHook;
+
+    private static void SteamAPIDebugTextHook(int nSeverity, System.Text.StringBuilder pchDebugText)
+    {
+        Debug.LogWarning(pchDebugText);
+    }
+
+    private void Awake()
+    {
+        if (s_instance != null)
+        {
+            Destroy(gameObject);
+            return;
+        }
+
+        s_instance = this;
+        DontDestroyOnLoad(gameObject);
+
+        if (!Packsize.Test())
+        {
+            Debug.LogError("[Steamworks.NET] Packsize Test failed.");
+            return;
+        }
+
+        if (!DllCheck.Test())
+        {
+            Debug.LogError("[Steamworks.NET] DllCheck Test failed.");
+            return;
+        }
+
+        try
+        {
+            if (SteamAPI.RestartAppIfNecessary((AppId_t)5080810))
+            {
+                Application.Quit();
+                return;
+            }
+        }
+        catch (System.DllNotFoundException e)
+        {
+            Debug.LogError("[Steamworks.NET] Could not load steam_api.dll/so/dylib: " + e);
+            return;
+        }
+
+        m_bInitialized = SteamAPI.Init();
+        if (!m_bInitialized)
+        {
+            Debug.LogError("[Steamworks.NET] SteamAPI_Init() failed.");
+            return;
+        }
+    }
+
+    private void OnEnable()
+    {
+        if (s_instance == null) s_instance = this;
+
+        if (!m_bInitialized) return;
+
+        if (m_SteamAPIWarningMessageHook == null)
+        {
+            m_SteamAPIWarningMessageHook = new SteamAPIWarningMessageHook_t(SteamAPIDebugTextHook);
+            SteamClient.SetWarningMessageHook(m_SteamAPIWarningMessageHook);
+        }
+    }
+
+    private void OnDestroy()
+    {
+        if (s_instance != this) return;
+
+        s_instance = null;
+
+        if (!m_bInitialized) return;
+
+        SteamAPI.Shutdown();
+    }
+
+    private void Update()
+    {
+        if (!m_bInitialized) return;
+
+        SteamAPI.RunCallbacks();
+    }
+}
+</file>
+
+<file path="Assets/_Scripts/SteamManager.cs.meta">
+fileFormatVersion: 2
+guid: d967b9578c3c6954481707ca0b1b7b91
+</file>
+
+<file path="Assets/_Scripts/LocalizationDatabase.cs">
+using System.Collections.Generic;
+using UnityEngine;
+
+[CreateAssetMenu(fileName = "LocalizationDatabase", menuName = "Game/Localization Database")]
+public class LocalizationDatabase : ScriptableObject
+{
+    [System.Serializable]
+    public class Translation
+    {
+        public string key;
+        public string english;
+        public string french;
+        public string spanish;
+        public string german;
+        public string japanese;
+        public string simplifiedChinese;
+    }
+
+    public List<Translation> translations = new List<Translation>();
+}
 </file>
 
 <file path="Assets/_Scripts/PlayerController.cs">
@@ -1821,11 +2476,6 @@ public class PlayerController : MonoBehaviour
 }
 </file>
 
-<file path="Assets/_Scripts/PlayerController.cs.meta">
-fileFormatVersion: 2
-guid: 0fd908d732cf8aa4fbcb1e177ef991e1
-</file>
-
 <file path="Assets/_Scripts/PlayerFootsteps.cs">
 using UnityEngine;
 
@@ -1895,165 +2545,70 @@ public class PlayerFootsteps : MonoBehaviour
 }
 </file>
 
-<file path="Assets/_Scripts/PlayerFootsteps.cs.meta">
-fileFormatVersion: 2
-guid: 72fb10457fccc6947911034423f1301f
-</file>
-
-<file path="Assets/_Scripts/RoomReverb.cs">
+<file path="Assets/_Scripts/SaveManager.cs">
+using System.Collections.Generic;
+using System.IO;
 using UnityEngine;
 
-[RequireComponent(typeof(BoxCollider))]
-public class RoomReverb : MonoBehaviour
+[System.Serializable]
+public class SaveData
 {
-    [Header("Reverb Settings")]
-    public AudioReverbPreset roomPreset = AudioReverbPreset.StoneCorridor;
-
-    private AudioReverbFilter playerReverb;
-
-    private void OnTriggerEnter(Collider other)
-    {
-        // Activates and configures the reverb filter when the player enters the room
-        if (other.CompareTag("Player"))
-        {
-            playerReverb = other.GetComponentInChildren<AudioReverbFilter>();
-
-            if (playerReverb == null)
-            {
-                playerReverb = other.gameObject.AddComponent<AudioReverbFilter>();
-            }
-
-            playerReverb.reverbPreset = roomPreset;
-            playerReverb.enabled = true;
-        }
-    }
-
-    private void OnTriggerExit(Collider other)
-    {
-        // Disables the reverb effect as soon as the player leaves the BoxCollider
-        if (other.CompareTag("Player") && playerReverb != null)
-        {
-            playerReverb.enabled = false;
-        }
-    }
+    public List<int> unlockedAnomalies = new List<int>();
 }
-</file>
 
-<file path="Assets/_Scripts/RoomReverb.cs.meta">
-fileFormatVersion: 2
-guid: f5f8382d1af8419408468e5b77148ad3
-</file>
-
-<file path="Assets/_Scripts/SaveManager.cs.meta">
-fileFormatVersion: 2
-guid: ee5573890d8e6634d99e8349e671d81a
-</file>
-
-<file path="Assets/_Scripts/SettingsManager.cs.meta">
-fileFormatVersion: 2
-guid: e8c80499fb745f947acdd17bc4aa31fd
-</file>
-
-<file path="Assets/_Scripts/SteamManager.cs">
-using UnityEngine;
-using Steamworks;
-
-[DisallowMultipleComponent]
-public class SteamManager : MonoBehaviour
+public static class SaveManager
 {
-    private static SteamManager s_instance;
+    private static string SaveFilePath => Path.Combine(Application.persistentDataPath, "save.json");
 
-    public static bool Initialized => s_instance != null && s_instance.m_bInitialized;
-
-    private bool m_bInitialized;
-    private SteamAPIWarningMessageHook_t m_SteamAPIWarningMessageHook;
-
-    private static void SteamAPIDebugTextHook(int nSeverity, System.Text.StringBuilder pchDebugText)
+    public static void Save(List<int> unlockedList)
     {
-        Debug.LogWarning(pchDebugText);
-    }
-
-    private void Awake()
-    {
-        if (s_instance != null)
-        {
-            Destroy(gameObject);
-            return;
-        }
-
-        s_instance = this;
-        DontDestroyOnLoad(gameObject);
-
-        if (!Packsize.Test())
-        {
-            Debug.LogError("[Steamworks.NET] Packsize Test failed.");
-            return;
-        }
-
-        if (!DllCheck.Test())
-        {
-            Debug.LogError("[Steamworks.NET] DllCheck Test failed.");
-            return;
-        }
+        SaveData data = new SaveData { unlockedAnomalies = unlockedList };
+        string json = JsonUtility.ToJson(data, true);
 
         try
         {
-            if (SteamAPI.RestartAppIfNecessary((AppId_t)5080810))
+            File.WriteAllText(SaveFilePath, json);
+        }
+        catch (System.Exception e)
+        {
+            Debug.LogError($"Error saving game to JSON: {e.Message}");
+        }
+    }
+
+    public static List<int> Load()
+    {
+        if (File.Exists(SaveFilePath))
+        {
+            try
             {
-                Application.Quit();
-                return;
+                string json = File.ReadAllText(SaveFilePath);
+                SaveData data = JsonUtility.FromJson<SaveData>(json);
+                return data != null ? data.unlockedAnomalies : new List<int>();
+            }
+            catch (System.Exception e)
+            {
+                Debug.LogError($"Error loading game from JSON: {e.Message}");
+                return new List<int>();
             }
         }
-        catch (System.DllNotFoundException e)
-        {
-            Debug.LogError("[Steamworks.NET] Could not load steam_api.dll/so/dylib: " + e);
-            return;
-        }
-
-        m_bInitialized = SteamAPI.Init();
-        if (!m_bInitialized)
-        {
-            Debug.LogError("[Steamworks.NET] SteamAPI_Init() failed.");
-            return;
-        }
+        return new List<int>();
     }
 
-    private void OnEnable()
+    public static void DeleteSave()
     {
-        if (s_instance == null) s_instance = this;
-
-        if (!m_bInitialized) return;
-
-        if (m_SteamAPIWarningMessageHook == null)
+        if (File.Exists(SaveFilePath))
         {
-            m_SteamAPIWarningMessageHook = new SteamAPIWarningMessageHook_t(SteamAPIDebugTextHook);
-            SteamClient.SetWarningMessageHook(m_SteamAPIWarningMessageHook);
+            try
+            {
+                File.Delete(SaveFilePath);
+            }
+            catch (System.Exception e)
+            {
+                Debug.LogError($"Error deleting save file: {e.Message}");
+            }
         }
-    }
-
-    private void OnDestroy()
-    {
-        if (s_instance != this) return;
-
-        s_instance = null;
-
-        if (!m_bInitialized) return;
-
-        SteamAPI.Shutdown();
-    }
-
-    private void Update()
-    {
-        if (!m_bInitialized) return;
-
-        SteamAPI.RunCallbacks();
     }
 }
-</file>
-
-<file path="Assets/_Scripts/SteamManager.cs.meta">
-fileFormatVersion: 2
-guid: d967b9578c3c6954481707ca0b1b7b91
 </file>
 
 <file path="Assets/_Scripts/CreditsManager.cs">
@@ -2067,7 +2622,10 @@ public class CreditsManager : MonoBehaviour
     [Header("References")]
     public Image fullScreenImage;
     public RectTransform creditsPanel;
-    public Behaviour[] componentsToDisable;
+    
+    [Header("UI Elements")]
+    public GameObject skipButton; 
+    private CanvasGroup skipButtonCanvasGroup;
 
     [Header("Timings")]
     public float fadeToBlackDuration = 2f;
@@ -2078,16 +2636,30 @@ public class CreditsManager : MonoBehaviour
     public float scrollSpeed = 100f;
     public float endPositionY = 2500f;
 
+    private float initialVolume;
+
+    private void Start()
+    {
+        if (skipButton != null)
+        {
+            skipButtonCanvasGroup = skipButton.GetComponent<CanvasGroup>();
+            
+            if (skipButtonCanvasGroup == null)
+            {
+                skipButtonCanvasGroup = skipButton.AddComponent<CanvasGroup>();
+            }
+
+            skipButtonCanvasGroup.alpha = 0f;
+            skipButtonCanvasGroup.interactable = false;
+            skipButtonCanvasGroup.blocksRaycasts = false;
+            
+            skipButton.SetActive(false);
+        }
+    }
+
     public void StartCreditsSequence()
     {
-        foreach (Behaviour comp in componentsToDisable)
-        {
-            if (comp != null)
-            {
-                comp.enabled = false;
-            }
-        }
-
+        initialVolume = AudioListener.volume;
         StartCoroutine(CreditsRoutine());
     }
 
@@ -2097,17 +2669,41 @@ public class CreditsManager : MonoBehaviour
         {
             AchievementManager.Instance.UnlockAchievement("end");
         }
+        
         float timer = 0f;
         Color startColor = fullScreenImage.color;
         Color targetColor = Color.black;
 
+        if (skipButton != null)
+        {
+            skipButton.SetActive(true);
+        }
+
         while (timer < fadeToBlackDuration)
         {
             timer += Time.deltaTime;
-            fullScreenImage.color = Color.Lerp(startColor, targetColor, timer / fadeToBlackDuration);
+            float progress = timer / fadeToBlackDuration;
+            
+            fullScreenImage.color = Color.Lerp(startColor, targetColor, progress);
+            AudioListener.volume = Mathf.Lerp(initialVolume, 0f, progress);
+
+            if (skipButtonCanvasGroup != null)
+            {
+                skipButtonCanvasGroup.alpha = progress;
+            }
+
             yield return null;
         }
+        
         fullScreenImage.color = targetColor;
+        AudioListener.volume = 0f;
+
+        if (skipButtonCanvasGroup != null)
+        {
+            skipButtonCanvasGroup.alpha = 1f;
+            skipButtonCanvasGroup.interactable = true;
+            skipButtonCanvasGroup.blocksRaycasts = true;
+        }
 
         yield return new WaitForSeconds(waitBeforeCredits);
 
@@ -2124,36 +2720,316 @@ public class CreditsManager : MonoBehaviour
 
         yield return new WaitForSeconds(delayAfterScroll);
 
-        SceneManager.LoadScene("Menu");
+        LoadMenu();
     }
+
     public void SkipCredits()
     {
         StopAllCoroutines();
+        LoadMenu();
+    }
+
+    private void LoadMenu()
+    {
+        AudioListener.volume = initialVolume;
         SceneManager.LoadScene("Menu");
     }
 }
 </file>
 
-<file path="Assets/_Scripts/LocalizationDatabase.cs">
-using System.Collections.Generic;
+<file path="Assets/_Scripts/DigicodeManager.cs">
+using System.Collections;
 using UnityEngine;
+using TMPro;
+using UnityEngine.InputSystem;
 
-[CreateAssetMenu(fileName = "LocalizationDatabase", menuName = "Game/Localization Database")]
-public class LocalizationDatabase : ScriptableObject
+public class DigicodeManager : MonoBehaviour
 {
-    [System.Serializable]
-    public class Translation
+    public static DigicodeManager Instance;
+
+    [Header("UI References")]
+    public GameObject keypadPanel;
+    public TMP_Text displayCode;
+
+    [Header("Audio Feedback")]
+    public AudioSource audioSource;
+    public AudioClip[] buttonBeepClips;
+    public AudioClip errorClip;
+    public AudioClip successClip;
+
+    [Header("Door Settings")]
+    public string secretCode = "260315";
+    public string placeholderKey = "ui_keypad_format";
+    public Transform secretDoor;
+    public Vector3 openRotation = new Vector3(-90f, 0f, 30f);
+    public float openSpeed = 100f;
+    public AudioSource doorAudioSource;
+    public AudioClip doorOpenClip;
+
+    private string currentInput = "";
+    private PlayerController playerController;
+    private PauseManager pauseManager;
+    private bool isSolved = false;
+
+    private void Awake()
     {
-        public string key;
-        public string english;
-        public string french;
-        public string spanish;
-        public string german;
-        public string japanese;
-        public string simplifiedChinese;
+        Instance = this;
+        if (keypadPanel != null) keypadPanel.SetActive(false);
+    }
+    
+    private void Start()
+    {
+        pauseManager = FindAnyObjectByType<PauseManager>();
     }
 
-    public List<Translation> translations = new List<Translation>();
+    private void Update()
+    {
+        if (keypadPanel != null && keypadPanel.activeSelf && !isSolved)
+        {
+            if (Keyboard.current != null && Keyboard.current.escapeKey.wasPressedThisFrame)
+            {
+                CloseKeypad();
+            }
+        }
+    }
+
+    public void OpenKeypad(PlayerController player)
+    {
+        if (isSolved) return;
+
+        playerController = player;
+        if (playerController != null) playerController.enabled = false;
+        if (pauseManager != null) pauseManager.enabled = false;
+
+        Cursor.lockState = CursorLockMode.None;
+        Cursor.visible = true;
+
+        ClearInputSilent();
+
+        if (keypadPanel != null) keypadPanel.SetActive(true);
+    }
+
+    public void CloseKeypad()
+    {
+        if (keypadPanel != null) keypadPanel.SetActive(false);
+
+        Cursor.lockState = CursorLockMode.Locked;
+        Cursor.visible = false;
+
+        if (playerController != null) playerController.enabled = true;
+        if (pauseManager != null) pauseManager.enabled = true;
+    }
+
+    public void AddDigit(string digit)
+    {
+        PlayRandomBeep();
+
+        if (currentInput.Length < 6)
+        {
+            if (currentInput.Length == 0)
+            {
+                displayCode.color = Color.white;
+            }
+            currentInput += digit;
+            displayCode.text = currentInput;
+        }
+    }
+
+    public void ClearInput()
+    {
+        PlayRandomBeep();
+        ClearInputSilent();
+    }
+
+    private void ClearInputSilent()
+    {
+        currentInput = "";
+
+        if (LocalizationManager.Instance != null)
+        {
+            displayCode.text = LocalizationManager.Instance.GetTranslation(placeholderKey);
+        }
+        else
+        {
+            displayCode.text = "AA/MM/JJ";
+        }
+
+        displayCode.color = Color.gray;
+    }
+
+    public void ValidateOrClose()
+    {
+        if (string.IsNullOrEmpty(currentInput))
+        {
+            PlayRandomBeep();
+            CloseKeypad();
+            return;
+        }
+
+        if (currentInput == secretCode)
+        {
+            isSolved = true;
+            displayCode.text = "OK";
+            displayCode.color = Color.green;
+            StartCoroutine(UnlockSequence());
+        }
+        else
+        {
+            if (audioSource != null && errorClip != null)
+            {
+                audioSource.PlayOneShot(errorClip);
+            }
+            CloseKeypad();
+        }
+    }
+
+    private void PlayRandomBeep()
+    {
+        if (audioSource != null && buttonBeepClips != null && buttonBeepClips.Length > 0)
+        {
+            int randomIndex = Random.Range(0, buttonBeepClips.Length);
+            audioSource.PlayOneShot(buttonBeepClips[randomIndex]);
+        }
+    }
+
+    private IEnumerator UnlockSequence()
+    {
+        if (audioSource != null && successClip != null)
+        {
+            audioSource.PlayOneShot(successClip);
+        }
+        yield return new WaitForSeconds(0.5f);
+        CloseKeypad();
+
+        if (doorAudioSource != null && doorOpenClip != null)
+        {
+            doorAudioSource.PlayOneShot(doorOpenClip);
+        }
+
+        if (AchievementManager.Instance != null)
+        {
+            AchievementManager.Instance.UnlockAchievement("secret_end");
+        }
+
+        if (secretDoor != null)
+        {
+            Quaternion startRot = secretDoor.localRotation;
+            Quaternion targetRot = Quaternion.Euler(openRotation);
+            float t = 0f;
+
+            while (t < 1f)
+            {
+                t += Time.deltaTime * openSpeed;
+                secretDoor.localRotation = Quaternion.Slerp(startRot, targetRot, t);
+                yield return null;
+            }
+
+            secretDoor.localRotation = targetRot;
+        }
+    }
+}
+</file>
+
+<file path="Assets/_Scripts/EndgameFade.cs">
+using UnityEngine;
+using UnityEngine.UI;
+
+public class EndgameFade : MonoBehaviour
+{
+    [Header("References")]
+    public Transform player;
+    public Transform fadeTarget;
+    public Image whiteFadeImage;
+    public CreditsManager creditsManager;
+    private Transform mainCameraTransform;
+
+    [Header("Fade Settings")]
+    public float startFadeDistance = 15f;
+    public float endFadeDistance = 2f;
+    public float fadeSmoothing = 3f; 
+
+    private bool isFinished = false;
+    private float currentAlpha = 0f;
+    private PlayerController playerController;
+
+    private void Start()
+    {
+        if (whiteFadeImage != null)
+        {
+            whiteFadeImage.gameObject.SetActive(true);
+            SetImageAlpha(0f);
+        }
+
+        if (player != null)
+        {
+            playerController = player.GetComponent<PlayerController>();
+        }
+
+        if (Camera.main != null)
+        {
+            mainCameraTransform = Camera.main.transform;
+        }
+    }
+
+    private void Update()
+    {
+        if (isFinished || player == null || fadeTarget == null || whiteFadeImage == null) return;
+
+        float distance = Vector3.Distance(player.position, fadeTarget.position);
+
+        float baseAlpha = Mathf.InverseLerp(startFadeDistance, endFadeDistance, distance);
+        baseAlpha = Mathf.SmoothStep(0f, 1f, baseAlpha);
+
+        float targetAlpha = baseAlpha;
+
+        if (distance > endFadeDistance && mainCameraTransform != null)
+        {
+            Vector3 directionToTarget = (fadeTarget.position - mainCameraTransform.position).normalized;
+            
+            float lookDot = Vector3.Dot(mainCameraTransform.forward, directionToTarget);
+            
+            float lookFactor = Mathf.Clamp01((lookDot + 1f) / 2f);
+
+            lookFactor = Mathf.Pow(lookFactor, 2f);
+
+            targetAlpha = baseAlpha * lookFactor;
+        }
+        else if (distance <= endFadeDistance)
+        {
+            targetAlpha = 1f;
+        }
+
+        currentAlpha = Mathf.Lerp(currentAlpha, targetAlpha, Time.deltaTime * fadeSmoothing);
+
+        SetImageAlpha(currentAlpha);
+
+        if (currentAlpha >= 0.98f && distance <= endFadeDistance)
+        {
+            isFinished = true;
+            SetImageAlpha(1f);
+            TriggerEndgame();
+        }
+    }
+
+    private void SetImageAlpha(float alpha)
+    {
+        Color c = whiteFadeImage.color;
+        c.a = alpha;
+        whiteFadeImage.color = c;
+    }
+
+    private void TriggerEndgame()
+    {
+        if (playerController != null)
+        {
+            playerController.enabled = false;
+        }
+
+        if (creditsManager != null) 
+        {
+            creditsManager.StartCreditsSequence();
+        }
+    }
 }
 </file>
 
@@ -2175,12 +3051,37 @@ public class LocalizationManager : MonoBehaviour
         if (Instance == null)
         {
             Instance = this;
-            currentLanguageIndex = PlayerPrefs.GetInt("LanguagePref", 0); 
+            
+            // if first time running game
+            if (!PlayerPrefs.HasKey("LanguagePref"))
+            {
+                currentLanguageIndex = GetSystemLanguageIndex();
+                PlayerPrefs.SetInt("LanguagePref", currentLanguageIndex);
+            }
+            else
+            {
+                currentLanguageIndex = PlayerPrefs.GetInt("LanguagePref", 0); 
+            }
+            
             DontDestroyOnLoad(gameObject);
         }
         else
         {
             Destroy(gameObject);
+        }
+    }
+
+    private int GetSystemLanguageIndex()
+    {
+        switch (Application.systemLanguage)
+        {
+            case SystemLanguage.French: return 1;
+            case SystemLanguage.Spanish: return 2;
+            case SystemLanguage.German: return 3;
+            case SystemLanguage.Japanese: return 4;
+            case SystemLanguage.ChineseSimplified: return 5;
+            case SystemLanguage.Chinese: return 5;
+            default: return 0;
         }
     }
 
@@ -2215,6 +3116,64 @@ public class LocalizationManager : MonoBehaviour
 }
 </file>
 
+<file path="Assets/_Scripts/LoopTrigger.cs">
+using UnityEngine;
+
+public class LoopTrigger : MonoBehaviour
+{
+    public Transform destinationTrigger;
+    public Transform endgameDestinationTrigger;
+
+    public bool isForwardExit;
+
+    private static float cooldownTimer = 0f;
+
+    private void OnTriggerEnter(Collider other)
+    {
+        if (Time.time < cooldownTimer) return;
+
+        if (other.CompareTag("Player"))
+        {
+            CharacterController cc = other.GetComponent<CharacterController>();
+            if (cc != null)
+            {
+                cooldownTimer = Time.time + 0.2f;
+
+                GameManager.Instance.CheckPlayerChoice(isForwardExit);
+
+                Vector3 localPos = transform.InverseTransformPoint(other.transform.position);
+
+                if (!isForwardExit)
+                {
+                    localPos.x = -localPos.x;
+                    localPos.z = -localPos.z;
+                }
+
+                Transform targetDestination = destinationTrigger;
+
+                if (GameManager.Instance.currentLevel >= GameManager.Instance.winLevel)
+                {
+                    targetDestination = endgameDestinationTrigger;
+                }
+
+                Vector3 worldDestination = targetDestination.TransformPoint(localPos);
+
+                cc.enabled = false;
+                other.transform.position = worldDestination;
+
+                if (!isForwardExit)
+                {
+                    other.transform.Rotate(0, 180, 0);
+                }
+
+                Physics.SyncTransforms();
+                cc.enabled = true;
+            }
+        }
+    }
+}
+</file>
+
 <file path="Assets/_Scripts/MenuManager.cs">
 using System.Collections.Generic;
 using TMPro;
@@ -2231,6 +3190,7 @@ public class MenuManager : MonoBehaviour
     public GameObject mainPanel;
     public GameObject optionsPanel;
     public GameObject anomaliesPanel;
+    public GameObject howToPlayPanel;
 
     [Header("Anomalies Menu")]
     public TMP_Text progressText;
@@ -2249,17 +3209,38 @@ public class MenuManager : MonoBehaviour
 
     public void ShowPanel(GameObject panelToShow)
     {
-        mainPanel.SetActive(false);
-        optionsPanel.SetActive(false);
-        anomaliesPanel.SetActive(false);
+        if (mainPanel != null) mainPanel.SetActive(false);
+        if (optionsPanel != null) optionsPanel.SetActive(false);
+        if (anomaliesPanel != null) anomaliesPanel.SetActive(false);
+        if (howToPlayPanel != null) howToPlayPanel.SetActive(false);
 
-        panelToShow.SetActive(true);
+        if (panelToShow != null) panelToShow.SetActive(true);
         ResetDeleteButton();
 
         if (panelToShow == anomaliesPanel)
         {
             RefreshAnomalyList();
         }
+    }
+
+    public void OpenHowToPlay()
+    {
+        ShowPanel(howToPlayPanel);
+    }
+
+    public void OpenOptions()
+    {
+        ShowPanel(optionsPanel);
+    }
+
+    public void OpenAnomalies()
+    {
+        ShowPanel(anomaliesPanel);
+    }
+
+    public void BackToMainMenu()
+    {
+        ShowPanel(mainPanel);
     }
 
     public void PlayGame()
@@ -2385,133 +3366,9 @@ public class MenuManager : MonoBehaviour
     private void OnLanguageChanged()
     {
         ResetDeleteButton();
-        if (anomaliesPanel.activeSelf)
+        if (anomaliesPanel != null && anomaliesPanel.activeSelf)
         {
             RefreshAnomalyList();
-        }
-    }
-}
-</file>
-
-<file path="Assets/_Scripts/SaveManager.cs">
-using System.Collections.Generic;
-using System.IO;
-using UnityEngine;
-
-[System.Serializable]
-public class SaveData
-{
-    public List<int> unlockedAnomalies = new List<int>();
-}
-
-public static class SaveManager
-{
-    private static string SaveFilePath => Path.Combine(Application.persistentDataPath, "save.json");
-
-    public static void Save(List<int> unlockedList)
-    {
-        SaveData data = new SaveData { unlockedAnomalies = unlockedList };
-        string json = JsonUtility.ToJson(data, true);
-
-        try
-        {
-            File.WriteAllText(SaveFilePath, json);
-        }
-        catch (System.Exception e)
-        {
-            Debug.LogError($"Error saving game to JSON: {e.Message}");
-        }
-    }
-
-    public static List<int> Load()
-    {
-        if (File.Exists(SaveFilePath))
-        {
-            try
-            {
-                string json = File.ReadAllText(SaveFilePath);
-                SaveData data = JsonUtility.FromJson<SaveData>(json);
-                return data != null ? data.unlockedAnomalies : new List<int>();
-            }
-            catch (System.Exception e)
-            {
-                Debug.LogError($"Error loading game from JSON: {e.Message}");
-                return new List<int>();
-            }
-        }
-        return new List<int>();
-    }
-
-    public static void DeleteSave()
-    {
-        if (File.Exists(SaveFilePath))
-        {
-            try
-            {
-                File.Delete(SaveFilePath);
-            }
-            catch (System.Exception e)
-            {
-                Debug.LogError($"Error deleting save file: {e.Message}");
-            }
-        }
-    }
-}
-</file>
-
-<file path="Assets/_Scripts/LoopTrigger.cs">
-using UnityEngine;
-
-public class LoopTrigger : MonoBehaviour
-{
-    public Transform destinationTrigger;
-    public Transform endgameDestinationTrigger;
-
-    public bool isForwardExit;
-
-    private static float cooldownTimer = 0f;
-
-    private void OnTriggerEnter(Collider other)
-    {
-        if (Time.time < cooldownTimer) return;
-
-        if (other.CompareTag("Player"))
-        {
-            CharacterController cc = other.GetComponent<CharacterController>();
-            if (cc != null)
-            {
-                cooldownTimer = Time.time + 0.2f;
-
-                GameManager.Instance.CheckPlayerChoice(isForwardExit);
-
-                Vector3 localPos = transform.InverseTransformPoint(other.transform.position);
-
-                if (!isForwardExit)
-                {
-                    localPos.x = -localPos.x;
-                    localPos.z = -localPos.z;
-                }
-
-                Transform targetDestination = destinationTrigger;
-
-                if (GameManager.Instance.currentLevel >= GameManager.Instance.winLevel)
-                {
-                    targetDestination = endgameDestinationTrigger;
-                }
-
-                Vector3 worldDestination = targetDestination.TransformPoint(localPos);
-
-                cc.enabled = false;
-                other.transform.position = worldDestination;
-
-                if (!isForwardExit)
-                {
-                    other.transform.Rotate(0, 180, 0);
-                }
-
-                Physics.SyncTransforms();
-                cc.enabled = true;
-            }
         }
     }
 }
@@ -2644,126 +3501,6 @@ public class AnomalyController : MonoBehaviour
             }
         }
         SaveManager.Save(unlockedIndexes);
-    }
-}
-</file>
-
-<file path="Assets/_Scripts/PauseManager.cs">
-using System.Collections.Generic;
-using TMPro;
-using UnityEngine;
-using UnityEngine.InputSystem;
-using UnityEngine.SceneManagement;
-
-public class PauseManager : MonoBehaviour
-{
-    [Header("Panels")]
-    public GameObject pausePanel;
-    public GameObject optionsPanel;
-
-    [Header("Progress UI")]
-    public TMP_Text progressText;
-    public AnomalyDatabase database;
-
-    [Header("UI to Hide")]
-    public GameObject deleteSaveButton;
-
-    private bool isPaused = false;
-
-    private void Start()
-    {
-        pausePanel.SetActive(false);
-        if (optionsPanel != null) optionsPanel.SetActive(false);
-        if (deleteSaveButton != null) deleteSaveButton.SetActive(false);
-
-        SetCursorState(true);
-    }
-
-    private void Update()
-    {
-        if (Keyboard.current != null && Keyboard.current.escapeKey.wasPressedThisFrame)
-        {
-            if (optionsPanel != null && optionsPanel.activeSelf)
-            {
-                CloseOptions();
-            }
-            else
-            {
-                TogglePause();
-            }
-        }
-    }
-
-    private void OnEnable()
-    {
-        LocalizationManager.LanguageChangedEvent += UpdateProgressText;
-    }
-
-    private void OnDisable()
-    {
-        LocalizationManager.LanguageChangedEvent -= UpdateProgressText;
-    }
-
-    public void TogglePause()
-    {
-        isPaused = !isPaused;
-        pausePanel.SetActive(isPaused);
-
-        Time.timeScale = isPaused ? 0f : 1f;
-        AudioListener.pause = isPaused;
-
-        SetCursorState(!isPaused);
-
-        PlayerController playerController = FindAnyObjectByType<PlayerController>();
-        if (playerController != null)
-        {
-            playerController.enabled = !isPaused;
-        }
-
-        if (isPaused)
-        {
-            UpdateProgressText();
-        }
-    }
-
-    public void OpenOptions()
-    {
-        pausePanel.SetActive(false);
-        if (optionsPanel != null) optionsPanel.SetActive(true);
-    }
-
-    public void CloseOptions()
-    {
-        if (optionsPanel != null) optionsPanel.SetActive(false);
-        pausePanel.SetActive(true);
-    }
-
-    public void LoadMainMenu()
-    {
-        Time.timeScale = 1f;
-        AudioListener.pause = false;
-        SetCursorState(false);
-        SceneManager.LoadScene("Menu");
-    }
-
-    private void SetCursorState(bool locked)
-    {
-        Cursor.lockState = locked ? CursorLockMode.Locked : CursorLockMode.None;
-        Cursor.visible = !locked;
-    }
-
-    private void UpdateProgressText()
-    {
-        if (progressText == null || database == null) return;
-
-        List<int> unlockedAnomalies = SaveManager.Load();
-        int totalAnomalies = database.anomalyKeys.Count;
-
-        string progressFormat = LocalizationManager.Instance != null
-            ? LocalizationManager.Instance.GetTranslation("ui_progress")
-            : "{0} / {1}";
-
-        progressText.text = string.Format(progressFormat, unlockedAnomalies.Count, totalAnomalies);
     }
 }
 </file>
@@ -3157,6 +3894,126 @@ public class GameManager : MonoBehaviour
         {
             levelDisplay.text = currentLevel.ToString("00");
         }
+    }
+}
+</file>
+
+<file path="Assets/_Scripts/PauseManager.cs">
+using System.Collections.Generic;
+using TMPro;
+using UnityEngine;
+using UnityEngine.InputSystem;
+using UnityEngine.SceneManagement;
+
+public class PauseManager : MonoBehaviour
+{
+    [Header("Panels")]
+    public GameObject pausePanel;
+    public GameObject optionsPanel;
+
+    [Header("Progress UI")]
+    public TMP_Text progressText;
+    public AnomalyDatabase database;
+
+    [Header("UI to Hide")]
+    public GameObject deleteSaveButton;
+
+    public bool isPaused = false;
+
+    private void Start()
+    {
+        pausePanel.SetActive(false);
+        if (optionsPanel != null) optionsPanel.SetActive(false);
+        if (deleteSaveButton != null) deleteSaveButton.SetActive(false);
+
+        SetCursorState(true);
+    }
+
+    private void Update()
+    {
+        if (Keyboard.current != null && Keyboard.current.escapeKey.wasPressedThisFrame)
+        {
+            if (optionsPanel != null && optionsPanel.activeSelf)
+            {
+                CloseOptions();
+            }
+            else
+            {
+                TogglePause();
+            }
+        }
+    }
+
+    private void OnEnable()
+    {
+        LocalizationManager.LanguageChangedEvent += UpdateProgressText;
+    }
+
+    private void OnDisable()
+    {
+        LocalizationManager.LanguageChangedEvent -= UpdateProgressText;
+    }
+
+    public void TogglePause()
+    {
+        isPaused = !isPaused;
+        pausePanel.SetActive(isPaused);
+
+        Time.timeScale = isPaused ? 0f : 1f;
+        AudioListener.pause = isPaused;
+
+        SetCursorState(!isPaused);
+
+        PlayerController playerController = FindAnyObjectByType<PlayerController>();
+        if (playerController != null)
+        {
+            playerController.enabled = !isPaused;
+        }
+
+        if (isPaused)
+        {
+            UpdateProgressText();
+        }
+    }
+
+    public void OpenOptions()
+    {
+        pausePanel.SetActive(false);
+        if (optionsPanel != null) optionsPanel.SetActive(true);
+    }
+
+    public void CloseOptions()
+    {
+        if (optionsPanel != null) optionsPanel.SetActive(false);
+        pausePanel.SetActive(true);
+    }
+
+    public void LoadMainMenu()
+    {
+        Time.timeScale = 1f;
+        AudioListener.pause = false;
+        SetCursorState(false);
+        SceneManager.LoadScene("Menu");
+    }
+
+    private void SetCursorState(bool locked)
+    {
+        Cursor.lockState = locked ? CursorLockMode.Locked : CursorLockMode.None;
+        Cursor.visible = !locked;
+    }
+
+    private void UpdateProgressText()
+    {
+        if (progressText == null || database == null) return;
+
+        List<int> unlockedAnomalies = SaveManager.Load();
+        int totalAnomalies = database.anomalyKeys.Count;
+
+        string progressFormat = LocalizationManager.Instance != null
+            ? LocalizationManager.Instance.GetTranslation("ui_progress")
+            : "{0} / {1}";
+
+        progressText.text = string.Format(progressFormat, unlockedAnomalies.Count, totalAnomalies);
     }
 }
 </file>

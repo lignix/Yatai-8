@@ -9,7 +9,7 @@ public class SettingsManager : MonoBehaviour
     [Header("UI Elements")]
     public TMP_Dropdown resolutionDropdown;
     public TMP_Dropdown languageDropdown;
-    
+
     [Header("Volume")]
     public Slider volumeSlider;
     public TMP_Text volumeValueText;
@@ -20,7 +20,7 @@ public class SettingsManager : MonoBehaviour
 
     [Header("Graphics")]
     public TMP_Dropdown aaDropdown;
-    
+
     [Header("Sensitivity")]
     public Slider sensitivitySlider;
     public TMP_Text sensitivityValueText;
@@ -54,6 +54,13 @@ public class SettingsManager : MonoBehaviour
         for (int i = 0; i < rawResolutions.Length; i++)
         {
             Resolution res = rawResolutions[i];
+
+            float aspectRatio = (float)res.width / res.height;
+            if (Mathf.Abs(aspectRatio - (16f / 9f)) > 0.05f)
+            {
+                continue;
+            }
+
             string option = res.width + " x " + res.height;
 
             if (!options.Contains(option))
@@ -68,15 +75,24 @@ public class SettingsManager : MonoBehaviour
             }
         }
 
+        if (options.Count == 0)
+        {
+            filteredResolutions.Add(new Resolution { width = 1920, height = 1080 });
+            options.Add("1920 x 1080");
+            currentResIndex = 0;
+        }
+
         resolutionDropdown.AddOptions(options);
-        int savedRes = PlayerPrefs.GetInt("ResolutionPref", currentResIndex);
-        if (savedRes >= filteredResolutions.Count) savedRes = currentResIndex;
+        int defaultResIndex = filteredResolutions.Count - 1;
+
+        int savedRes = PlayerPrefs.GetInt("ResolutionPref", defaultResIndex);
+
+        if (savedRes >= filteredResolutions.Count) savedRes = defaultResIndex;
 
         resolutionDropdown.SetValueWithoutNotify(savedRes);
         resolutionDropdown.RefreshShownValue();
         SetResolution(savedRes);
     }
-
     public void SetResolution(int index)
     {
         Resolution res = filteredResolutions[index];
@@ -190,7 +206,7 @@ public class SettingsManager : MonoBehaviour
     {
         if (aaDropdown != null)
         {
-            int savedAA = PlayerPrefs.GetInt("AAPref", 1); 
+            int savedAA = PlayerPrefs.GetInt("AAPref", 1);
             aaDropdown.SetValueWithoutNotify(savedAA);
             aaDropdown.RefreshShownValue();
             SetAA(savedAA);
@@ -200,7 +216,7 @@ public class SettingsManager : MonoBehaviour
     public void SetAA(int index)
     {
         PlayerPrefs.SetInt("AAPref", index);
-        
+
         Camera targetCam = Camera.main != null ? Camera.main : FindAnyObjectByType<Camera>();
         if (targetCam != null)
         {
@@ -216,7 +232,7 @@ public class SettingsManager : MonoBehaviour
     {
         if (sensitivitySlider != null)
         {
-            float savedSens = PlayerPrefs.GetFloat("SensitivityPref", 1f); 
+            float savedSens = PlayerPrefs.GetFloat("SensitivityPref", 1f);
             sensitivitySlider.SetValueWithoutNotify(savedSens);
             UpdateSensitivityText(savedSens);
         }

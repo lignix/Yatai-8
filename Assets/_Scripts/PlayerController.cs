@@ -39,7 +39,7 @@ public class PlayerController : MonoBehaviour
     private PlayerInput playerInput;
     private float verticalVelocity;
     private float cameraPitch = 0.0f;
-    
+
     public bool isNoclipActive = false;
     private float noclipRotX = 0f;
     private float noclipRotY = 0f;
@@ -96,11 +96,14 @@ public class PlayerController : MonoBehaviour
 
     private void Update()
     {
-        if (enableNoclip && Keyboard.current != null && Keyboard.current.f1Key.wasPressedThisFrame)
-        {
-            isNoclipActive = !isNoclipActive;
-            verticalVelocity = 0f;
-        }
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+    // Will be compiled only in the Editor or Development builds, allowing for noclip testing without affecting the final build.
+    if (enableNoclip && Keyboard.current != null && Keyboard.current.f1Key.wasPressedThisFrame)
+    {
+        isNoclipActive = !isNoclipActive;
+        verticalVelocity = 0f;
+    }
+#endif
 
         if (isNoclipActive)
         {
@@ -157,7 +160,7 @@ public class PlayerController : MonoBehaviour
         }
 
         float finalSensitivity = lookSensitivity * sensitivityMultiplier * 0.1f;
-        
+
         transform.Rotate(Vector3.up * lookInput.x * finalSensitivity);
 
         cameraPitch += lookInput.y * finalSensitivity;

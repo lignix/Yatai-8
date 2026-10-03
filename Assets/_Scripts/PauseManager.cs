@@ -6,6 +6,7 @@ using UnityEngine.SceneManagement;
 
 public class PauseManager : MonoBehaviour
 {
+    public static PauseManager Instance;
     [Header("Panels")]
     public GameObject pausePanel;
     public GameObject optionsPanel;
@@ -17,7 +18,13 @@ public class PauseManager : MonoBehaviour
     [Header("UI to Hide")]
     public GameObject deleteSaveButton;
 
-    private bool isPaused = false;
+    public bool isPaused = false;
+
+    private void Awake()
+    {
+        if (Instance == null) Instance = this;
+        else Destroy(gameObject);
+    }
 
     private void Start()
     {

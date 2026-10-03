@@ -29,10 +29,10 @@ public class DigicodeInteract : MonoBehaviour
         {
             bool interactPressed = false;
 
-            if (Keyboard.current != null && (Keyboard.current.eKey.wasPressedThisFrame || Keyboard.current.fKey.wasPressedThisFrame))
+            if (!PauseManager.Instance.isPaused && Keyboard.current != null && (Keyboard.current.eKey.wasPressedThisFrame || Keyboard.current.fKey.wasPressedThisFrame))
                 interactPressed = true;
                 
-            if (Mouse.current != null && Mouse.current.leftButton.wasPressedThisFrame)
+            if (!PauseManager.Instance.isPaused && Mouse.current != null && Mouse.current.leftButton.wasPressedThisFrame)
                 interactPressed = true;
 
             if (interactPressed)

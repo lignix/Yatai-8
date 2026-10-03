@@ -15,12 +15,18 @@ public class SecretPaper : MonoBehaviour
 
     [Header("Settings")]
     public float interactDistance = 1f;
+    public float lookAngleThreshold = 20f;
 
     private bool isReading = false;
     private bool hasBeenRead = false;
+    private Transform mainCamera;
+
+    public InteractableIndicator indicator;
 
     private void OnEnable()
     {
+        if (Camera.main != null) mainCamera = Camera.main.transform;
+
         if (player == null)
         {
             GameObject playerObj = GameObject.FindGameObjectWithTag("Player");
@@ -44,33 +50,39 @@ public class SecretPaper : MonoBehaviour
 
     private void Update()
     {
-        if (player == null) return;
+        if (player == null || mainCamera == null) return;
 
         if (!isReading && !hasBeenRead) 
         {
             if (Vector3.Distance(player.position, transform.position) <= interactDistance)
             {
-                bool interactPressed = false;
-                
-                if (Keyboard.current != null)
-                {
-                    if (!pauseManager.isPaused && (Keyboard.current.eKey.wasPressedThisFrame || Keyboard.current.fKey.wasPressedThisFrame))
-                    {
-                        interactPressed = true;
-                    }
-                }
-                
-                if (!pauseManager.isPaused && Mouse.current != null) 
-                {
-                    if (Mouse.current.leftButton.wasPressedThisFrame) 
-                    {
-                        interactPressed = true; 
-                    }
-                }
+                Vector3 dirToTarget = (transform.position - mainCamera.position).normalized;
+                float angle = Vector3.Angle(mainCamera.forward, dirToTarget);
 
-                if (interactPressed) 
+                if (angle <= lookAngleThreshold)
                 {
-                    ReadPaper();
+                    bool interactPressed = false;
+                    
+                    if (Keyboard.current != null)
+                    {
+                        if (!pauseManager.isPaused && (Keyboard.current.eKey.wasPressedThisFrame || Keyboard.current.fKey.wasPressedThisFrame))
+                        {
+                            interactPressed = true;
+                        }
+                    }
+                    
+                    if (!pauseManager.isPaused && Mouse.current != null) 
+                    {
+                        if (Mouse.current.leftButton.wasPressedThisFrame) 
+                        {
+                            interactPressed = true; 
+                        }
+                    }
+
+                    if (interactPressed) 
+                    {
+                        ReadPaper();
+                    }
                 }
             }
         }
@@ -99,6 +111,7 @@ public class SecretPaper : MonoBehaviour
     {
         isReading = true;
         hasBeenRead = true;
+        if (indicator != null) indicator.enabled = false;
 
         if (pickupSound != null)
         {
@@ -131,5 +144,11 @@ public class SecretPaper : MonoBehaviour
         {
             creditsManager.StartCreditsSequence();
         }
+    }
+
+    private void OnDrawGizmosSelected()
+    {
+        Gizmos.color = Color.cyan;
+        Gizmos.DrawWireSphere(transform.position, interactDistance);
     }
 }

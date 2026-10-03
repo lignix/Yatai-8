@@ -6,23 +6,28 @@ public class RamenAnomaly : MonoBehaviour
 {
     [Header("References")]
     public Transform player;
-    
+
     [Header("Settings")]
     public float interactDistance = 2.5f;
+    public float lookAngleThreshold = 20f;
 
     private AudioSource audioSource;
     private bool hasBeenEaten = false;
+    private Transform mainCamera;
+
+    public InteractableIndicator indicator;
 
     private void Awake()
     {
         audioSource = GetComponent<AudioSource>();
-        audioSource.playOnAwake = false; 
+        audioSource.playOnAwake = false;
     }
 
     private void OnEnable()
     {
         hasBeenEaten = false;
-        
+        if (Camera.main != null) mainCamera = Camera.main.transform;
+
         if (player == null)
         {
             GameObject playerObj = GameObject.FindGameObjectWithTag("Player");
@@ -32,31 +37,37 @@ public class RamenAnomaly : MonoBehaviour
 
     private void Update()
     {
-        if (hasBeenEaten || player == null) return;
+        if (hasBeenEaten || player == null || mainCamera == null) return;
 
         if (Vector3.Distance(player.position, transform.position) <= interactDistance)
         {
-            bool interactPressed = false;
-            
-            if (Keyboard.current != null && !PauseManager.Instance.isPaused)
-            {
-                if (Keyboard.current.eKey.wasPressedThisFrame || Keyboard.current.fKey.wasPressedThisFrame)
-                {
-                    interactPressed = true;
-                }
-            }
-            
-            if (Mouse.current != null && !PauseManager.Instance.isPaused)
-            {
-                if (Mouse.current.leftButton.wasPressedThisFrame)
-                {
-                    interactPressed = true;
-                }
-            }
+            Vector3 dirToTarget = (transform.position - mainCamera.position).normalized;
+            float angle = Vector3.Angle(mainCamera.forward, dirToTarget);
 
-            if (interactPressed)
+            if (angle <= lookAngleThreshold)
             {
-                EatRamen();
+                bool interactPressed = false;
+
+                if (Keyboard.current != null && !PauseManager.Instance.isPaused)
+                {
+                    if (Keyboard.current.eKey.wasPressedThisFrame || Keyboard.current.fKey.wasPressedThisFrame)
+                    {
+                        interactPressed = true;
+                    }
+                }
+
+                if (Mouse.current != null && !PauseManager.Instance.isPaused)
+                {
+                    if (Mouse.current.leftButton.wasPressedThisFrame)
+                    {
+                        interactPressed = true;
+                    }
+                }
+
+                if (interactPressed)
+                {
+                    EatRamen();
+                }
             }
         }
     }
@@ -64,6 +75,8 @@ public class RamenAnomaly : MonoBehaviour
     private void EatRamen()
     {
         hasBeenEaten = true;
+
+        if (indicator != null) indicator.enabled = false;
 
         if (audioSource != null && audioSource.clip != null)
         {
@@ -74,5 +87,11 @@ public class RamenAnomaly : MonoBehaviour
         {
             AchievementManager.Instance.UnlockAchievement("eat");
         }
+    }
+
+    private void OnDrawGizmosSelected()
+    {
+        Gizmos.color = Color.cyan;
+        Gizmos.DrawWireSphere(transform.position, interactDistance);
     }
 }

@@ -29,7 +29,9 @@ public class DigicodeManager : MonoBehaviour
     private string currentInput = "";
     private PlayerController playerController;
     private PauseManager pauseManager;
-    private bool isSolved = false;
+    public bool isSolved = false;
+
+    public InteractableIndicator indicator;
 
     private void Awake()
     {
@@ -129,6 +131,7 @@ public class DigicodeManager : MonoBehaviour
         if (currentInput == secretCode)
         {
             isSolved = true;
+            if (indicator != null) indicator.enabled = false;
             displayCode.text = "OK";
             displayCode.color = Color.green;
             StartCoroutine(UnlockSequence());

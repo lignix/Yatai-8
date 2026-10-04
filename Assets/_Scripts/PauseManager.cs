@@ -99,7 +99,15 @@ public class PauseManager : MonoBehaviour
         Time.timeScale = 1f;
         AudioListener.pause = false;
         SetCursorState(false);
-        SceneManager.LoadScene("Menu");
+        
+        if (FadeManager.Instance != null)
+        {
+            FadeManager.Instance.FadeAndLoadScene("Menu", 0.5f);
+        }
+        else
+        {
+            SceneManager.LoadScene("Menu");
+        }
     }
 
     private void SetCursorState(bool locked)

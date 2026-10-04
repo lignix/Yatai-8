@@ -2,6 +2,8 @@ using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
+using UnityEngine.InputSystem;
+using UnityEngine.EventSystems;
 
 public class CreditsManager : MonoBehaviour
 {
@@ -17,12 +19,20 @@ public class CreditsManager : MonoBehaviour
     public float fadeToBlackDuration = 2f;
     public float waitBeforeCredits = 1f;
     public float delayAfterScroll = 3f;
+    [Tooltip("Temps d'attente avant l'apparition du bouton Skip")]
+    public float skipButtonDelay = 3f; 
 
     [Header("Scrolling Settings")]
     public float scrollSpeed = 100f;
-    public float endPositionY = 2500f;
+    [Tooltip("Multiplicateur de vitesse quand on maintient le clic gauche")]
+    public float fastScrollMultiplier = 4f; 
+    [Tooltip("La distance de départ de ton panneau en Y (ex: 1080)")]
+    public float startOffsetY = 1080f;
+    [Tooltip("Marge ajoutée à la hauteur du panneau pour s'assurer que le texte sort bien de l'écran")]
+    public float endPadding = 200f;
 
     private float initialVolume;
+    private bool isSkipping = false;
 
     private void Start()
     {
@@ -47,6 +57,26 @@ public class CreditsManager : MonoBehaviour
     {
         initialVolume = AudioListener.volume;
         StartCoroutine(CreditsRoutine());
+        
+        if (skipButton != null)
+        {
+            StartCoroutine(ShowSkipButtonRoutine());
+        }
+    }
+
+    private IEnumerator ShowSkipButtonRoutine()
+    {
+        yield return new WaitForSeconds(skipButtonDelay);
+        
+        if (isSkipping) yield break;
+
+        skipButton.SetActive(true);
+        if (skipButtonCanvasGroup != null)
+        {
+            skipButtonCanvasGroup.alpha = 1f;
+            skipButtonCanvasGroup.interactable = true;
+            skipButtonCanvasGroup.blocksRaycasts = true;
+        }
     }
 
     private IEnumerator CreditsRoutine()
@@ -60,36 +90,25 @@ public class CreditsManager : MonoBehaviour
         Color startColor = fullScreenImage.color;
         Color targetColor = Color.black;
 
-        if (skipButton != null)
-        {
-            skipButton.SetActive(true);
-        }
-
         while (timer < fadeToBlackDuration)
         {
             timer += Time.deltaTime;
             float progress = timer / fadeToBlackDuration;
             
-            fullScreenImage.color = Color.Lerp(startColor, targetColor, progress);
-            AudioListener.volume = Mathf.Lerp(initialVolume, 0f, progress);
-
-            if (skipButtonCanvasGroup != null)
+            if (fullScreenImage != null)
             {
-                skipButtonCanvasGroup.alpha = progress;
+                fullScreenImage.color = Color.Lerp(startColor, targetColor, progress);
             }
+            AudioListener.volume = Mathf.Lerp(initialVolume, 0f, progress);
 
             yield return null;
         }
         
-        fullScreenImage.color = targetColor;
-        AudioListener.volume = 0f;
-
-        if (skipButtonCanvasGroup != null)
+        if (fullScreenImage != null)
         {
-            skipButtonCanvasGroup.alpha = 1f;
-            skipButtonCanvasGroup.interactable = true;
-            skipButtonCanvasGroup.blocksRaycasts = true;
+            fullScreenImage.color = targetColor;
         }
+        AudioListener.volume = 0f;
 
         yield return new WaitForSeconds(waitBeforeCredits);
 
@@ -97,9 +116,20 @@ public class CreditsManager : MonoBehaviour
         {
             creditsPanel.gameObject.SetActive(true);
 
-            while (creditsPanel.anchoredPosition.y < endPositionY)
+            float dynamicEndY = creditsPanel.rect.height - startOffsetY + endPadding;
+
+            while (creditsPanel.anchoredPosition.y < dynamicEndY)
             {
-                creditsPanel.anchoredPosition += Vector2.up * (scrollSpeed * Time.deltaTime);
+                float currentSpeed = scrollSpeed;
+                
+                bool isPointerOverUI = EventSystem.current != null && EventSystem.current.IsPointerOverGameObject();
+
+                if (Mouse.current != null && Mouse.current.leftButton.isPressed && !isPointerOverUI)
+                {
+                    currentSpeed *= fastScrollMultiplier;
+                }
+
+                creditsPanel.anchoredPosition += Vector2.up * (currentSpeed * Time.deltaTime);
                 yield return null;
             }
         }
@@ -111,13 +141,25 @@ public class CreditsManager : MonoBehaviour
 
     public void SkipCredits()
     {
-        StopAllCoroutines();
         LoadMenu();
     }
 
     private void LoadMenu()
     {
+        if (isSkipping) return;
+        isSkipping = true;
+
+        StopAllCoroutines();
+        
         AudioListener.volume = initialVolume;
-        SceneManager.LoadScene("Menu");
+
+        if (FadeManager.Instance != null)
+        {
+            FadeManager.Instance.FadeAndLoadScene("Menu", 1f);
+        }
+        else
+        {
+            SceneManager.LoadScene("Menu");
+        }
     }
 }

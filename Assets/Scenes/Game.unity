@@ -360,7 +360,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 1}
   m_AnchorMax: {x: 0.5, y: 1}
   m_AnchoredPosition: {x: 0, y: -1080}
-  m_SizeDelta: {x: 1920, y: 3000}
+  m_SizeDelta: {x: 1920, y: 6600}
   m_Pivot: {x: 0.5, y: 1}
 --- !u!114 &6641055
 MonoBehaviour:
@@ -37174,60 +37174,44 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: 'DEVELOPMENT & LEVEL DESIGN
-
-    Charles Bouvier
-
-
-    3D MODELS & ASSETS
-    (CC-BY 4.0)
-
-    "Ramen-Yatai" by Mathias Tossens
-
-    "Japanese Paper Lantern"
-    by WIsEman_Tavern
-
-    "Japanese Trash Can" by ditovirnantio
-
-    "Electric cable
-    - 13MB" by Mehdi Shahsavan
-
-    "Low Poly | Plastic Garbage Bags" by Anna Denisova
-
-    "Japanese
-    stone lamp" by Mehdi Shahsavan
-
-    "Cyberpunk animated japanese LED neon sign"
-    by YD Visual
-
-    "Japanese sign board 003" by sa6
-
-    "Japanese Inspired Vending
-    Machines" by Spookyghostboo
-
-    "Japanese Red Post Box" by XSkullHunterX
-
-    "1DAE08
-    Denis Robbe Props Kyoto Japan" by RobbeDenis
-
-
-    AUDIO & SOUND DESIGN
-
-    [Audio
-    Name] by [Author] - Freesound
-
-    [Audio Name] by [Author] - Pixabay
-
-
-    SPECIAL
-    THANKS
-
-    Sami Demay
-
-
-    hope you enjoyed :)
-
-    Thank you for playing.'
+  m_text: "DEVELOPMENT & LEVEL DESIGN\nCharles Bouvier\n\n\n3D MODELS\nLicensed under
+    Creative Commons Attribution 4.0 (CC BY 4.0)\nhttp://creativecommons.org/licenses/by/4.0/\n\n\u2022
+    \"Ramen-Yatai\" (https://skfb.ly/6QZX8) by Mathias Tossens\n\u2022 \"Japanese
+    Paper Lantern\" (https://skfb.ly/oKVNV), \"Japanese stone lamp\" (https://skfb.ly/oQQS9)
+    & \"Electric cable\" (https://skfb.ly/oTVyK) by Mehdi Shahsavan\n\u2022 \"Japanese
+    Trash Can\" (https://skfb.ly/6S8sS) by ditovirnantio\n\u2022 \"Low Poly Plastic
+    Garbage Bags\" (https://skfb.ly/oIHo9) by Anna Denisova\n\u2022 \"Cyberpunk animated
+    japanese LED neon sign\" (https://skfb.ly/6S6CZ) by YD Visual\n\u2022 \"Japanese
+    sign board 003\" (https://skfb.ly/6RYTN) by sa6\n\u2022 \"Japanese Inspired Vending
+    Machines\" (https://skfb.ly/oXBs8) by Spookyghostboo\n\u2022 \"Japanese Red Post
+    Box\" (https://skfb.ly/oPCsR) by XSkullHunterX\n\u2022 \"1DAE08 Denis Robbe Props
+    Kyoto Japan\" (https://skfb.ly/6RxLI) by RobbeDenis\n\u2022 \"OLD PAINTED WOODEN
+    WINDOWS\" (https://skfb.ly/oyJpq) by Colin.Greenall\n\u2022 \"Low-Poly PSX Style
+    Industrial Metal Doors Pack\" (https://skfb.ly/pFQEV) by Icevanilla\n\u2022 \"Rusty
+    Japanese Arcade\" (https://skfb.ly/oDxIL) by Hawtor Studio\n\u2022 \"Japanese
+    light signage\" (https://skfb.ly/ovYRs) by Sousinho\n\u2022 \"Rubber duck\" (https://skfb.ly/6TsSv)
+    by Ikki_3d\n\u2022 \"Ramen\" (https://skfb.ly/6ULvx) by BobbyNofoot\n\u2022 \"Security
+    Keypad\" (https://skfb.ly/6WV9F) by staceyAEH (modified)\n\u2022 \"Japan School
+    Desk\" (https://skfb.ly/oSIXM) by Requital (Azamkhon) (modified)\n\n\nSOUNDS\nLicensed
+    under Creative Commons 0 (Public Domain)\nhttps://creativecommons.org/publicdomain/zero/1.0/\n\n\u2022
+    \"trash bag\" by 13F_Panska_Koprivikova_Klara (https://freesound.org/s/378303/)\n\u2022
+    \"Rubber-Duck_Squeezes\" by LamaMakesMusic (https://freesound.org/s/403507/)\n\u2022
+    \"metal frantic door knocks 2\" by TRP (https://freesound.org/s/576956/)\n\u2022
+    \"Train Pass By\" by GreekIrish (https://freesound.org/s/254778/)\n\u2022 \"Ambience
+    City Quiet Night Air Tone\" by leonelmail (https://freesound.org/s/427841/)\n\u2022
+    \"Flood\" by cribbler (https://freesound.org/s/592364/)\n\u2022 \"vent air conditioner
+    clean rattle hum\" by kyles (https://freesound.org/s/637930/)\n\u2022 \"Tsk 2\"
+    by hollandm (https://freesound.org/s/691913/)\n\u2022 \"Metal Door Squeaking
+    8\" by MathewHenry (https://freesound.org/s/700705/)\n\u2022 \"Vending Machine
+    Hum\" by HECKFRICKER (https://freesound.org/s/730438/)\n\u2022 \"Glitch Computer\"
+    by TheMinkman (https://freesound.org/s/434657/)\n\u2022 \"Bike bell 1\" by pallen33
+    (https://freesound.org/s/405628/)\n\u2022 \"Japan_Tokyo_Roppongi_Crossing\" by
+    RutgerMuller (https://freesound.org/s/364901/)\n\n\nLicensed under Creative Commons
+    Attribution 4.0 (CC BY 4.0)\n\u2022 \"storm door slam 01\" by volivieri (https://freesound.org/s/161190/)\n\u2022
+    \"Parking Garage - Metal Door\" by sndadv (https://freesound.org/s/187283/)\n\n\nLicensed
+    under Creative Commons Attribution 3.0 (CC BY 3.0)\n\u2022 \"Spooky Arcade Loop\"
+    by JungleBean (https://freesound.org/s/368092/)\n\n\n\nSPECIAL THANKS\nSami Demay\n\n\nHope
+    you enjoyed :)\nThank you for playing."
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: cf6a5723f72228048936c1608cf25386, type: 2}
   m_sharedMaterial: {fileID: -6765979892735119581, guid: cf6a5723f72228048936c1608cf25386, type: 2}

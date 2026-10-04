@@ -22,6 +22,10 @@ public class AchievementManager : MonoBehaviour
 
     private IEnumerator Start()
     {
+#if DEVELOPMENT_BUILD
+        yield break;
+#endif
+
         while (!SteamManager.Initialized)
         {
             yield return null;
@@ -32,6 +36,10 @@ public class AchievementManager : MonoBehaviour
 
     public void CheckAndSyncSaveAchievements()
     {
+#if DEVELOPMENT_BUILD
+        return;
+#endif
+
         if (!SteamManager.Initialized) return;
 
         List<int> unlockedList = SaveManager.Load();
@@ -49,6 +57,10 @@ public class AchievementManager : MonoBehaviour
 
     public void UnlockAchievement(string achievementID)
     {
+#if DEVELOPMENT_BUILD
+        return;
+#endif
+
         if (!SteamManager.Initialized) return;
 
         bool isUnlocked;

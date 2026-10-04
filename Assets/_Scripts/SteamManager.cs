@@ -27,6 +27,12 @@ public class SteamManager : MonoBehaviour
         s_instance = this;
         DontDestroyOnLoad(gameObject);
 
+#if DEVELOPMENT_BUILD
+        Debug.LogWarning("[Steamworks.NET] Development Build actif : Steam disabled to allow testing without a license.");
+        m_bInitialized = false;
+        return;
+#endif
+
         if (!Packsize.Test())
         {
             Debug.LogError("[Steamworks.NET] Packsize Test failed.");

@@ -30,12 +30,30 @@ public class SettingsManager : MonoBehaviour
     private List<Resolution> filteredResolutions;
     private readonly int[] fpsLimits = { -1, 30, 60, 120, 144 };
 
+    private void Update()
+    {
+#if DEVELOPMENT_BUILD || UNITY_EDITOR
+        if (UnityEngine.InputSystem.Keyboard.current != null && UnityEngine.InputSystem.Keyboard.current.f12Key.wasPressedThisFrame)
+        {
+            PlayerPrefs.DeleteAll();
+            
+            Debug.Log("[DevTool] Reloading game...");
+
+#if UNITY_EDITOR
+            UnityEditor.EditorApplication.isPlaying = false;
+#else
+            Application.Quit();
+#endif
+        }
+#endif
+    }
+
     private void Start()
     {
+        SetupFullscreen();
         SetupResolutions();
         SetupVolume();
         SetupLanguage();
-        SetupFullscreen();
         SetupVSync();
         SetupFPS();
         SetupAA();
@@ -96,7 +114,9 @@ public class SettingsManager : MonoBehaviour
     public void SetResolution(int index)
     {
         Resolution res = filteredResolutions[index];
-        Screen.SetResolution(res.width, res.height, Screen.fullScreen);
+        bool isFullscreen = PlayerPrefs.GetInt("FullscreenPref", 1) == 1;
+        
+        Screen.SetResolution(res.width, res.height, isFullscreen);
         PlayerPrefs.SetInt("ResolutionPref", index);
     }
 
@@ -152,8 +172,15 @@ public class SettingsManager : MonoBehaviour
 
     public void SetFullscreen(bool isFullscreen)
     {
-        Screen.fullScreen = isFullscreen;
         PlayerPrefs.SetInt("FullscreenPref", isFullscreen ? 1 : 0);
+        Screen.fullScreen = isFullscreen;
+
+        if (filteredResolutions != null && filteredResolutions.Count > 0)
+        {
+            int savedRes = PlayerPrefs.GetInt("ResolutionPref", filteredResolutions.Count - 1);
+            Resolution res = filteredResolutions[savedRes];
+            Screen.SetResolution(res.width, res.height, isFullscreen);
+        }
     }
 
     private void SetupVSync()

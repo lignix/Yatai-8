@@ -511,7 +511,7 @@ MonoBehaviour:
   m_OnValueChanged:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 5787581599514366493}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: SettingsManager, Assembly-CSharp
         m_MethodName: SetLanguage
         m_Mode: 0
@@ -901,7 +901,7 @@ MonoBehaviour:
   m_OnValueChanged:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 5787581599514366493}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: SettingsManager, Assembly-CSharp
         m_MethodName: SetVolume
         m_Mode: 0
@@ -1277,7 +1277,7 @@ MonoBehaviour:
   m_OnValueChanged:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 5787581599514366493}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: SettingsManager, Assembly-CSharp
         m_MethodName: SetFPSLimit
         m_Mode: 0
@@ -1852,7 +1852,7 @@ MonoBehaviour:
   onValueChanged:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 5787581599514366493}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: SettingsManager, Assembly-CSharp
         m_MethodName: SetVSync
         m_Mode: 0
@@ -2443,7 +2443,7 @@ MonoBehaviour:
   m_OnValueChanged:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 5787581599514366493}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: SettingsManager, Assembly-CSharp
         m_MethodName: SetSensitivity
         m_Mode: 0
@@ -4172,7 +4172,7 @@ MonoBehaviour:
   onValueChanged:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 5787581599514366493}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: SettingsManager, Assembly-CSharp
         m_MethodName: SetFullscreen
         m_Mode: 0
@@ -4433,7 +4433,6 @@ GameObject:
   - component: {fileID: 9119194241695930060}
   - component: {fileID: 3963012756846010474}
   - component: {fileID: 7903612925413902811}
-  - component: {fileID: 5787581599514366493}
   m_Layer: 5
   m_Name: OptionsMenu
   m_TagString: Untagged
@@ -4512,28 +4511,6 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
---- !u!114 &5787581599514366493
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4367792420637492666}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e8c80499fb745f947acdd17bc4aa31fd, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::SettingsManager
-  resolutionDropdown: {fileID: 4843803352394544268}
-  languageDropdown: {fileID: 3257992475561378070}
-  volumeSlider: {fileID: 3252353808832147726}
-  volumeValueText: {fileID: 6490914007019474364}
-  fullscreenToggle: {fileID: 241224659097250262}
-  vsyncToggle: {fileID: 6885895696829376047}
-  fpsDropdown: {fileID: 4736314731580456523}
-  aaDropdown: {fileID: 1302208180156499452}
-  sensitivitySlider: {fileID: 8389400413523013339}
-  sensitivityValueText: {fileID: 6328388471136521110}
 --- !u!1 &4449960491906833725
 GameObject:
   m_ObjectHideFlags: 0
@@ -6069,7 +6046,7 @@ MonoBehaviour:
   m_OnValueChanged:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 5787581599514366493}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: SettingsManager, Assembly-CSharp
         m_MethodName: SetResolution
         m_Mode: 0
@@ -7380,7 +7357,7 @@ MonoBehaviour:
   m_OnValueChanged:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 5787581599514366493}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: SettingsManager, Assembly-CSharp
         m_MethodName: SetAA
         m_Mode: 0

@@ -735,6 +735,17 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 478818833}
   m_CullTransparentMesh: 1
+--- !u!114 &488262899 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 9143486790696933743, guid: c161c85f81874384f97352839ba73e29, type: 3}
+  m_PrefabInstance: {fileID: 5126144402185581817}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7b743370ac3e4ec2a1668f5455a8ef8a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.TextMeshPro::TMPro.TMP_Dropdown
 --- !u!1 &530604497
 GameObject:
   m_ObjectHideFlags: 0
@@ -1361,6 +1372,17 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 819044426}
   m_CullTransparentMesh: 1
+--- !u!114 &858364494 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 3180808400106643547, guid: c161c85f81874384f97352839ba73e29, type: 3}
+  m_PrefabInstance: {fileID: 5126144402185581817}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7b743370ac3e4ec2a1668f5455a8ef8a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.TextMeshPro::TMPro.TMP_Dropdown
 --- !u!1 &919607269
 GameObject:
   m_ObjectHideFlags: 0
@@ -3290,6 +3312,17 @@ MonoBehaviour:
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.ContentSizeFitter
   m_HorizontalFit: 0
   m_VerticalFit: 2
+--- !u!114 &1821740376 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 1521636821889245250, guid: c161c85f81874384f97352839ba73e29, type: 3}
+  m_PrefabInstance: {fileID: 5126144402185581817}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7b743370ac3e4ec2a1668f5455a8ef8a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.TextMeshPro::TMPro.TMP_Dropdown
 --- !u!1 &1845967322
 GameObject:
   m_ObjectHideFlags: 0
@@ -3737,13 +3770,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SettingsManager
   resolutionDropdown: {fileID: 5126144402185581827}
-  languageDropdown: {fileID: 5126144402185581826}
+  languageDropdown: {fileID: 1821740376}
   volumeSlider: {fileID: 5126144402185581825}
   volumeValueText: {fileID: 5126144402185581824}
   fullscreenToggle: {fileID: 5126144402185581823}
   vsyncToggle: {fileID: 5126144402185581822}
-  fpsDropdown: {fileID: 5126144402185581821}
-  aaDropdown: {fileID: 5126144402185581820}
+  fpsDropdown: {fileID: 488262899}
+  aaDropdown: {fileID: 858364494}
   sensitivitySlider: {fileID: 5126144402185581819}
   sensitivityValueText: {fileID: 5126144402185581818}
 --- !u!1 &2018198831
@@ -4304,11 +4337,11 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 197512569800265382, guid: c161c85f81874384f97352839ba73e29, type: 3}
       propertyPath: m_fontSize
-      value: 50
+      value: 30
       objectReference: {fileID: 0}
     - target: {fileID: 197512569800265382, guid: c161c85f81874384f97352839ba73e29, type: 3}
       propertyPath: m_fontSizeBase
-      value: 50
+      value: 30
       objectReference: {fileID: 0}
     - target: {fileID: 241224659097250262, guid: c161c85f81874384f97352839ba73e29, type: 3}
       propertyPath: onValueChanged.m_PersistentCalls.m_Calls.Array.data[0].m_Target
@@ -4338,37 +4371,53 @@ PrefabInstance:
       propertyPath: m_OnValueChanged.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
       value: SetAA
       objectReference: {fileID: 0}
+    - target: {fileID: 1521636821889245250, guid: c161c85f81874384f97352839ba73e29, type: 3}
+      propertyPath: m_OnValueChanged.m_PersistentCalls.m_Calls.Array.data[0].m_Target
+      value: 
+      objectReference: {fileID: 2003812041}
+    - target: {fileID: 1521636821889245250, guid: c161c85f81874384f97352839ba73e29, type: 3}
+      propertyPath: m_OnValueChanged.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
+      value: SetLanguage
+      objectReference: {fileID: 0}
     - target: {fileID: 1840322652803750646, guid: c161c85f81874384f97352839ba73e29, type: 3}
       propertyPath: m_fontSize
-      value: 50
+      value: 30
       objectReference: {fileID: 0}
     - target: {fileID: 1840322652803750646, guid: c161c85f81874384f97352839ba73e29, type: 3}
       propertyPath: m_fontSizeBase
-      value: 50
+      value: 30
       objectReference: {fileID: 0}
     - target: {fileID: 1996604205088688364, guid: c161c85f81874384f97352839ba73e29, type: 3}
       propertyPath: m_fontSize
-      value: 50
+      value: 30
       objectReference: {fileID: 0}
     - target: {fileID: 1996604205088688364, guid: c161c85f81874384f97352839ba73e29, type: 3}
       propertyPath: m_fontSizeBase
-      value: 50
+      value: 30
       objectReference: {fileID: 0}
     - target: {fileID: 1996783607708433880, guid: c161c85f81874384f97352839ba73e29, type: 3}
       propertyPath: m_fontSize
-      value: 50
+      value: 30
       objectReference: {fileID: 0}
     - target: {fileID: 1996783607708433880, guid: c161c85f81874384f97352839ba73e29, type: 3}
       propertyPath: m_fontSizeBase
-      value: 50
+      value: 30
       objectReference: {fileID: 0}
     - target: {fileID: 2666683406810658103, guid: c161c85f81874384f97352839ba73e29, type: 3}
       propertyPath: m_fontSize
-      value: 50
+      value: 30
       objectReference: {fileID: 0}
     - target: {fileID: 2666683406810658103, guid: c161c85f81874384f97352839ba73e29, type: 3}
       propertyPath: m_fontSizeBase
-      value: 50
+      value: 30
+      objectReference: {fileID: 0}
+    - target: {fileID: 3180808400106643547, guid: c161c85f81874384f97352839ba73e29, type: 3}
+      propertyPath: m_OnValueChanged.m_PersistentCalls.m_Calls.Array.data[0].m_Target
+      value: 
+      objectReference: {fileID: 2003812041}
+    - target: {fileID: 3180808400106643547, guid: c161c85f81874384f97352839ba73e29, type: 3}
+      propertyPath: m_OnValueChanged.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
+      value: SetAA
       objectReference: {fileID: 0}
     - target: {fileID: 3252353808832147726, guid: c161c85f81874384f97352839ba73e29, type: 3}
       propertyPath: m_OnValueChanged.m_PersistentCalls.m_Calls.Array.data[0].m_Mode
@@ -4400,11 +4449,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4703363571813731328, guid: c161c85f81874384f97352839ba73e29, type: 3}
       propertyPath: m_fontSize
-      value: 50
+      value: 30
       objectReference: {fileID: 0}
     - target: {fileID: 4703363571813731328, guid: c161c85f81874384f97352839ba73e29, type: 3}
       propertyPath: m_fontSizeBase
-      value: 50
+      value: 30
       objectReference: {fileID: 0}
     - target: {fileID: 4736314731580456523, guid: c161c85f81874384f97352839ba73e29, type: 3}
       propertyPath: m_OnValueChanged.m_PersistentCalls.m_Calls.Array.data[0].m_Target
@@ -4460,19 +4509,19 @@ PrefabInstance:
       objectReference: {fileID: 2003812040}
     - target: {fileID: 5811581068682291867, guid: c161c85f81874384f97352839ba73e29, type: 3}
       propertyPath: m_fontSize
-      value: 50
+      value: 30
       objectReference: {fileID: 0}
     - target: {fileID: 5811581068682291867, guid: c161c85f81874384f97352839ba73e29, type: 3}
       propertyPath: m_fontSizeBase
-      value: 50
+      value: 30
       objectReference: {fileID: 0}
     - target: {fileID: 6706687781224505812, guid: c161c85f81874384f97352839ba73e29, type: 3}
       propertyPath: m_fontSize
-      value: 50
+      value: 30
       objectReference: {fileID: 0}
     - target: {fileID: 6706687781224505812, guid: c161c85f81874384f97352839ba73e29, type: 3}
       propertyPath: m_fontSizeBase
-      value: 50
+      value: 30
       objectReference: {fileID: 0}
     - target: {fileID: 6885895696829376047, guid: c161c85f81874384f97352839ba73e29, type: 3}
       propertyPath: onValueChanged.m_PersistentCalls.m_Calls.Array.data[0].m_Target
@@ -4509,10 +4558,6 @@ PrefabInstance:
     - target: {fileID: 8389400413523013339, guid: c161c85f81874384f97352839ba73e29, type: 3}
       propertyPath: m_OnValueChanged.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
       value: SetSensitivity
-      objectReference: {fileID: 0}
-    - target: {fileID: 8472024727157212225, guid: c161c85f81874384f97352839ba73e29, type: 3}
-      propertyPath: m_margin.y
-      value: -3.1418686
       objectReference: {fileID: 0}
     - target: {fileID: 9119194241695930060, guid: c161c85f81874384f97352839ba73e29, type: 3}
       propertyPath: m_Pivot.x
@@ -4594,6 +4639,14 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 9143486790696933743, guid: c161c85f81874384f97352839ba73e29, type: 3}
+      propertyPath: m_OnValueChanged.m_PersistentCalls.m_Calls.Array.data[0].m_Target
+      value: 
+      objectReference: {fileID: 2003812041}
+    - target: {fileID: 9143486790696933743, guid: c161c85f81874384f97352839ba73e29, type: 3}
+      propertyPath: m_OnValueChanged.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
+      value: SetFPSLimit
+      objectReference: {fileID: 0}
     m_RemovedComponents:
     - {fileID: 5787581599514366493, guid: c161c85f81874384f97352839ba73e29, type: 3}
     m_RemovedGameObjects: []
@@ -4622,28 +4675,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 67db9e8f0e2ae9c40bc1e2b64352a6b4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Slider
---- !u!114 &5126144402185581820 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 1302208180156499452, guid: c161c85f81874384f97352839ba73e29, type: 3}
-  m_PrefabInstance: {fileID: 5126144402185581817}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 7b743370ac3e4ec2a1668f5455a8ef8a, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Unity.TextMeshPro::TMPro.TMP_Dropdown
---- !u!114 &5126144402185581821 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 4736314731580456523, guid: c161c85f81874384f97352839ba73e29, type: 3}
-  m_PrefabInstance: {fileID: 5126144402185581817}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 7b743370ac3e4ec2a1668f5455a8ef8a, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Unity.TextMeshPro::TMPro.TMP_Dropdown
 --- !u!114 &5126144402185581822 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 6885895696829376047, guid: c161c85f81874384f97352839ba73e29, type: 3}
@@ -4688,17 +4719,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 67db9e8f0e2ae9c40bc1e2b64352a6b4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Slider
---- !u!114 &5126144402185581826 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 3257992475561378070, guid: c161c85f81874384f97352839ba73e29, type: 3}
-  m_PrefabInstance: {fileID: 5126144402185581817}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 7b743370ac3e4ec2a1668f5455a8ef8a, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Unity.TextMeshPro::TMPro.TMP_Dropdown
 --- !u!114 &5126144402185581827 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 4843803352394544268, guid: c161c85f81874384f97352839ba73e29, type: 3}

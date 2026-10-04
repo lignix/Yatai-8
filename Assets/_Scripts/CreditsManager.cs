@@ -10,9 +10,9 @@ public class CreditsManager : MonoBehaviour
     [Header("References")]
     public Image fullScreenImage;
     public RectTransform creditsPanel;
-    
+
     [Header("UI Elements")]
-    public GameObject skipButton; 
+    public GameObject skipButton;
     private CanvasGroup skipButtonCanvasGroup;
 
     [Header("Timings")]
@@ -20,12 +20,12 @@ public class CreditsManager : MonoBehaviour
     public float waitBeforeCredits = 1f;
     public float delayAfterScroll = 3f;
     [Tooltip("Temps d'attente avant l'apparition du bouton Skip")]
-    public float skipButtonDelay = 3f; 
+    public float skipButtonDelay = 3f;
 
     [Header("Scrolling Settings")]
     public float scrollSpeed = 100f;
     [Tooltip("Multiplicateur de vitesse quand on maintient le clic gauche")]
-    public float fastScrollMultiplier = 4f; 
+    public float fastScrollMultiplier = 4f;
     [Tooltip("La distance de départ de ton panneau en Y (ex: 1080)")]
     public float startOffsetY = 1080f;
     [Tooltip("Marge ajoutée à la hauteur du panneau pour s'assurer que le texte sort bien de l'écran")]
@@ -39,7 +39,7 @@ public class CreditsManager : MonoBehaviour
         if (skipButton != null)
         {
             skipButtonCanvasGroup = skipButton.GetComponent<CanvasGroup>();
-            
+
             if (skipButtonCanvasGroup == null)
             {
                 skipButtonCanvasGroup = skipButton.AddComponent<CanvasGroup>();
@@ -48,7 +48,7 @@ public class CreditsManager : MonoBehaviour
             skipButtonCanvasGroup.alpha = 0f;
             skipButtonCanvasGroup.interactable = false;
             skipButtonCanvasGroup.blocksRaycasts = false;
-            
+
             skipButton.SetActive(false);
         }
     }
@@ -57,7 +57,7 @@ public class CreditsManager : MonoBehaviour
     {
         initialVolume = AudioListener.volume;
         StartCoroutine(CreditsRoutine());
-        
+
         if (skipButton != null)
         {
             StartCoroutine(ShowSkipButtonRoutine());
@@ -67,7 +67,7 @@ public class CreditsManager : MonoBehaviour
     private IEnumerator ShowSkipButtonRoutine()
     {
         yield return new WaitForSeconds(skipButtonDelay);
-        
+
         if (isSkipping) yield break;
 
         skipButton.SetActive(true);
@@ -85,7 +85,7 @@ public class CreditsManager : MonoBehaviour
         {
             AchievementManager.Instance.UnlockAchievement("end");
         }
-        
+
         float timer = 0f;
         Color startColor = fullScreenImage.color;
         Color targetColor = Color.black;
@@ -94,7 +94,7 @@ public class CreditsManager : MonoBehaviour
         {
             timer += Time.deltaTime;
             float progress = timer / fadeToBlackDuration;
-            
+
             if (fullScreenImage != null)
             {
                 fullScreenImage.color = Color.Lerp(startColor, targetColor, progress);
@@ -103,7 +103,7 @@ public class CreditsManager : MonoBehaviour
 
             yield return null;
         }
-        
+
         if (fullScreenImage != null)
         {
             fullScreenImage.color = targetColor;
@@ -121,7 +121,7 @@ public class CreditsManager : MonoBehaviour
             while (creditsPanel.anchoredPosition.y < dynamicEndY)
             {
                 float currentSpeed = scrollSpeed;
-                
+
                 bool isPointerOverUI = EventSystem.current != null && EventSystem.current.IsPointerOverGameObject();
 
                 if (Mouse.current != null && Mouse.current.leftButton.isPressed && !isPointerOverUI)
@@ -150,8 +150,8 @@ public class CreditsManager : MonoBehaviour
         isSkipping = true;
 
         StopAllCoroutines();
-        
-        AudioListener.volume = initialVolume;
+
+        AudioListener.volume = 0f;
 
         if (FadeManager.Instance != null)
         {

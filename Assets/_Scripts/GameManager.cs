@@ -26,6 +26,8 @@ public class GameManager : MonoBehaviour
     {
         if (Instance == null) Instance = this;
         else Destroy(gameObject);
+
+        Debug.unityLogger.logEnabled = Debug.isDebugBuild;
     }
 
     private void Start()

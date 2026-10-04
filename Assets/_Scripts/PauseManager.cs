@@ -97,7 +97,10 @@ public class PauseManager : MonoBehaviour
     public void LoadMainMenu()
     {
         Time.timeScale = 1f;
+        
+        AudioListener.volume = 0f; 
         AudioListener.pause = false;
+        
         SetCursorState(false);
         
         if (FadeManager.Instance != null)

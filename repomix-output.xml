@@ -101,6 +101,10 @@ Assets/
     FadeManager.cs.meta
     GameManager.cs
     GameManager.cs.meta
+    IndicatorAnim.cs
+    IndicatorAnim.cs.meta
+    InteractableIndicator.cs
+    InteractableIndicator.cs.meta
     LocalizationDatabase.cs
     LocalizationDatabase.cs.meta
     LocalizationManager.cs
@@ -1089,87 +1093,6 @@ fileFormatVersion: 2
 guid: e7e70bb3ca09627489276a58b773ebc1
 </file>
 
-<file path="Assets/_Scripts/Anomalies/RamenAnomaly.cs">
-using UnityEngine;
-using UnityEngine.InputSystem;
-
-[RequireComponent(typeof(AudioSource))]
-public class RamenAnomaly : MonoBehaviour
-{
-    [Header("References")]
-    public Transform player;
-    
-    [Header("Settings")]
-    public float interactDistance = 2.5f;
-
-    private AudioSource audioSource;
-    private bool hasBeenEaten = false;
-
-    private void Awake()
-    {
-        audioSource = GetComponent<AudioSource>();
-        audioSource.playOnAwake = false; 
-    }
-
-    private void OnEnable()
-    {
-        hasBeenEaten = false;
-        
-        if (player == null)
-        {
-            GameObject playerObj = GameObject.FindGameObjectWithTag("Player");
-            if (playerObj != null) player = playerObj.transform;
-        }
-    }
-
-    private void Update()
-    {
-        if (hasBeenEaten || player == null) return;
-
-        if (Vector3.Distance(player.position, transform.position) <= interactDistance)
-        {
-            bool interactPressed = false;
-            
-            if (Keyboard.current != null && !isPaused)
-            {
-                if (Keyboard.current.eKey.wasPressedThisFrame || Keyboard.current.fKey.wasPressedThisFrame)
-                {
-                    interactPressed = true;
-                }
-            }
-            
-            if (Mouse.current != null && !isPaused)
-            {
-                if (Mouse.current.leftButton.wasPressedThisFrame)
-                {
-                    interactPressed = true;
-                }
-            }
-
-            if (interactPressed)
-            {
-                EatRamen();
-            }
-        }
-    }
-
-    private void EatRamen()
-    {
-        hasBeenEaten = true;
-
-        if (audioSource != null && audioSource.clip != null)
-        {
-            audioSource.Play();
-        }
-
-        if (AchievementManager.Instance != null)
-        {
-            AchievementManager.Instance.UnlockAchievement("eat");
-        }
-    }
-}
-</file>
-
 <file path="Assets/_Scripts/Anomalies/RamenAnomaly.cs.meta">
 fileFormatVersion: 2
 guid: 038cf47bc205ce749b877ae7598fb83b
@@ -1192,144 +1115,6 @@ public class RotatingConeAnomaly : MonoBehaviour
 <file path="Assets/_Scripts/Anomalies/RotatingConeAnomaly.cs.meta">
 fileFormatVersion: 2
 guid: 07104689711bfd543868be515e7e1f9e
-</file>
-
-<file path="Assets/_Scripts/Anomalies/SecretPaper.cs">
-using UnityEngine;
-using UnityEngine.InputSystem;
-
-public class SecretPaper : MonoBehaviour
-{
-    [Header("References")]
-    public Transform player;
-    public GameObject paperUIPanel;
-    public PlayerController playerController;
-    public PauseManager pauseManager;
-    public CreditsManager creditsManager;
-
-    [Header("Audio")]
-    public AudioSource pickupSound;
-
-    [Header("Settings")]
-    public float interactDistance = 1f;
-
-    private bool isReading = false;
-    private bool hasBeenRead = false;
-
-    private void OnEnable()
-    {
-        if (player == null)
-        {
-            GameObject playerObj = GameObject.FindGameObjectWithTag("Player");
-            if (playerObj != null) 
-            {
-                player = playerObj.transform;
-                playerController = playerObj.GetComponent<PlayerController>();
-            }
-        }
-        
-        if (pauseManager == null)
-        {
-            pauseManager = FindAnyObjectByType<PauseManager>();
-        }
-        
-        if (creditsManager == null)
-        {
-            creditsManager = FindAnyObjectByType<CreditsManager>();
-        }
-    }
-
-    private void Update()
-    {
-        if (player == null) return;
-
-        if (!isReading && !hasBeenRead) 
-        {
-            if (Vector3.Distance(player.position, transform.position) <= interactDistance)
-            {
-                bool interactPressed = false;
-                
-                if (Keyboard.current != null)
-                {
-                    if (!isPaused && (Keyboard.current.eKey.wasPressedThisFrame || Keyboard.current.fKey.wasPressedThisFrame))
-                    {
-                        interactPressed = true;
-                    }
-                }
-                
-                if (!isPaused && Mouse.current != null) 
-                {
-                    if (Mouse.current.leftButton.wasPressedThisFrame) 
-                    {
-                        interactPressed = true; 
-                    }
-                }
-
-                if (interactPressed) 
-                {
-                    ReadPaper();
-                }
-            }
-        }
-        else if (isReading)
-        {
-            bool exitPressed = false;
-
-            if (!isPaused && Keyboard.current != null && Keyboard.current.escapeKey.wasPressedThisFrame)
-            {
-                exitPressed = true;
-            }
-            
-            if (!isPaused && Mouse.current != null && Mouse.current.leftButton.wasPressedThisFrame)
-            {
-                exitPressed = true;
-            }
-
-            if (exitPressed)
-            {
-                CloseAndRollCredits();
-            }
-        }
-    }
-
-    private void ReadPaper()
-    {
-        isReading = true;
-        hasBeenRead = true;
-
-        if (pickupSound != null)
-        {
-            pickupSound.Play();
-        }
-
-        if (paperUIPanel != null) paperUIPanel.SetActive(true);
-
-        if (playerController != null) playerController.enabled = false;
-        if (pauseManager != null) pauseManager.enabled = false;
-    }
-
-    private void CloseAndRollCredits()
-    {
-        isReading = false;
-        if (paperUIPanel != null) paperUIPanel.SetActive(false);
-        
-        if (AchievementManager.Instance != null)
-        {
-            AchievementManager.Instance.UnlockAchievement("secret_end");
-        }
-
-        EndgameFade endgameFade = FindAnyObjectByType<EndgameFade>();
-        if (endgameFade != null)
-        {
-            endgameFade.enabled = false;
-        }
-
-        if (creditsManager != null)
-        {
-            creditsManager.StartCreditsSequence();
-        }
-    }
-}
 </file>
 
 <file path="Assets/_Scripts/Anomalies/SecretPaper.cs.meta">
@@ -1660,71 +1445,6 @@ fileFormatVersion: 2
 guid: 0ff2c39b59516c9418f0c654a9cb6a65
 </file>
 
-<file path="Assets/_Scripts/AchievementManager.cs">
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-using Steamworks;
-
-public class AchievementManager : MonoBehaviour
-{
-    public static AchievementManager Instance;
-
-    private void Awake()
-    {
-        if (Instance == null)
-        {
-            Instance = this;
-            DontDestroyOnLoad(gameObject);
-        }
-        else
-        {
-            Destroy(gameObject);
-        }
-    }
-
-    private IEnumerator Start()
-    {
-        while (!SteamManager.Initialized)
-        {
-            yield return null;
-        }
-
-        CheckAndSyncSaveAchievements();
-    }
-
-    public void CheckAndSyncSaveAchievements()
-    {
-        if (!SteamManager.Initialized) return;
-
-        List<int> unlockedList = SaveManager.Load();
-        int count = unlockedList.Count;
-
-        SteamUserStats.SetStat("stat_anomalies_found", count);
-
-        if (count >= 10) UnlockAchievement("ano_10");
-        if (count >= 20) UnlockAchievement("ano_20");
-        if (count >= 30) UnlockAchievement("ano_30");
-        if (count >= 40) UnlockAchievement("ano_40");
-
-        SteamUserStats.StoreStats();
-    }
-
-    public void UnlockAchievement(string achievementID)
-    {
-        if (!SteamManager.Initialized) return;
-
-        bool isUnlocked;
-        if (SteamUserStats.GetAchievement(achievementID, out isUnlocked) && !isUnlocked)
-        {
-            SteamUserStats.SetAchievement(achievementID);
-            SteamUserStats.StoreStats();
-            Debug.Log($"[Steam] Succès débloqué : {achievementID}");
-        }
-    }
-}
-</file>
-
 <file path="Assets/_Scripts/AchievementManager.cs.meta">
 fileFormatVersion: 2
 guid: 28bdf3296ffd53d4bb21fa4463487c61
@@ -1767,53 +1487,6 @@ fileFormatVersion: 2
 guid: 008129d65e86ccc43b6f89cad97532dd
 </file>
 
-<file path="Assets/_Scripts/DigicodeInteract.cs">
-using UnityEngine;
-using UnityEngine.InputSystem;
-
-public class DigicodeInteract : MonoBehaviour
-{
-    public float interactDistance = 2.5f;
-    private Transform player;
-    private PlayerController playerController;
-
-    private void OnEnable()
-    {
-        if (player == null)
-        {
-            GameObject p = GameObject.FindGameObjectWithTag("Player");
-            if (p != null)
-            {
-                player = p.transform;
-                playerController = p.GetComponent<PlayerController>();
-            }
-        }
-    }
-
-    private void Update()
-    {
-        if (player == null || DigicodeManager.Instance == null) return;
-        if (DigicodeManager.Instance.keypadPanel.activeSelf) return;
-
-        if (Vector3.Distance(player.position, transform.position) <= interactDistance)
-        {
-            bool interactPressed = false;
-
-            if (!isPaused && Keyboard.current != null && (Keyboard.current.eKey.wasPressedThisFrame || Keyboard.current.fKey.wasPressedThisFrame))
-                interactPressed = true;
-                
-            if (!isPaused && Mouse.current != null && Mouse.current.leftButton.wasPressedThisFrame)
-                interactPressed = true;
-
-            if (interactPressed)
-            {
-                DigicodeManager.Instance.OpenKeypad(playerController);
-            }
-        }
-    }
-}
-</file>
-
 <file path="Assets/_Scripts/DigicodeInteract.cs.meta">
 fileFormatVersion: 2
 guid: 8b01bfef2adfad94e8dabc64aadbfadb
@@ -1829,94 +1502,6 @@ fileFormatVersion: 2
 guid: a1b4f6ce5138ff24ca2f87b20c7faf83
 </file>
 
-<file path="Assets/_Scripts/FadeManager.cs">
-using System.Collections;
-using UnityEngine;
-using UnityEngine.UI;
-using UnityEngine.SceneManagement;
-
-public class FadeManager : MonoBehaviour
-{
-    public static FadeManager Instance;
-
-    [Header("References")]
-    public Image fadeImage;
-
-    [Header("Settings")]
-    public float fadeOutDuration = 1.5f;
-    public float fadeInDuration = 0.1f;
-
-    private void Awake()
-    {
-        if (Instance == null) Instance = this;
-        else Destroy(gameObject);
-    }
-
-    private void Start()
-    {
-        if (fadeImage != null)
-        {
-            fadeImage.gameObject.SetActive(true);
-            fadeImage.color = Color.black;
-        }
-
-        StartCoroutine(StartGameFadeSequence());
-    }
-
-    private IEnumerator StartGameFadeSequence()
-    {
-        float timer = 0f;
-        while (timer < fadeOutDuration)
-        {
-            timer += Time.deltaTime;
-            float alpha = Mathf.Lerp(1f, 0f, timer / fadeOutDuration);
-            
-            if (fadeImage != null)
-            {
-                Color c = fadeImage.color;
-                c.a = alpha;
-                fadeImage.color = c;
-            }
-            yield return null;
-        }
-
-        if (fadeImage != null) fadeImage.gameObject.SetActive(false);
-    }
-
-    public void FadeAndRestart()
-    {
-        StartCoroutine(FadeToSceneSequence(SceneManager.GetActiveScene().name, fadeInDuration));
-    }
-
-    public void FadeAndLoadScene(string sceneName, float duration)
-    {
-        StartCoroutine(FadeToSceneSequence(sceneName, duration));
-    }
-
-    private IEnumerator FadeToSceneSequence(string targetScene, float duration)
-    {
-        if (fadeImage != null) fadeImage.gameObject.SetActive(true);
-
-        float timer = 0f;
-        while (timer < duration)
-        {
-            timer += Time.deltaTime;
-            float alpha = Mathf.Lerp(0f, 1f, timer / duration);
-            
-            if (fadeImage != null)
-            {
-                Color c = fadeImage.color;
-                c.a = alpha;
-                fadeImage.color = c;
-            }
-            yield return null;
-        }
-
-        SceneManager.LoadScene(targetScene);
-    }
-}
-</file>
-
 <file path="Assets/_Scripts/FadeManager.cs.meta">
 fileFormatVersion: 2
 guid: 0fb09a7eb4de1fa4a844bc8246d970b0
@@ -1925,6 +1510,119 @@ guid: 0fb09a7eb4de1fa4a844bc8246d970b0
 <file path="Assets/_Scripts/GameManager.cs.meta">
 fileFormatVersion: 2
 guid: c52d63c9e3ac5394e92e9e2b6efc1deb
+</file>
+
+<file path="Assets/_Scripts/IndicatorAnim.cs">
+using UnityEngine;
+
+public class IndicatorAnim : MonoBehaviour
+{
+    public float bobSpeed = 5f;
+    public float bobHeight = 0.1f;
+    
+    private Vector3 startLocalPos;
+    private Transform mainCam;
+
+    private void Start()
+    {
+        startLocalPos = transform.localPosition;
+        if (Camera.main != null) mainCam = Camera.main.transform;
+    }
+
+    private void Update()
+    {
+        float newY = Mathf.Sin(Time.time * bobSpeed) * bobHeight;
+        transform.localPosition = new Vector3(startLocalPos.x, startLocalPos.y + newY, startLocalPos.z);
+
+        if (mainCam != null)
+        {
+            transform.LookAt(transform.position + mainCam.forward);
+        }
+    }
+}
+</file>
+
+<file path="Assets/_Scripts/IndicatorAnim.cs.meta">
+fileFormatVersion: 2
+guid: fcb015a1e001df84aac4476b22d7e300
+</file>
+
+<file path="Assets/_Scripts/InteractableIndicator.cs">
+using UnityEngine;
+
+public class InteractableIndicator : MonoBehaviour
+{
+    [Header("Settings")]
+    public GameObject indicatorPrefab;
+    public float interactDistance = 2.5f;
+    public float lookAngleThreshold = 20f;
+
+    public Vector3 indicatorOffset = new Vector3(0f, 0.2f, 0f);
+
+    private GameObject indicatorInstance;
+    private Transform mainCamera;
+
+    private void Start()
+    {
+        if (Camera.main != null) mainCamera = Camera.main.transform;
+
+        if (indicatorPrefab != null)
+        {
+            indicatorInstance = Instantiate(indicatorPrefab, transform);
+            indicatorInstance.transform.localPosition = indicatorOffset;
+            indicatorInstance.SetActive(false);
+        }
+    }
+
+    private void Update()
+    {
+        if (indicatorInstance == null || mainCamera == null) return;
+
+        if (PauseManager.Instance != null && PauseManager.Instance.isPaused)
+        {
+            indicatorInstance.SetActive(false);
+            return;
+        }
+
+        float distance = Vector3.Distance(mainCamera.position, transform.position);
+
+        if (distance <= interactDistance)
+        {
+            Vector3 dirToTarget = (transform.position - mainCamera.position).normalized;
+            float angle = Vector3.Angle(mainCamera.forward, dirToTarget);
+
+            if (angle <= lookAngleThreshold)
+            {
+                indicatorInstance.SetActive(true);
+                return;
+            }
+        }
+
+        indicatorInstance.SetActive(false);
+    }
+
+    private void OnDrawGizmosSelected()
+    {
+        Gizmos.color = new Color(1f, 0.92f, 0.016f, 0.5f);
+        Vector3 gizmoPos = transform.TransformPoint(indicatorOffset);
+        Gizmos.DrawSphere(gizmoPos, 0.1f);
+
+        Gizmos.color = Color.yellow;
+        Gizmos.DrawLine(transform.position, gizmoPos);
+    }
+    private void OnDisable()
+    {
+        if (indicatorInstance != null)
+        {
+            indicatorInstance.SetActive(false);
+        }
+    }
+}
+</file>
+
+<file path="Assets/_Scripts/InteractableIndicator.cs.meta">
+fileFormatVersion: 2
+guid: 7b21231259f22dc41b7c3e73c4413c38
 </file>
 
 <file path="Assets/_Scripts/LocalizationDatabase.cs.meta">
@@ -2144,106 +1842,233 @@ fileFormatVersion: 2
 guid: e8c80499fb745f947acdd17bc4aa31fd
 </file>
 
-<file path="Assets/_Scripts/SteamManager.cs">
+<file path="Assets/_Scripts/SteamManager.cs.meta">
+fileFormatVersion: 2
+guid: d967b9578c3c6954481707ca0b1b7b91
+</file>
+
+<file path="Assets/_Scripts/AchievementManager.cs">
+using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using Steamworks;
 
-[DisallowMultipleComponent]
-public class SteamManager : MonoBehaviour
+public class AchievementManager : MonoBehaviour
 {
-    private static SteamManager s_instance;
-
-    public static bool Initialized => s_instance != null && s_instance.m_bInitialized;
-
-    private bool m_bInitialized;
-    private SteamAPIWarningMessageHook_t m_SteamAPIWarningMessageHook;
-
-    private static void SteamAPIDebugTextHook(int nSeverity, System.Text.StringBuilder pchDebugText)
-    {
-        Debug.LogWarning(pchDebugText);
-    }
+    public static AchievementManager Instance;
 
     private void Awake()
     {
-        if (s_instance != null)
+        if (Instance == null)
+        {
+            Instance = this;
+            DontDestroyOnLoad(gameObject);
+        }
+        else
         {
             Destroy(gameObject);
-            return;
-        }
-
-        s_instance = this;
-        DontDestroyOnLoad(gameObject);
-
-        if (!Packsize.Test())
-        {
-            Debug.LogError("[Steamworks.NET] Packsize Test failed.");
-            return;
-        }
-
-        if (!DllCheck.Test())
-        {
-            Debug.LogError("[Steamworks.NET] DllCheck Test failed.");
-            return;
-        }
-
-        try
-        {
-            if (SteamAPI.RestartAppIfNecessary((AppId_t)5080810))
-            {
-                Application.Quit();
-                return;
-            }
-        }
-        catch (System.DllNotFoundException e)
-        {
-            Debug.LogError("[Steamworks.NET] Could not load steam_api.dll/so/dylib: " + e);
-            return;
-        }
-
-        m_bInitialized = SteamAPI.Init();
-        if (!m_bInitialized)
-        {
-            Debug.LogError("[Steamworks.NET] SteamAPI_Init() failed.");
-            return;
         }
     }
 
-    private void OnEnable()
+    private IEnumerator Start()
     {
-        if (s_instance == null) s_instance = this;
+#if DEVELOPMENT_BUILD
+        yield break;
+#endif
 
-        if (!m_bInitialized) return;
-
-        if (m_SteamAPIWarningMessageHook == null)
+        while (!SteamManager.Initialized)
         {
-            m_SteamAPIWarningMessageHook = new SteamAPIWarningMessageHook_t(SteamAPIDebugTextHook);
-            SteamClient.SetWarningMessageHook(m_SteamAPIWarningMessageHook);
+            yield return null;
         }
+
+        CheckAndSyncSaveAchievements();
     }
 
-    private void OnDestroy()
+    public void CheckAndSyncSaveAchievements()
     {
-        if (s_instance != this) return;
+#if DEVELOPMENT_BUILD
+        return;
+#endif
 
-        s_instance = null;
+        if (!SteamManager.Initialized) return;
 
-        if (!m_bInitialized) return;
+        List<int> unlockedList = SaveManager.Load();
+        int count = unlockedList.Count;
 
-        SteamAPI.Shutdown();
+        SteamUserStats.SetStat("stat_anomalies_found", count);
+
+        if (count >= 10) UnlockAchievement("ano_10");
+        if (count >= 20) UnlockAchievement("ano_20");
+        if (count >= 30) UnlockAchievement("ano_30");
+        if (count >= 40) UnlockAchievement("ano_40");
+
+        SteamUserStats.StoreStats();
     }
 
-    private void Update()
+    public void UnlockAchievement(string achievementID)
     {
-        if (!m_bInitialized) return;
+#if DEVELOPMENT_BUILD
+        return;
+#endif
 
-        SteamAPI.RunCallbacks();
+        if (!SteamManager.Initialized) return;
+
+        bool isUnlocked;
+        if (SteamUserStats.GetAchievement(achievementID, out isUnlocked) && !isUnlocked)
+        {
+            SteamUserStats.SetAchievement(achievementID);
+            SteamUserStats.StoreStats();
+            Debug.Log($"[Steam] Succès débloqué : {achievementID}");
+        }
     }
 }
 </file>
 
-<file path="Assets/_Scripts/SteamManager.cs.meta">
-fileFormatVersion: 2
-guid: d967b9578c3c6954481707ca0b1b7b91
+<file path="Assets/_Scripts/FadeManager.cs">
+using System.Collections;
+using UnityEngine;
+using UnityEngine.UI;
+using UnityEngine.SceneManagement;
+
+public class FadeManager : MonoBehaviour
+{
+    public static FadeManager Instance;
+
+    [Header("References")]
+    public Image fadeImage;
+    [Tooltip("L'objet contenant ton image ou texte de chargement")]
+    public GameObject loadingIcon; 
+
+    [Header("Settings")]
+    public float fadeOutDuration = 1.5f; 
+    public float fadeInDuration = 0.1f; 
+
+    private bool isFading = false;
+
+    private void Awake()
+    {
+        if (Instance == null)
+        {
+            Instance = this;
+            transform.SetParent(null); 
+            DontDestroyOnLoad(gameObject);
+        }
+        else
+        {
+            Destroy(gameObject);
+        }
+    }
+
+    private void Start()
+    {
+        if (loadingIcon != null) loadingIcon.SetActive(false);
+
+        if (fadeImage != null && !isFading)
+        {
+            fadeImage.gameObject.SetActive(true);
+            fadeImage.color = Color.black;
+            StartCoroutine(InitialFadeInRoutine());
+        }
+    }
+
+    private IEnumerator InitialFadeInRoutine()
+    {
+        isFading = true;
+        
+        yield return null;
+        yield return null;
+        yield return null;
+
+        float timer = 0f;
+        while (timer < fadeOutDuration)
+        {
+            timer += Time.unscaledDeltaTime;
+            float alpha = Mathf.Lerp(1f, 0f, timer / fadeOutDuration);
+            if (fadeImage != null)
+            {
+                Color c = fadeImage.color;
+                c.a = alpha;
+                fadeImage.color = c;
+            }
+            yield return null;
+        }
+
+        if (fadeImage != null) fadeImage.gameObject.SetActive(false);
+        isFading = false;
+    }
+
+    public void FadeAndRestart()
+    {
+        if (isFading) return;
+        StartCoroutine(RealLoadingSequence(SceneManager.GetActiveScene().name, fadeInDuration));
+    }
+
+    public void FadeAndLoadScene(string sceneName, float duration)
+    {
+        if (isFading) return;
+        StartCoroutine(RealLoadingSequence(sceneName, duration));
+    }
+
+    private IEnumerator RealLoadingSequence(string targetScene, float fadeDuration)
+    {
+        isFading = true;
+        
+        if (fadeImage != null) fadeImage.gameObject.SetActive(true);
+        float timer = 0f;
+        while (timer < fadeDuration)
+        {
+            timer += Time.unscaledDeltaTime;
+            float alpha = Mathf.Lerp(0f, 1f, timer / fadeDuration);
+            if (fadeImage != null)
+            {
+                Color c = fadeImage.color;
+                c.a = alpha;
+                fadeImage.color = c;
+            }
+            yield return null;
+        }
+
+        if (fadeImage != null) fadeImage.color = Color.black;
+
+        if (loadingIcon != null) loadingIcon.SetActive(true);
+
+        AsyncOperation asyncLoad = SceneManager.LoadSceneAsync(targetScene);
+        while (!asyncLoad.isDone)
+        {
+            yield return null;
+        }
+
+        yield return null;
+        yield return null;
+        yield return null;
+
+        if (loadingIcon != null) loadingIcon.SetActive(false);
+
+        timer = 0f;
+        while (timer < fadeOutDuration)
+        {
+            timer += Time.unscaledDeltaTime;
+            float alpha = Mathf.Lerp(1f, 0f, timer / fadeOutDuration);
+            if (fadeImage != null)
+            {
+                Color c = fadeImage.color;
+                c.a = alpha;
+                fadeImage.color = c;
+            }
+            yield return null;
+        }
+
+        if (fadeImage != null)
+        {
+            Color c = fadeImage.color;
+            c.a = 0f;
+            fadeImage.color = c;
+            fadeImage.gameObject.SetActive(false);
+        }
+
+        isFading = false;
+    }
+}
 </file>
 
 <file path="Assets/_Scripts/LocalizationDatabase.cs">
@@ -2266,213 +2091,6 @@ public class LocalizationDatabase : ScriptableObject
     }
 
     public List<Translation> translations = new List<Translation>();
-}
-</file>
-
-<file path="Assets/_Scripts/PlayerController.cs">
-using UnityEngine;
-using UnityEngine.InputSystem;
-
-[RequireComponent(typeof(CharacterController))]
-[RequireComponent(typeof(PlayerInput))]
-public class PlayerController : MonoBehaviour
-{
-    [Header("Player Movement")]
-    [Tooltip("Walking speed of the character in m/s")]
-    public float moveSpeed = 4.0f;
-    [Tooltip("Sprint speed of the character in m/s")]
-    public float sprintSpeed = 6.0f;
-    [Tooltip("Gravity force applied to the character")]
-    public float gravity = -15.0f;
-
-    [Header("Camera & Look")]
-    [Tooltip("Transform of the camera object for vertical rotation")]
-    public Transform cameraTransform;
-    [Tooltip("Mouse sensitivity multiplier (synced with settings)")]
-    public float lookSensitivity = 1.0f;
-    [Tooltip("Global multiplier to boost overall base sensitivity")]
-    public float sensitivityMultiplier = 10.0f;
-    [Tooltip("Maximum upward camera angle")]
-    public float topClamp = 90.0f;
-    [Tooltip("Maximum downward camera angle")]
-    public float bottomClamp = -90.0f;
-
-    [Header("Noclip Mode (F1 to toggle)")]
-    [Tooltip("Check this box to allow using Noclip mode with the F1 key.")]
-    public bool enableNoclip = true;
-    [Tooltip("Speed multiplier when moving freely in noclip")]
-    public float noclipSpeed = 10.0f;
-    [Tooltip("Sprint multiplier in noclip mode")]
-    public float noclipFastMultiplier = 3.0f;
-    [Tooltip("Cinematic mouse smoothing in noclip (lower value = smoother glide)")]
-    public float noclipSmoothing = 5f;
-
-    private CharacterController controller;
-    private PlayerInput playerInput;
-    private float verticalVelocity;
-    private float cameraPitch = 0.0f;
-    
-    public bool isNoclipActive = false;
-    private float noclipRotX = 0f;
-    private float noclipRotY = 0f;
-    private float currentNoclipRotX = 0f;
-    private float currentNoclipRotY = 0f;
-
-    private void Awake()
-    {
-        controller = GetComponent<CharacterController>();
-        playerInput = GetComponent<PlayerInput>();
-
-        if (playerInput != null && playerInput.actions != null)
-        {
-            playerInput.actions.Disable();
-            playerInput.currentActionMap = playerInput.actions.FindActionMap("Player");
-            if (playerInput.currentActionMap != null)
-            {
-                playerInput.currentActionMap.Enable();
-            }
-        }
-
-        if (cameraTransform == null && Camera.main != null)
-        {
-            cameraTransform = Camera.main.transform;
-        }
-    }
-
-    private void OnEnable()
-    {
-        SettingsManager.OnSensitivityChanged += ApplySavedSensitivity;
-        ApplySavedSensitivity(PlayerPrefs.GetFloat("SensitivityPref", 1f));
-
-        Cursor.lockState = CursorLockMode.Locked;
-        Cursor.visible = false;
-    }
-
-    private void OnDisable()
-    {
-        SettingsManager.OnSensitivityChanged -= ApplySavedSensitivity;
-
-        Cursor.lockState = CursorLockMode.None;
-        Cursor.visible = true;
-    }
-
-    private void Start()
-    {
-        ApplySavedSensitivity(PlayerPrefs.GetFloat("SensitivityPref", 1f));
-    }
-
-    private void ApplySavedSensitivity(float newSensitivity)
-    {
-        lookSensitivity = newSensitivity;
-    }
-
-    private void Update()
-    {
-        if (enableNoclip && Keyboard.current != null && Keyboard.current.f1Key.wasPressedThisFrame)
-        {
-            isNoclipActive = !isNoclipActive;
-            verticalVelocity = 0f;
-        }
-
-        if (isNoclipActive)
-        {
-            HandleNoclipMovement();
-        }
-        else
-        {
-            HandleNormalMovement();
-            HandleNormalLook();
-        }
-    }
-
-    private void HandleNormalMovement()
-    {
-        bool isSprinting = Keyboard.current != null && Keyboard.current.leftShiftKey.isPressed;
-        float currentSpeed = isSprinting ? sprintSpeed : moveSpeed;
-
-        Vector2 moveInput = Vector2.zero;
-        if (playerInput != null && playerInput.actions != null)
-        {
-            InputAction moveAction = playerInput.actions["Move"];
-            if (moveAction != null)
-            {
-                moveInput = moveAction.ReadValue<Vector2>();
-            }
-        }
-
-        Vector3 moveDirection = transform.right * moveInput.x + transform.forward * moveInput.y;
-        moveDirection.Normalize();
-
-        if (controller.isGrounded)
-        {
-            if (verticalVelocity < 0.0f) verticalVelocity = -2f;
-        }
-        else
-        {
-            verticalVelocity += gravity * Time.deltaTime;
-        }
-
-        Vector3 finalMovement = moveDirection * currentSpeed + Vector3.up * verticalVelocity;
-        controller.Move(finalMovement * Time.deltaTime);
-    }
-
-    private void HandleNormalLook()
-    {
-        Vector2 lookInput = Vector2.zero;
-        if (playerInput != null && playerInput.actions != null)
-        {
-            InputAction lookAction = playerInput.actions["Look"];
-            if (lookAction != null)
-            {
-                lookInput = lookAction.ReadValue<Vector2>();
-            }
-        }
-
-        float finalSensitivity = lookSensitivity * sensitivityMultiplier * 0.1f;
-        
-        transform.Rotate(Vector3.up * lookInput.x * finalSensitivity);
-
-        cameraPitch += lookInput.y * finalSensitivity;
-        cameraPitch = Mathf.Clamp(cameraPitch, bottomClamp, topClamp);
-
-        if (cameraTransform != null)
-        {
-            cameraTransform.localRotation = Quaternion.Euler(cameraPitch, 0.0f, 0.0f);
-        }
-    }
-
-    private void HandleNoclipMovement()
-    {
-        if (Mouse.current != null)
-        {
-            Vector2 mouseDelta = Mouse.current.delta.ReadValue();
-            noclipRotX += mouseDelta.x * lookSensitivity * 0.05f;
-            noclipRotY -= mouseDelta.y * lookSensitivity * 0.05f;
-            noclipRotY = Mathf.Clamp(noclipRotY, -90f, 90f);
-        }
-
-        currentNoclipRotX = Mathf.Lerp(currentNoclipRotX, noclipRotX, noclipSmoothing * Time.deltaTime);
-        currentNoclipRotY = Mathf.Lerp(currentNoclipRotY, noclipRotY, noclipSmoothing * Time.deltaTime);
-
-        transform.rotation = Quaternion.Euler(currentNoclipRotY, currentNoclipRotX, 0f);
-        if (cameraTransform != null) cameraTransform.localRotation = Quaternion.identity;
-
-        float speed = noclipSpeed;
-        if (Keyboard.current != null && Keyboard.current.leftShiftKey.isPressed) speed *= noclipFastMultiplier;
-
-        Vector3 noclipDir = Vector3.zero;
-        if (Keyboard.current != null)
-        {
-            if (Keyboard.current.wKey.isPressed || Keyboard.current.zKey.isPressed) noclipDir += transform.forward;
-            if (Keyboard.current.sKey.isPressed) noclipDir -= transform.forward;
-            if (Keyboard.current.dKey.isPressed) noclipDir += transform.right;
-            if (Keyboard.current.qKey.isPressed || Keyboard.current.aKey.isPressed) noclipDir -= transform.right;
-            if (Keyboard.current.eKey.isPressed) noclipDir += Vector3.up;
-            if (Keyboard.current.xKey.isPressed) noclipDir -= Vector3.up;
-        }
-
-        transform.position += noclipDir * speed * Time.deltaTime;
-    }
 }
 </file>
 
@@ -2611,321 +2229,428 @@ public static class SaveManager
 }
 </file>
 
-<file path="Assets/_Scripts/CreditsManager.cs">
-using System.Collections;
+<file path="Assets/_Scripts/SteamManager.cs">
 using UnityEngine;
-using UnityEngine.UI;
-using UnityEngine.SceneManagement;
+using Steamworks;
 
-public class CreditsManager : MonoBehaviour
+[DisallowMultipleComponent]
+public class SteamManager : MonoBehaviour
 {
-    [Header("References")]
-    public Image fullScreenImage;
-    public RectTransform creditsPanel;
-    
-    [Header("UI Elements")]
-    public GameObject skipButton; 
-    private CanvasGroup skipButtonCanvasGroup;
+    private static SteamManager s_instance;
 
-    [Header("Timings")]
-    public float fadeToBlackDuration = 2f;
-    public float waitBeforeCredits = 1f;
-    public float delayAfterScroll = 3f;
+    public static bool Initialized => s_instance != null && s_instance.m_bInitialized;
 
-    [Header("Scrolling Settings")]
-    public float scrollSpeed = 100f;
-    public float endPositionY = 2500f;
+    private bool m_bInitialized;
+    private SteamAPIWarningMessageHook_t m_SteamAPIWarningMessageHook;
 
-    private float initialVolume;
-
-    private void Start()
+    private static void SteamAPIDebugTextHook(int nSeverity, System.Text.StringBuilder pchDebugText)
     {
-        if (skipButton != null)
-        {
-            skipButtonCanvasGroup = skipButton.GetComponent<CanvasGroup>();
-            
-            if (skipButtonCanvasGroup == null)
-            {
-                skipButtonCanvasGroup = skipButton.AddComponent<CanvasGroup>();
-            }
-
-            skipButtonCanvasGroup.alpha = 0f;
-            skipButtonCanvasGroup.interactable = false;
-            skipButtonCanvasGroup.blocksRaycasts = false;
-            
-            skipButton.SetActive(false);
-        }
+        Debug.LogWarning(pchDebugText);
     }
-
-    public void StartCreditsSequence()
-    {
-        initialVolume = AudioListener.volume;
-        StartCoroutine(CreditsRoutine());
-    }
-
-    private IEnumerator CreditsRoutine()
-    {
-        if (AchievementManager.Instance != null)
-        {
-            AchievementManager.Instance.UnlockAchievement("end");
-        }
-        
-        float timer = 0f;
-        Color startColor = fullScreenImage.color;
-        Color targetColor = Color.black;
-
-        if (skipButton != null)
-        {
-            skipButton.SetActive(true);
-        }
-
-        while (timer < fadeToBlackDuration)
-        {
-            timer += Time.deltaTime;
-            float progress = timer / fadeToBlackDuration;
-            
-            fullScreenImage.color = Color.Lerp(startColor, targetColor, progress);
-            AudioListener.volume = Mathf.Lerp(initialVolume, 0f, progress);
-
-            if (skipButtonCanvasGroup != null)
-            {
-                skipButtonCanvasGroup.alpha = progress;
-            }
-
-            yield return null;
-        }
-        
-        fullScreenImage.color = targetColor;
-        AudioListener.volume = 0f;
-
-        if (skipButtonCanvasGroup != null)
-        {
-            skipButtonCanvasGroup.alpha = 1f;
-            skipButtonCanvasGroup.interactable = true;
-            skipButtonCanvasGroup.blocksRaycasts = true;
-        }
-
-        yield return new WaitForSeconds(waitBeforeCredits);
-
-        if (creditsPanel != null)
-        {
-            creditsPanel.gameObject.SetActive(true);
-
-            while (creditsPanel.anchoredPosition.y < endPositionY)
-            {
-                creditsPanel.anchoredPosition += Vector2.up * (scrollSpeed * Time.deltaTime);
-                yield return null;
-            }
-        }
-
-        yield return new WaitForSeconds(delayAfterScroll);
-
-        LoadMenu();
-    }
-
-    public void SkipCredits()
-    {
-        StopAllCoroutines();
-        LoadMenu();
-    }
-
-    private void LoadMenu()
-    {
-        AudioListener.volume = initialVolume;
-        SceneManager.LoadScene("Menu");
-    }
-}
-</file>
-
-<file path="Assets/_Scripts/DigicodeManager.cs">
-using System.Collections;
-using UnityEngine;
-using TMPro;
-using UnityEngine.InputSystem;
-
-public class DigicodeManager : MonoBehaviour
-{
-    public static DigicodeManager Instance;
-
-    [Header("UI References")]
-    public GameObject keypadPanel;
-    public TMP_Text displayCode;
-
-    [Header("Audio Feedback")]
-    public AudioSource audioSource;
-    public AudioClip[] buttonBeepClips;
-    public AudioClip errorClip;
-    public AudioClip successClip;
-
-    [Header("Door Settings")]
-    public string secretCode = "260315";
-    public string placeholderKey = "ui_keypad_format";
-    public Transform secretDoor;
-    public Vector3 openRotation = new Vector3(-90f, 0f, 30f);
-    public float openSpeed = 100f;
-    public AudioSource doorAudioSource;
-    public AudioClip doorOpenClip;
-
-    private string currentInput = "";
-    private PlayerController playerController;
-    private PauseManager pauseManager;
-    private bool isSolved = false;
 
     private void Awake()
     {
-        Instance = this;
-        if (keypadPanel != null) keypadPanel.SetActive(false);
+        if (s_instance != null)
+        {
+            Destroy(gameObject);
+            return;
+        }
+
+        s_instance = this;
+        DontDestroyOnLoad(gameObject);
+
+#if DEVELOPMENT_BUILD
+        Debug.LogWarning("[Steamworks.NET] Development Build actif : Steam disabled to allow testing without a license.");
+        m_bInitialized = false;
+        return;
+#endif
+
+        if (!Packsize.Test())
+        {
+            Debug.LogError("[Steamworks.NET] Packsize Test failed.");
+            return;
+        }
+
+        if (!DllCheck.Test())
+        {
+            Debug.LogError("[Steamworks.NET] DllCheck Test failed.");
+            return;
+        }
+
+        try
+        {
+            if (SteamAPI.RestartAppIfNecessary((AppId_t)5080810))
+            {
+                Application.Quit();
+                return;
+            }
+        }
+        catch (System.DllNotFoundException e)
+        {
+            Debug.LogError("[Steamworks.NET] Could not load steam_api.dll/so/dylib: " + e);
+            return;
+        }
+
+        m_bInitialized = SteamAPI.Init();
+        if (!m_bInitialized)
+        {
+            Debug.LogError("[Steamworks.NET] SteamAPI_Init() failed.");
+            return;
+        }
     }
-    
-    private void Start()
+
+    private void OnEnable()
     {
-        pauseManager = FindAnyObjectByType<PauseManager>();
+        if (s_instance == null) s_instance = this;
+
+        if (!m_bInitialized) return;
+
+        if (m_SteamAPIWarningMessageHook == null)
+        {
+            m_SteamAPIWarningMessageHook = new SteamAPIWarningMessageHook_t(SteamAPIDebugTextHook);
+            SteamClient.SetWarningMessageHook(m_SteamAPIWarningMessageHook);
+        }
+    }
+
+    private void OnDestroy()
+    {
+        if (s_instance != this) return;
+
+        s_instance = null;
+
+        if (!m_bInitialized) return;
+
+        SteamAPI.Shutdown();
     }
 
     private void Update()
     {
-        if (keypadPanel != null && keypadPanel.activeSelf && !isSolved)
+        if (!m_bInitialized) return;
+
+        SteamAPI.RunCallbacks();
+    }
+}
+</file>
+
+<file path="Assets/_Scripts/Anomalies/RamenAnomaly.cs">
+using UnityEngine;
+using UnityEngine.InputSystem;
+
+[RequireComponent(typeof(AudioSource))]
+public class RamenAnomaly : MonoBehaviour
+{
+    [Header("References")]
+    public Transform player;
+
+    [Header("Settings")]
+    public float interactDistance = 2.5f;
+    public float lookAngleThreshold = 20f;
+
+    private AudioSource audioSource;
+    private bool hasBeenEaten = false;
+    private Transform mainCamera;
+
+    public InteractableIndicator indicator;
+
+    private void Awake()
+    {
+        audioSource = GetComponent<AudioSource>();
+        audioSource.playOnAwake = false;
+    }
+
+    private void OnEnable()
+    {
+        hasBeenEaten = false;
+        if (Camera.main != null) mainCamera = Camera.main.transform;
+
+        if (player == null)
         {
-            if (Keyboard.current != null && Keyboard.current.escapeKey.wasPressedThisFrame)
+            GameObject playerObj = GameObject.FindGameObjectWithTag("Player");
+            if (playerObj != null) player = playerObj.transform;
+        }
+    }
+
+    private void Update()
+    {
+        if (hasBeenEaten || player == null || mainCamera == null) return;
+
+        if (Vector3.Distance(player.position, transform.position) <= interactDistance)
+        {
+            Vector3 dirToTarget = (transform.position - mainCamera.position).normalized;
+            float angle = Vector3.Angle(mainCamera.forward, dirToTarget);
+
+            if (angle <= lookAngleThreshold)
             {
-                CloseKeypad();
+                bool interactPressed = false;
+
+                if (Keyboard.current != null && !PauseManager.Instance.isPaused)
+                {
+                    if (Keyboard.current.eKey.wasPressedThisFrame || Keyboard.current.fKey.wasPressedThisFrame)
+                    {
+                        interactPressed = true;
+                    }
+                }
+
+                if (Mouse.current != null && !PauseManager.Instance.isPaused)
+                {
+                    if (Mouse.current.leftButton.wasPressedThisFrame)
+                    {
+                        interactPressed = true;
+                    }
+                }
+
+                if (interactPressed)
+                {
+                    EatRamen();
+                }
             }
         }
     }
 
-    public void OpenKeypad(PlayerController player)
+    private void EatRamen()
     {
-        if (isSolved) return;
+        hasBeenEaten = true;
 
-        playerController = player;
+        if (indicator != null) indicator.enabled = false;
+
+        if (audioSource != null && audioSource.clip != null)
+        {
+            audioSource.Play();
+        }
+
+        if (AchievementManager.Instance != null)
+        {
+            AchievementManager.Instance.UnlockAchievement("eat");
+        }
+    }
+
+    private void OnDrawGizmosSelected()
+    {
+        Gizmos.color = Color.cyan;
+        Gizmos.DrawWireSphere(transform.position, interactDistance);
+    }
+}
+</file>
+
+<file path="Assets/_Scripts/Anomalies/SecretPaper.cs">
+using UnityEngine;
+using UnityEngine.InputSystem;
+
+public class SecretPaper : MonoBehaviour
+{
+    [Header("References")]
+    public Transform player;
+    public GameObject paperUIPanel;
+    public PlayerController playerController;
+    public PauseManager pauseManager;
+    public CreditsManager creditsManager;
+
+    [Header("Audio")]
+    public AudioSource pickupSound;
+
+    [Header("Settings")]
+    public float interactDistance = 1f;
+    public float lookAngleThreshold = 20f;
+
+    private bool isReading = false;
+    private bool hasBeenRead = false;
+    private Transform mainCamera;
+
+    public InteractableIndicator indicator;
+
+    private void OnEnable()
+    {
+        if (Camera.main != null) mainCamera = Camera.main.transform;
+
+        if (player == null)
+        {
+            GameObject playerObj = GameObject.FindGameObjectWithTag("Player");
+            if (playerObj != null) 
+            {
+                player = playerObj.transform;
+                playerController = playerObj.GetComponent<PlayerController>();
+            }
+        }
+        
+        if (pauseManager == null)
+        {
+            pauseManager = FindAnyObjectByType<PauseManager>();
+        }
+        
+        if (creditsManager == null)
+        {
+            creditsManager = FindAnyObjectByType<CreditsManager>();
+        }
+    }
+
+    private void Update()
+    {
+        if (player == null || mainCamera == null) return;
+
+        if (!isReading && !hasBeenRead) 
+        {
+            if (Vector3.Distance(player.position, transform.position) <= interactDistance)
+            {
+                Vector3 dirToTarget = (transform.position - mainCamera.position).normalized;
+                float angle = Vector3.Angle(mainCamera.forward, dirToTarget);
+
+                if (angle <= lookAngleThreshold)
+                {
+                    bool interactPressed = false;
+                    
+                    if (Keyboard.current != null)
+                    {
+                        if (!pauseManager.isPaused && (Keyboard.current.eKey.wasPressedThisFrame || Keyboard.current.fKey.wasPressedThisFrame))
+                        {
+                            interactPressed = true;
+                        }
+                    }
+                    
+                    if (!pauseManager.isPaused && Mouse.current != null) 
+                    {
+                        if (Mouse.current.leftButton.wasPressedThisFrame) 
+                        {
+                            interactPressed = true; 
+                        }
+                    }
+
+                    if (interactPressed) 
+                    {
+                        ReadPaper();
+                    }
+                }
+            }
+        }
+        else if (isReading)
+        {
+            bool exitPressed = false;
+
+            if (!pauseManager.isPaused && Keyboard.current != null && Keyboard.current.escapeKey.wasPressedThisFrame)
+            {
+                exitPressed = true;
+            }
+            
+            if (!pauseManager.isPaused && Mouse.current != null && Mouse.current.leftButton.wasPressedThisFrame)
+            {
+                exitPressed = true;
+            }
+
+            if (exitPressed)
+            {
+                CloseAndRollCredits();
+            }
+        }
+    }
+
+    private void ReadPaper()
+    {
+        isReading = true;
+        hasBeenRead = true;
+        if (indicator != null) indicator.enabled = false;
+
+        if (pickupSound != null)
+        {
+            pickupSound.Play();
+        }
+
+        if (paperUIPanel != null) paperUIPanel.SetActive(true);
+
         if (playerController != null) playerController.enabled = false;
         if (pauseManager != null) pauseManager.enabled = false;
-
-        Cursor.lockState = CursorLockMode.None;
-        Cursor.visible = true;
-
-        ClearInputSilent();
-
-        if (keypadPanel != null) keypadPanel.SetActive(true);
     }
 
-    public void CloseKeypad()
+    private void CloseAndRollCredits()
     {
-        if (keypadPanel != null) keypadPanel.SetActive(false);
-
-        Cursor.lockState = CursorLockMode.Locked;
-        Cursor.visible = false;
-
-        if (playerController != null) playerController.enabled = true;
-        if (pauseManager != null) pauseManager.enabled = true;
-    }
-
-    public void AddDigit(string digit)
-    {
-        PlayRandomBeep();
-
-        if (currentInput.Length < 6)
-        {
-            if (currentInput.Length == 0)
-            {
-                displayCode.color = Color.white;
-            }
-            currentInput += digit;
-            displayCode.text = currentInput;
-        }
-    }
-
-    public void ClearInput()
-    {
-        PlayRandomBeep();
-        ClearInputSilent();
-    }
-
-    private void ClearInputSilent()
-    {
-        currentInput = "";
-
-        if (LocalizationManager.Instance != null)
-        {
-            displayCode.text = LocalizationManager.Instance.GetTranslation(placeholderKey);
-        }
-        else
-        {
-            displayCode.text = "AA/MM/JJ";
-        }
-
-        displayCode.color = Color.gray;
-    }
-
-    public void ValidateOrClose()
-    {
-        if (string.IsNullOrEmpty(currentInput))
-        {
-            PlayRandomBeep();
-            CloseKeypad();
-            return;
-        }
-
-        if (currentInput == secretCode)
-        {
-            isSolved = true;
-            displayCode.text = "OK";
-            displayCode.color = Color.green;
-            StartCoroutine(UnlockSequence());
-        }
-        else
-        {
-            if (audioSource != null && errorClip != null)
-            {
-                audioSource.PlayOneShot(errorClip);
-            }
-            CloseKeypad();
-        }
-    }
-
-    private void PlayRandomBeep()
-    {
-        if (audioSource != null && buttonBeepClips != null && buttonBeepClips.Length > 0)
-        {
-            int randomIndex = Random.Range(0, buttonBeepClips.Length);
-            audioSource.PlayOneShot(buttonBeepClips[randomIndex]);
-        }
-    }
-
-    private IEnumerator UnlockSequence()
-    {
-        if (audioSource != null && successClip != null)
-        {
-            audioSource.PlayOneShot(successClip);
-        }
-        yield return new WaitForSeconds(0.5f);
-        CloseKeypad();
-
-        if (doorAudioSource != null && doorOpenClip != null)
-        {
-            doorAudioSource.PlayOneShot(doorOpenClip);
-        }
-
+        isReading = false;
+        if (paperUIPanel != null) paperUIPanel.SetActive(false);
+        
         if (AchievementManager.Instance != null)
         {
             AchievementManager.Instance.UnlockAchievement("secret_end");
         }
 
-        if (secretDoor != null)
+        EndgameFade endgameFade = FindAnyObjectByType<EndgameFade>();
+        if (endgameFade != null)
         {
-            Quaternion startRot = secretDoor.localRotation;
-            Quaternion targetRot = Quaternion.Euler(openRotation);
-            float t = 0f;
-
-            while (t < 1f)
-            {
-                t += Time.deltaTime * openSpeed;
-                secretDoor.localRotation = Quaternion.Slerp(startRot, targetRot, t);
-                yield return null;
-            }
-
-            secretDoor.localRotation = targetRot;
+            endgameFade.enabled = false;
         }
+
+        if (creditsManager != null)
+        {
+            creditsManager.StartCreditsSequence();
+        }
+    }
+
+    private void OnDrawGizmosSelected()
+    {
+        Gizmos.color = Color.cyan;
+        Gizmos.DrawWireSphere(transform.position, interactDistance);
+    }
+}
+</file>
+
+<file path="Assets/_Scripts/DigicodeInteract.cs">
+using UnityEngine;
+using UnityEngine.InputSystem;
+
+public class DigicodeInteract : MonoBehaviour
+{
+    [Header("Settings")]
+    public float interactDistance = 2.5f;
+    public float lookAngleThreshold = 20f;
+
+    private Transform player;
+    private PlayerController playerController;
+    private Transform mainCamera;
+
+    private void OnEnable()
+    {
+        if (Camera.main != null) mainCamera = Camera.main.transform;
+
+        if (player == null)
+        {
+            GameObject p = GameObject.FindGameObjectWithTag("Player");
+            if (p != null)
+            {
+                player = p.transform;
+                playerController = p.GetComponent<PlayerController>();
+            }
+        }
+    }
+
+    private void Update()
+    {
+        if (player == null || mainCamera == null || DigicodeManager.Instance == null) return;
+        if (DigicodeManager.Instance.isSolved) return;
+        if (DigicodeManager.Instance.keypadPanel.activeSelf) return;
+
+        if (Vector3.Distance(player.position, transform.position) <= interactDistance)
+        {
+            Vector3 dirToTarget = (transform.position - mainCamera.position).normalized;
+            float angle = Vector3.Angle(mainCamera.forward, dirToTarget);
+
+            if (angle <= lookAngleThreshold)
+            {
+                bool interactPressed = false;
+
+                if (!PauseManager.Instance.isPaused && Keyboard.current != null && (Keyboard.current.eKey.wasPressedThisFrame || Keyboard.current.fKey.wasPressedThisFrame))
+                    interactPressed = true;
+                    
+                if (!PauseManager.Instance.isPaused && Mouse.current != null && Mouse.current.leftButton.wasPressedThisFrame)
+                    interactPressed = true;
+
+                if (interactPressed)
+                {
+                    DigicodeManager.Instance.OpenKeypad(playerController);
+                }
+            }
+        }
+    }
+
+    private void OnDrawGizmosSelected()
+    {
+        Gizmos.color = Color.cyan;
+        Gizmos.DrawWireSphere(transform.position, interactDistance);
     }
 }
 </file>
@@ -3112,64 +2837,6 @@ public class LocalizationManager : MonoBehaviour
             }
         }
         return key; 
-    }
-}
-</file>
-
-<file path="Assets/_Scripts/LoopTrigger.cs">
-using UnityEngine;
-
-public class LoopTrigger : MonoBehaviour
-{
-    public Transform destinationTrigger;
-    public Transform endgameDestinationTrigger;
-
-    public bool isForwardExit;
-
-    private static float cooldownTimer = 0f;
-
-    private void OnTriggerEnter(Collider other)
-    {
-        if (Time.time < cooldownTimer) return;
-
-        if (other.CompareTag("Player"))
-        {
-            CharacterController cc = other.GetComponent<CharacterController>();
-            if (cc != null)
-            {
-                cooldownTimer = Time.time + 0.2f;
-
-                GameManager.Instance.CheckPlayerChoice(isForwardExit);
-
-                Vector3 localPos = transform.InverseTransformPoint(other.transform.position);
-
-                if (!isForwardExit)
-                {
-                    localPos.x = -localPos.x;
-                    localPos.z = -localPos.z;
-                }
-
-                Transform targetDestination = destinationTrigger;
-
-                if (GameManager.Instance.currentLevel >= GameManager.Instance.winLevel)
-                {
-                    targetDestination = endgameDestinationTrigger;
-                }
-
-                Vector3 worldDestination = targetDestination.TransformPoint(localPos);
-
-                cc.enabled = false;
-                other.transform.position = worldDestination;
-
-                if (!isForwardExit)
-                {
-                    other.transform.Rotate(0, 180, 0);
-                }
-
-                Physics.SyncTransforms();
-                cc.enabled = true;
-            }
-        }
     }
 }
 </file>
@@ -3374,6 +3041,216 @@ public class MenuManager : MonoBehaviour
 }
 </file>
 
+<file path="Assets/_Scripts/PlayerController.cs">
+using UnityEngine;
+using UnityEngine.InputSystem;
+
+[RequireComponent(typeof(CharacterController))]
+[RequireComponent(typeof(PlayerInput))]
+public class PlayerController : MonoBehaviour
+{
+    [Header("Player Movement")]
+    [Tooltip("Walking speed of the character in m/s")]
+    public float moveSpeed = 4.0f;
+    [Tooltip("Sprint speed of the character in m/s")]
+    public float sprintSpeed = 6.0f;
+    [Tooltip("Gravity force applied to the character")]
+    public float gravity = -15.0f;
+
+    [Header("Camera & Look")]
+    [Tooltip("Transform of the camera object for vertical rotation")]
+    public Transform cameraTransform;
+    [Tooltip("Mouse sensitivity multiplier (synced with settings)")]
+    public float lookSensitivity = 1.0f;
+    [Tooltip("Global multiplier to boost overall base sensitivity")]
+    public float sensitivityMultiplier = 10.0f;
+    [Tooltip("Maximum upward camera angle")]
+    public float topClamp = 90.0f;
+    [Tooltip("Maximum downward camera angle")]
+    public float bottomClamp = -90.0f;
+
+    [Header("Noclip Mode (F1 to toggle)")]
+    [Tooltip("Check this box to allow using Noclip mode with the F1 key.")]
+    public bool enableNoclip = true;
+    [Tooltip("Speed multiplier when moving freely in noclip")]
+    public float noclipSpeed = 10.0f;
+    [Tooltip("Sprint multiplier in noclip mode")]
+    public float noclipFastMultiplier = 3.0f;
+    [Tooltip("Cinematic mouse smoothing in noclip (lower value = smoother glide)")]
+    public float noclipSmoothing = 5f;
+
+    private CharacterController controller;
+    private PlayerInput playerInput;
+    private float verticalVelocity;
+    private float cameraPitch = 0.0f;
+
+    public bool isNoclipActive = false;
+    private float noclipRotX = 0f;
+    private float noclipRotY = 0f;
+    private float currentNoclipRotX = 0f;
+    private float currentNoclipRotY = 0f;
+
+    private void Awake()
+    {
+        controller = GetComponent<CharacterController>();
+        playerInput = GetComponent<PlayerInput>();
+
+        if (playerInput != null && playerInput.actions != null)
+        {
+            playerInput.actions.Disable();
+            playerInput.currentActionMap = playerInput.actions.FindActionMap("Player");
+            if (playerInput.currentActionMap != null)
+            {
+                playerInput.currentActionMap.Enable();
+            }
+        }
+
+        if (cameraTransform == null && Camera.main != null)
+        {
+            cameraTransform = Camera.main.transform;
+        }
+    }
+
+    private void OnEnable()
+    {
+        SettingsManager.OnSensitivityChanged += ApplySavedSensitivity;
+        ApplySavedSensitivity(PlayerPrefs.GetFloat("SensitivityPref", 1f));
+
+        Cursor.lockState = CursorLockMode.Locked;
+        Cursor.visible = false;
+    }
+
+    private void OnDisable()
+    {
+        SettingsManager.OnSensitivityChanged -= ApplySavedSensitivity;
+
+        Cursor.lockState = CursorLockMode.None;
+        Cursor.visible = true;
+    }
+
+    private void Start()
+    {
+        ApplySavedSensitivity(PlayerPrefs.GetFloat("SensitivityPref", 1f));
+    }
+
+    private void ApplySavedSensitivity(float newSensitivity)
+    {
+        lookSensitivity = newSensitivity;
+    }
+
+    private void Update()
+    {
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+    // Will be compiled only in the Editor or Development builds, allowing for noclip testing without affecting the final build.
+    if (enableNoclip && Keyboard.current != null && Keyboard.current.f1Key.wasPressedThisFrame)
+    {
+        isNoclipActive = !isNoclipActive;
+        verticalVelocity = 0f;
+    }
+#endif
+
+        if (isNoclipActive)
+        {
+            HandleNoclipMovement();
+        }
+        else
+        {
+            HandleNormalMovement();
+            HandleNormalLook();
+        }
+    }
+
+    private void HandleNormalMovement()
+    {
+        bool isSprinting = Keyboard.current != null && Keyboard.current.leftShiftKey.isPressed;
+        float currentSpeed = isSprinting ? sprintSpeed : moveSpeed;
+
+        Vector2 moveInput = Vector2.zero;
+        if (playerInput != null && playerInput.actions != null)
+        {
+            InputAction moveAction = playerInput.actions["Move"];
+            if (moveAction != null)
+            {
+                moveInput = moveAction.ReadValue<Vector2>();
+            }
+        }
+
+        Vector3 moveDirection = transform.right * moveInput.x + transform.forward * moveInput.y;
+        moveDirection.Normalize();
+
+        if (controller.isGrounded)
+        {
+            if (verticalVelocity < 0.0f) verticalVelocity = -2f;
+        }
+        else
+        {
+            verticalVelocity += gravity * Time.deltaTime;
+        }
+
+        Vector3 finalMovement = moveDirection * currentSpeed + Vector3.up * verticalVelocity;
+        controller.Move(finalMovement * Time.deltaTime);
+    }
+
+    private void HandleNormalLook()
+    {
+        Vector2 lookInput = Vector2.zero;
+        if (playerInput != null && playerInput.actions != null)
+        {
+            InputAction lookAction = playerInput.actions["Look"];
+            if (lookAction != null)
+            {
+                lookInput = lookAction.ReadValue<Vector2>();
+            }
+        }
+
+        float finalSensitivity = lookSensitivity * sensitivityMultiplier * 0.1f;
+
+        transform.Rotate(Vector3.up * lookInput.x * finalSensitivity);
+
+        cameraPitch += lookInput.y * finalSensitivity;
+        cameraPitch = Mathf.Clamp(cameraPitch, bottomClamp, topClamp);
+
+        if (cameraTransform != null)
+        {
+            cameraTransform.localRotation = Quaternion.Euler(cameraPitch, 0.0f, 0.0f);
+        }
+    }
+
+    private void HandleNoclipMovement()
+    {
+        if (Mouse.current != null)
+        {
+            Vector2 mouseDelta = Mouse.current.delta.ReadValue();
+            noclipRotX += mouseDelta.x * lookSensitivity * 0.05f;
+            noclipRotY -= mouseDelta.y * lookSensitivity * 0.05f;
+            noclipRotY = Mathf.Clamp(noclipRotY, -90f, 90f);
+        }
+
+        currentNoclipRotX = Mathf.Lerp(currentNoclipRotX, noclipRotX, noclipSmoothing * Time.deltaTime);
+        currentNoclipRotY = Mathf.Lerp(currentNoclipRotY, noclipRotY, noclipSmoothing * Time.deltaTime);
+
+        transform.rotation = Quaternion.Euler(currentNoclipRotY, currentNoclipRotX, 0f);
+        if (cameraTransform != null) cameraTransform.localRotation = Quaternion.identity;
+
+        float speed = noclipSpeed;
+        if (Keyboard.current != null && Keyboard.current.leftShiftKey.isPressed) speed *= noclipFastMultiplier;
+
+        Vector3 noclipDir = Vector3.zero;
+        if (Keyboard.current != null)
+        {
+            if (Keyboard.current.wKey.isPressed || Keyboard.current.zKey.isPressed) noclipDir += transform.forward;
+            if (Keyboard.current.sKey.isPressed) noclipDir -= transform.forward;
+            if (Keyboard.current.dKey.isPressed) noclipDir += transform.right;
+            if (Keyboard.current.qKey.isPressed || Keyboard.current.aKey.isPressed) noclipDir -= transform.right;
+            if (Keyboard.current.eKey.isPressed) noclipDir += Vector3.up;
+            if (Keyboard.current.xKey.isPressed) noclipDir -= Vector3.up;
+        }
+
+        transform.position += noclipDir * speed * Time.deltaTime;
+    }
+}
+</file>
+
 <file path="Assets/_Scripts/AnomalyController.cs">
 using System.Collections.Generic;
 using UnityEngine;
@@ -3505,243 +3382,417 @@ public class AnomalyController : MonoBehaviour
 }
 </file>
 
-<file path="Assets/_Scripts/SettingsManager.cs">
-using System.Collections.Generic;
+<file path="Assets/_Scripts/CreditsManager.cs">
+using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
-using TMPro;
-using UnityEngine.Rendering.Universal;
+using UnityEngine.SceneManagement;
+using UnityEngine.InputSystem;
+using UnityEngine.EventSystems;
 
-public class SettingsManager : MonoBehaviour
+public class CreditsManager : MonoBehaviour
 {
+    [Header("References")]
+    public Image fullScreenImage;
+    public RectTransform creditsPanel;
+    
     [Header("UI Elements")]
-    public TMP_Dropdown resolutionDropdown;
-    public TMP_Dropdown languageDropdown;
-    
-    [Header("Volume")]
-    public Slider volumeSlider;
-    public TMP_Text volumeValueText;
+    public GameObject skipButton; 
+    private CanvasGroup skipButtonCanvasGroup;
 
-    public Toggle fullscreenToggle;
-    public Toggle vsyncToggle;
-    public TMP_Dropdown fpsDropdown;
+    [Header("Timings")]
+    public float fadeToBlackDuration = 2f;
+    public float waitBeforeCredits = 1f;
+    public float delayAfterScroll = 3f;
+    [Tooltip("Temps d'attente avant l'apparition du bouton Skip")]
+    public float skipButtonDelay = 3f; 
 
-    [Header("Graphics")]
-    public TMP_Dropdown aaDropdown;
-    
-    [Header("Sensitivity")]
-    public Slider sensitivitySlider;
-    public TMP_Text sensitivityValueText;
-    public delegate void SensitivityChangedEvent(float newValue);
-    public static event SensitivityChangedEvent OnSensitivityChanged;
+    [Header("Scrolling Settings")]
+    public float scrollSpeed = 100f;
+    [Tooltip("Multiplicateur de vitesse quand on maintient le clic gauche")]
+    public float fastScrollMultiplier = 4f; 
+    [Tooltip("La distance de départ de ton panneau en Y (ex: 1080)")]
+    public float startOffsetY = 1080f;
+    [Tooltip("Marge ajoutée à la hauteur du panneau pour s'assurer que le texte sort bien de l'écran")]
+    public float endPadding = 200f;
 
-    private List<Resolution> filteredResolutions;
-    private readonly int[] fpsLimits = { -1, 30, 60, 120, 144 };
+    private float initialVolume;
+    private bool isSkipping = false;
 
     private void Start()
     {
-        SetupResolutions();
-        SetupVolume();
-        SetupLanguage();
-        SetupFullscreen();
-        SetupVSync();
-        SetupFPS();
-        SetupAA();
-        SetupSensitivity();
+        if (skipButton != null)
+        {
+            skipButtonCanvasGroup = skipButton.GetComponent<CanvasGroup>();
+            
+            if (skipButtonCanvasGroup == null)
+            {
+                skipButtonCanvasGroup = skipButton.AddComponent<CanvasGroup>();
+            }
+
+            skipButtonCanvasGroup.alpha = 0f;
+            skipButtonCanvasGroup.interactable = false;
+            skipButtonCanvasGroup.blocksRaycasts = false;
+            
+            skipButton.SetActive(false);
+        }
     }
 
-    private void SetupResolutions()
+    public void StartCreditsSequence()
     {
-        Resolution[] rawResolutions = Screen.resolutions;
-        filteredResolutions = new List<Resolution>();
-        resolutionDropdown.ClearOptions();
-
-        List<string> options = new List<string>();
-        int currentResIndex = 0;
-
-        for (int i = 0; i < rawResolutions.Length; i++)
+        initialVolume = AudioListener.volume;
+        StartCoroutine(CreditsRoutine());
+        
+        if (skipButton != null)
         {
-            Resolution res = rawResolutions[i];
-            string option = res.width + " x " + res.height;
+            StartCoroutine(ShowSkipButtonRoutine());
+        }
+    }
 
-            if (!options.Contains(option))
+    private IEnumerator ShowSkipButtonRoutine()
+    {
+        yield return new WaitForSeconds(skipButtonDelay);
+        
+        if (isSkipping) yield break;
+
+        skipButton.SetActive(true);
+        if (skipButtonCanvasGroup != null)
+        {
+            skipButtonCanvasGroup.alpha = 1f;
+            skipButtonCanvasGroup.interactable = true;
+            skipButtonCanvasGroup.blocksRaycasts = true;
+        }
+    }
+
+    private IEnumerator CreditsRoutine()
+    {
+        if (AchievementManager.Instance != null)
+        {
+            AchievementManager.Instance.UnlockAchievement("end");
+        }
+        
+        float timer = 0f;
+        Color startColor = fullScreenImage.color;
+        Color targetColor = Color.black;
+
+        while (timer < fadeToBlackDuration)
+        {
+            timer += Time.deltaTime;
+            float progress = timer / fadeToBlackDuration;
+            
+            if (fullScreenImage != null)
             {
-                filteredResolutions.Add(res);
-                options.Add(option);
+                fullScreenImage.color = Color.Lerp(startColor, targetColor, progress);
+            }
+            AudioListener.volume = Mathf.Lerp(initialVolume, 0f, progress);
 
-                if (res.width == Screen.currentResolution.width && res.height == Screen.currentResolution.height)
+            yield return null;
+        }
+        
+        if (fullScreenImage != null)
+        {
+            fullScreenImage.color = targetColor;
+        }
+        AudioListener.volume = 0f;
+
+        yield return new WaitForSeconds(waitBeforeCredits);
+
+        if (creditsPanel != null)
+        {
+            creditsPanel.gameObject.SetActive(true);
+
+            float dynamicEndY = creditsPanel.rect.height - startOffsetY + endPadding;
+
+            while (creditsPanel.anchoredPosition.y < dynamicEndY)
+            {
+                float currentSpeed = scrollSpeed;
+                
+                bool isPointerOverUI = EventSystem.current != null && EventSystem.current.IsPointerOverGameObject();
+
+                if (Mouse.current != null && Mouse.current.leftButton.isPressed && !isPointerOverUI)
                 {
-                    currentResIndex = filteredResolutions.Count - 1;
+                    currentSpeed *= fastScrollMultiplier;
                 }
+
+                creditsPanel.anchoredPosition += Vector2.up * (currentSpeed * Time.deltaTime);
+                yield return null;
             }
         }
 
-        resolutionDropdown.AddOptions(options);
-        int savedRes = PlayerPrefs.GetInt("ResolutionPref", currentResIndex);
-        if (savedRes >= filteredResolutions.Count) savedRes = currentResIndex;
+        yield return new WaitForSeconds(delayAfterScroll);
 
-        resolutionDropdown.SetValueWithoutNotify(savedRes);
-        resolutionDropdown.RefreshShownValue();
-        SetResolution(savedRes);
+        LoadMenu();
     }
 
-    public void SetResolution(int index)
+    public void SkipCredits()
     {
-        Resolution res = filteredResolutions[index];
-        Screen.SetResolution(res.width, res.height, Screen.fullScreen);
-        PlayerPrefs.SetInt("ResolutionPref", index);
+        LoadMenu();
     }
 
-    private void SetupVolume()
+    private void LoadMenu()
     {
-        float savedVolume = PlayerPrefs.GetFloat("VolumePref", 1f);
-        volumeSlider.SetValueWithoutNotify(savedVolume);
-        AudioListener.volume = savedVolume;
-        UpdateVolumeText(savedVolume);
-    }
+        if (isSkipping) return;
+        isSkipping = true;
 
-    public void SetVolume(float volume)
-    {
-        AudioListener.volume = volume;
-        PlayerPrefs.SetFloat("VolumePref", volume);
-        UpdateVolumeText(volume);
-    }
+        StopAllCoroutines();
+        
+        AudioListener.volume = initialVolume;
 
-    private void UpdateVolumeText(float volume)
-    {
-        if (volumeValueText != null)
+        if (FadeManager.Instance != null)
         {
-            volumeValueText.text = Mathf.RoundToInt(volume * 100f) + "%";
+            FadeManager.Instance.FadeAndLoadScene("Menu", 1f);
+        }
+        else
+        {
+            SceneManager.LoadScene("Menu");
+        }
+    }
+}
+</file>
+
+<file path="Assets/_Scripts/DigicodeManager.cs">
+using System.Collections;
+using UnityEngine;
+using TMPro;
+using UnityEngine.InputSystem;
+
+public class DigicodeManager : MonoBehaviour
+{
+    public static DigicodeManager Instance;
+
+    [Header("UI References")]
+    public GameObject keypadPanel;
+    public TMP_Text displayCode;
+
+    [Header("Audio Feedback")]
+    public AudioSource audioSource;
+    public AudioClip[] buttonBeepClips;
+    public AudioClip errorClip;
+    public AudioClip successClip;
+
+    [Header("Door Settings")]
+    public string secretCode = "260315";
+    public string placeholderKey = "ui_keypad_format";
+    public Transform secretDoor;
+    public Vector3 openRotation = new Vector3(-90f, 0f, 30f);
+    public float openSpeed = 100f;
+    public AudioSource doorAudioSource;
+    public AudioClip doorOpenClip;
+
+    private string currentInput = "";
+    private PlayerController playerController;
+    private PauseManager pauseManager;
+    public bool isSolved = false;
+
+    public InteractableIndicator indicator;
+
+    private void Awake()
+    {
+        Instance = this;
+        if (keypadPanel != null) keypadPanel.SetActive(false);
+    }
+    
+    private void Start()
+    {
+        pauseManager = FindAnyObjectByType<PauseManager>();
+    }
+
+    private void Update()
+    {
+        if (keypadPanel != null && keypadPanel.activeSelf && !isSolved)
+        {
+            if (Keyboard.current != null && Keyboard.current.escapeKey.wasPressedThisFrame)
+            {
+                CloseKeypad();
+            }
         }
     }
 
-    private void SetupLanguage()
+    public void OpenKeypad(PlayerController player)
     {
-        int savedLang = PlayerPrefs.GetInt("LanguagePref", 0);
-        languageDropdown.SetValueWithoutNotify(savedLang);
-        languageDropdown.RefreshShownValue();
+        if (isSolved) return;
+
+        playerController = player;
+        if (playerController != null) playerController.enabled = false;
+        if (pauseManager != null) pauseManager.enabled = false;
+
+        Cursor.lockState = CursorLockMode.None;
+        Cursor.visible = true;
+
+        ClearInputSilent();
+
+        if (keypadPanel != null) keypadPanel.SetActive(true);
     }
 
-    public void SetLanguage(int index)
+    public void CloseKeypad()
     {
-        PlayerPrefs.SetInt("LanguagePref", index);
+        if (keypadPanel != null) keypadPanel.SetActive(false);
+
+        Cursor.lockState = CursorLockMode.Locked;
+        Cursor.visible = false;
+
+        if (playerController != null) playerController.enabled = true;
+        if (pauseManager != null) pauseManager.enabled = true;
+    }
+
+    public void AddDigit(string digit)
+    {
+        PlayRandomBeep();
+
+        if (currentInput.Length < 6)
+        {
+            if (currentInput.Length == 0)
+            {
+                displayCode.color = Color.white;
+            }
+            currentInput += digit;
+            displayCode.text = currentInput;
+        }
+    }
+
+    public void ClearInput()
+    {
+        PlayRandomBeep();
+        ClearInputSilent();
+    }
+
+    private void ClearInputSilent()
+    {
+        currentInput = "";
+
         if (LocalizationManager.Instance != null)
         {
-            LocalizationManager.Instance.SetLanguage(index);
-            UpdateFPSDropdownText();
+            displayCode.text = LocalizationManager.Instance.GetTranslation(placeholderKey);
         }
-    }
-
-    private void SetupFullscreen()
-    {
-        if (fullscreenToggle != null)
+        else
         {
-            bool isFullscreen = PlayerPrefs.GetInt("FullscreenPref", 1) == 1;
-            fullscreenToggle.SetIsOnWithoutNotify(isFullscreen);
-            Screen.fullScreen = isFullscreen;
+            displayCode.text = "AA/MM/JJ";
         }
+
+        displayCode.color = Color.gray;
     }
 
-    public void SetFullscreen(bool isFullscreen)
+    public void ValidateOrClose()
     {
-        Screen.fullScreen = isFullscreen;
-        PlayerPrefs.SetInt("FullscreenPref", isFullscreen ? 1 : 0);
-    }
-
-    private void SetupVSync()
-    {
-        if (vsyncToggle != null)
+        if (string.IsNullOrEmpty(currentInput))
         {
-            bool isSync = PlayerPrefs.GetInt("VSyncPref", 0) == 1;
-            vsyncToggle.SetIsOnWithoutNotify(isSync);
-            SetVSync(isSync);
+            PlayRandomBeep();
+            CloseKeypad();
+            return;
         }
-    }
 
-    public void SetVSync(bool isVSync)
-    {
-        QualitySettings.vSyncCount = isVSync ? 1 : 0;
-        PlayerPrefs.SetInt("VSyncPref", isVSync ? 1 : 0);
-    }
-
-    private void SetupFPS()
-    {
-        if (fpsDropdown != null)
+        if (currentInput == secretCode)
         {
-            UpdateFPSDropdownText();
-            int savedFPSIndex = PlayerPrefs.GetInt("FPSPref", 0);
-            fpsDropdown.SetValueWithoutNotify(savedFPSIndex);
-            fpsDropdown.RefreshShownValue();
-            SetFPSLimit(savedFPSIndex);
+            isSolved = true;
+            if (indicator != null) indicator.enabled = false;
+            displayCode.text = "OK";
+            displayCode.color = Color.green;
+            StartCoroutine(UnlockSequence());
         }
-    }
-
-    private void UpdateFPSDropdownText()
-    {
-        if (fpsDropdown != null && fpsDropdown.options.Count > 0 && LocalizationManager.Instance != null)
+        else
         {
-            fpsDropdown.options[0].text = LocalizationManager.Instance.GetTranslation("ui_unlimited");
-            if (fpsDropdown.value == 0) fpsDropdown.captionText.text = fpsDropdown.options[0].text;
-        }
-    }
-
-    public void SetFPSLimit(int index)
-    {
-        if (index >= 0 && index < fpsLimits.Length)
-        {
-            Application.targetFrameRate = fpsLimits[index];
-            PlayerPrefs.SetInt("FPSPref", index);
-        }
-    }
-
-    private void SetupAA()
-    {
-        if (aaDropdown != null)
-        {
-            int savedAA = PlayerPrefs.GetInt("AAPref", 1); 
-            aaDropdown.SetValueWithoutNotify(savedAA);
-            aaDropdown.RefreshShownValue();
-            SetAA(savedAA);
-        }
-    }
-
-    public void SetAA(int index)
-    {
-        PlayerPrefs.SetInt("AAPref", index);
-        
-        Camera targetCam = Camera.main != null ? Camera.main : FindAnyObjectByType<Camera>();
-        if (targetCam != null)
-        {
-            UniversalAdditionalCameraData camData = targetCam.GetComponent<UniversalAdditionalCameraData>();
-            if (camData != null)
+            if (audioSource != null && errorClip != null)
             {
-                camData.antialiasing = (AntialiasingMode)index;
+                audioSource.PlayOneShot(errorClip);
             }
+            CloseKeypad();
         }
     }
 
-    private void SetupSensitivity()
+    private void PlayRandomBeep()
     {
-        if (sensitivitySlider != null)
+        if (audioSource != null && buttonBeepClips != null && buttonBeepClips.Length > 0)
         {
-            float savedSens = PlayerPrefs.GetFloat("SensitivityPref", 1f); 
-            sensitivitySlider.SetValueWithoutNotify(savedSens);
-            UpdateSensitivityText(savedSens);
+            int randomIndex = Random.Range(0, buttonBeepClips.Length);
+            audioSource.PlayOneShot(buttonBeepClips[randomIndex]);
         }
     }
 
-    public void SetSensitivity(float value)
+    private IEnumerator UnlockSequence()
     {
-        PlayerPrefs.SetFloat("SensitivityPref", value);
-        UpdateSensitivityText(value);
-        OnSensitivityChanged?.Invoke(value);
-    }
-
-    private void UpdateSensitivityText(float value)
-    {
-        if (sensitivityValueText != null)
+        if (audioSource != null && successClip != null)
         {
-            sensitivityValueText.text = value.ToString("F1");
+            audioSource.PlayOneShot(successClip);
+        }
+        yield return new WaitForSeconds(0.5f);
+        CloseKeypad();
+
+        if (doorAudioSource != null && doorOpenClip != null)
+        {
+            doorAudioSource.PlayOneShot(doorOpenClip);
+        }
+
+        if (AchievementManager.Instance != null)
+        {
+            AchievementManager.Instance.UnlockAchievement("secret_end");
+        }
+
+        if (secretDoor != null)
+        {
+            Quaternion startRot = secretDoor.localRotation;
+            Quaternion targetRot = Quaternion.Euler(openRotation);
+            float t = 0f;
+
+            while (t < 1f)
+            {
+                t += Time.deltaTime * openSpeed;
+                secretDoor.localRotation = Quaternion.Slerp(startRot, targetRot, t);
+                yield return null;
+            }
+
+            secretDoor.localRotation = targetRot;
+        }
+    }
+}
+</file>
+
+<file path="Assets/_Scripts/LoopTrigger.cs">
+using UnityEngine;
+
+public class LoopTrigger : MonoBehaviour
+{
+    public Transform landingPoint;
+    public Transform endgameLandingPoint;
+
+    public bool isForwardExit;
+
+    private void OnTriggerEnter(Collider other)
+    {
+        if (other.CompareTag("Player"))
+        {
+            CharacterController cc = other.GetComponent<CharacterController>();
+            if (cc != null)
+            {
+                GameManager.Instance.CheckPlayerChoice(isForwardExit);
+
+                Vector3 localPos = transform.InverseTransformPoint(other.transform.position);
+
+                if (!isForwardExit)
+                {
+                    localPos.x = -localPos.x;
+                    localPos.z = -localPos.z;
+                }
+
+                Transform targetDestination = landingPoint;
+
+                if (GameManager.Instance.currentLevel >= GameManager.Instance.winLevel)
+                {
+                    targetDestination = endgameLandingPoint;
+                }
+
+                Vector3 worldDestination = targetDestination.TransformPoint(localPos);
+
+                cc.enabled = false;
+                other.transform.position = worldDestination;
+
+                if (!isForwardExit)
+                {
+                    other.transform.Rotate(0, 180, 0);
+                }
+
+                Physics.SyncTransforms();
+                cc.enabled = true;
+            }
         }
     }
 }
@@ -3898,6 +3949,291 @@ public class GameManager : MonoBehaviour
 }
 </file>
 
+<file path="Assets/_Scripts/SettingsManager.cs">
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.UI;
+using TMPro;
+using UnityEngine.Rendering.Universal;
+
+public class SettingsManager : MonoBehaviour
+{
+    [Header("UI Elements")]
+    public TMP_Dropdown resolutionDropdown;
+    public TMP_Dropdown languageDropdown;
+
+    [Header("Volume")]
+    public Slider volumeSlider;
+    public TMP_Text volumeValueText;
+
+    public Toggle fullscreenToggle;
+    public Toggle vsyncToggle;
+    public TMP_Dropdown fpsDropdown;
+
+    [Header("Graphics")]
+    public TMP_Dropdown aaDropdown;
+
+    [Header("Sensitivity")]
+    public Slider sensitivitySlider;
+    public TMP_Text sensitivityValueText;
+    public delegate void SensitivityChangedEvent(float newValue);
+    public static event SensitivityChangedEvent OnSensitivityChanged;
+
+    private List<Resolution> filteredResolutions;
+    private readonly int[] fpsLimits = { -1, 30, 60, 120, 144 };
+
+    private void Update()
+    {
+#if DEVELOPMENT_BUILD || UNITY_EDITOR
+        if (UnityEngine.InputSystem.Keyboard.current != null && UnityEngine.InputSystem.Keyboard.current.f12Key.wasPressedThisFrame)
+        {
+            PlayerPrefs.DeleteAll();
+            
+            Debug.Log("[DevTool] Reloading game...");
+
+#if UNITY_EDITOR
+            UnityEditor.EditorApplication.isPlaying = false;
+#else
+            Application.Quit();
+#endif
+        }
+#endif
+    }
+
+    private void Start()
+    {
+        SetupFullscreen();
+        SetupResolutions();
+        SetupVolume();
+        SetupLanguage();
+        SetupVSync();
+        SetupFPS();
+        SetupAA();
+        SetupSensitivity();
+    }
+
+    private void SetupResolutions()
+    {
+        Resolution[] rawResolutions = Screen.resolutions;
+        filteredResolutions = new List<Resolution>();
+        resolutionDropdown.ClearOptions();
+
+        List<string> options = new List<string>();
+        int currentResIndex = 0;
+
+        for (int i = 0; i < rawResolutions.Length; i++)
+        {
+            Resolution res = rawResolutions[i];
+
+            float aspectRatio = (float)res.width / res.height;
+            if (Mathf.Abs(aspectRatio - (16f / 9f)) > 0.05f)
+            {
+                continue;
+            }
+
+            string option = res.width + " x " + res.height;
+
+            if (!options.Contains(option))
+            {
+                filteredResolutions.Add(res);
+                options.Add(option);
+
+                if (res.width == Screen.currentResolution.width && res.height == Screen.currentResolution.height)
+                {
+                    currentResIndex = filteredResolutions.Count - 1;
+                }
+            }
+        }
+
+        if (options.Count == 0)
+        {
+            filteredResolutions.Add(new Resolution { width = 1920, height = 1080 });
+            options.Add("1920 x 1080");
+            currentResIndex = 0;
+        }
+
+        resolutionDropdown.AddOptions(options);
+        int defaultResIndex = filteredResolutions.Count - 1;
+
+        int savedRes = PlayerPrefs.GetInt("ResolutionPref", defaultResIndex);
+
+        if (savedRes >= filteredResolutions.Count) savedRes = defaultResIndex;
+
+        resolutionDropdown.SetValueWithoutNotify(savedRes);
+        resolutionDropdown.RefreshShownValue();
+        SetResolution(savedRes);
+    }
+    public void SetResolution(int index)
+    {
+        Resolution res = filteredResolutions[index];
+        bool isFullscreen = PlayerPrefs.GetInt("FullscreenPref", 1) == 1;
+        
+        Screen.SetResolution(res.width, res.height, isFullscreen);
+        PlayerPrefs.SetInt("ResolutionPref", index);
+    }
+
+    private void SetupVolume()
+    {
+        float savedVolume = PlayerPrefs.GetFloat("VolumePref", 1f);
+        volumeSlider.SetValueWithoutNotify(savedVolume);
+        AudioListener.volume = savedVolume;
+        UpdateVolumeText(savedVolume);
+    }
+
+    public void SetVolume(float volume)
+    {
+        AudioListener.volume = volume;
+        PlayerPrefs.SetFloat("VolumePref", volume);
+        UpdateVolumeText(volume);
+    }
+
+    private void UpdateVolumeText(float volume)
+    {
+        if (volumeValueText != null)
+        {
+            volumeValueText.text = Mathf.RoundToInt(volume * 100f) + "%";
+        }
+    }
+
+    private void SetupLanguage()
+    {
+        int savedLang = PlayerPrefs.GetInt("LanguagePref", 0);
+        languageDropdown.SetValueWithoutNotify(savedLang);
+        languageDropdown.RefreshShownValue();
+    }
+
+    public void SetLanguage(int index)
+    {
+        PlayerPrefs.SetInt("LanguagePref", index);
+        if (LocalizationManager.Instance != null)
+        {
+            LocalizationManager.Instance.SetLanguage(index);
+            UpdateFPSDropdownText();
+        }
+    }
+
+    private void SetupFullscreen()
+    {
+        if (fullscreenToggle != null)
+        {
+            bool isFullscreen = PlayerPrefs.GetInt("FullscreenPref", 1) == 1;
+            fullscreenToggle.SetIsOnWithoutNotify(isFullscreen);
+            Screen.fullScreen = isFullscreen;
+        }
+    }
+
+    public void SetFullscreen(bool isFullscreen)
+    {
+        PlayerPrefs.SetInt("FullscreenPref", isFullscreen ? 1 : 0);
+        Screen.fullScreen = isFullscreen;
+
+        if (filteredResolutions != null && filteredResolutions.Count > 0)
+        {
+            int savedRes = PlayerPrefs.GetInt("ResolutionPref", filteredResolutions.Count - 1);
+            Resolution res = filteredResolutions[savedRes];
+            Screen.SetResolution(res.width, res.height, isFullscreen);
+        }
+    }
+
+    private void SetupVSync()
+    {
+        if (vsyncToggle != null)
+        {
+            bool isSync = PlayerPrefs.GetInt("VSyncPref", 0) == 1;
+            vsyncToggle.SetIsOnWithoutNotify(isSync);
+            SetVSync(isSync);
+        }
+    }
+
+    public void SetVSync(bool isVSync)
+    {
+        QualitySettings.vSyncCount = isVSync ? 1 : 0;
+        PlayerPrefs.SetInt("VSyncPref", isVSync ? 1 : 0);
+    }
+
+    private void SetupFPS()
+    {
+        if (fpsDropdown != null)
+        {
+            UpdateFPSDropdownText();
+            int savedFPSIndex = PlayerPrefs.GetInt("FPSPref", 0);
+            fpsDropdown.SetValueWithoutNotify(savedFPSIndex);
+            fpsDropdown.RefreshShownValue();
+            SetFPSLimit(savedFPSIndex);
+        }
+    }
+
+    private void UpdateFPSDropdownText()
+    {
+        if (fpsDropdown != null && fpsDropdown.options.Count > 0 && LocalizationManager.Instance != null)
+        {
+            fpsDropdown.options[0].text = LocalizationManager.Instance.GetTranslation("ui_unlimited");
+            if (fpsDropdown.value == 0) fpsDropdown.captionText.text = fpsDropdown.options[0].text;
+        }
+    }
+
+    public void SetFPSLimit(int index)
+    {
+        if (index >= 0 && index < fpsLimits.Length)
+        {
+            Application.targetFrameRate = fpsLimits[index];
+            PlayerPrefs.SetInt("FPSPref", index);
+        }
+    }
+
+    private void SetupAA()
+    {
+        if (aaDropdown != null)
+        {
+            int savedAA = PlayerPrefs.GetInt("AAPref", 1);
+            aaDropdown.SetValueWithoutNotify(savedAA);
+            aaDropdown.RefreshShownValue();
+            SetAA(savedAA);
+        }
+    }
+
+    public void SetAA(int index)
+    {
+        PlayerPrefs.SetInt("AAPref", index);
+
+        Camera targetCam = Camera.main != null ? Camera.main : FindAnyObjectByType<Camera>();
+        if (targetCam != null)
+        {
+            UniversalAdditionalCameraData camData = targetCam.GetComponent<UniversalAdditionalCameraData>();
+            if (camData != null)
+            {
+                camData.antialiasing = (AntialiasingMode)index;
+            }
+        }
+    }
+
+    private void SetupSensitivity()
+    {
+        if (sensitivitySlider != null)
+        {
+            float savedSens = PlayerPrefs.GetFloat("SensitivityPref", 1f);
+            sensitivitySlider.SetValueWithoutNotify(savedSens);
+            UpdateSensitivityText(savedSens);
+        }
+    }
+
+    public void SetSensitivity(float value)
+    {
+        PlayerPrefs.SetFloat("SensitivityPref", value);
+        UpdateSensitivityText(value);
+        OnSensitivityChanged?.Invoke(value);
+    }
+
+    private void UpdateSensitivityText(float value)
+    {
+        if (sensitivityValueText != null)
+        {
+            sensitivityValueText.text = value.ToString("F1");
+        }
+    }
+}
+</file>
+
 <file path="Assets/_Scripts/PauseManager.cs">
 using System.Collections.Generic;
 using TMPro;
@@ -3907,6 +4243,7 @@ using UnityEngine.SceneManagement;
 
 public class PauseManager : MonoBehaviour
 {
+    public static PauseManager Instance;
     [Header("Panels")]
     public GameObject pausePanel;
     public GameObject optionsPanel;
@@ -3919,6 +4256,12 @@ public class PauseManager : MonoBehaviour
     public GameObject deleteSaveButton;
 
     public bool isPaused = false;
+
+    private void Awake()
+    {
+        if (Instance == null) Instance = this;
+        else Destroy(gameObject);
+    }
 
     private void Start()
     {
@@ -3993,7 +4336,15 @@ public class PauseManager : MonoBehaviour
         Time.timeScale = 1f;
         AudioListener.pause = false;
         SetCursorState(false);
-        SceneManager.LoadScene("Menu");
+        
+        if (FadeManager.Instance != null)
+        {
+            FadeManager.Instance.FadeAndLoadScene("Menu", 0.5f);
+        }
+        else
+        {
+            SceneManager.LoadScene("Menu");
+        }
     }
 
     private void SetCursorState(bool locked)

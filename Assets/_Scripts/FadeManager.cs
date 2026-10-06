@@ -9,14 +9,13 @@ public class FadeManager : MonoBehaviour
 
     [Header("References")]
     public Image fadeImage;
-    [Tooltip("L'objet contenant ton image ou texte de chargement")]
     public GameObject loadingIcon;
 
     [Header("Settings")]
     public float fadeOutDuration = 1.5f;
     public float fadeInDuration = 0.1f;
 
-    private bool isFading = false;
+    private bool isTransitioning = false;
 
     private void Awake()
     {
@@ -36,18 +35,17 @@ public class FadeManager : MonoBehaviour
     {
         if (loadingIcon != null) loadingIcon.SetActive(false);
 
-        if (fadeImage != null && !isFading)
+        if (fadeImage != null)
         {
             fadeImage.gameObject.SetActive(true);
             fadeImage.color = Color.black;
+            fadeImage.raycastTarget = false;
             StartCoroutine(InitialFadeInRoutine());
         }
     }
 
     private IEnumerator InitialFadeInRoutine()
     {
-        isFading = true;
-
         yield return null;
         yield return null;
         yield return null;
@@ -67,26 +65,34 @@ public class FadeManager : MonoBehaviour
         }
 
         if (fadeImage != null) fadeImage.gameObject.SetActive(false);
-        isFading = false;
     }
 
     public void FadeAndRestart(float blackScreenPause = 0f)
     {
-        if (isFading) return;
+        if (isTransitioning) return;
+
+        StopAllCoroutines();
         StartCoroutine(RealLoadingSequence(SceneManager.GetActiveScene().name, fadeInDuration, blackScreenPause));
     }
 
     public void FadeAndLoadScene(string sceneName, float duration, float blackScreenPause = 0f)
     {
-        if (isFading) return;
+        if (isTransitioning) return;
+
+        StopAllCoroutines();
         StartCoroutine(RealLoadingSequence(sceneName, duration, blackScreenPause));
     }
 
     private IEnumerator RealLoadingSequence(string targetScene, float fadeDuration, float blackScreenPause)
     {
-        isFading = true;
+        isTransitioning = true;
 
-        if (fadeImage != null) fadeImage.gameObject.SetActive(true);
+        if (fadeImage != null)
+        {
+            fadeImage.gameObject.SetActive(true);
+            fadeImage.raycastTarget = true;
+        }
+
         float timer = 0f;
         while (timer < fadeDuration)
         {
@@ -122,6 +128,9 @@ public class FadeManager : MonoBehaviour
 
         if (loadingIcon != null) loadingIcon.SetActive(false);
 
+        isTransitioning = false;
+        if (fadeImage != null) fadeImage.raycastTarget = false;
+
         timer = 0f;
         while (timer < fadeOutDuration)
         {
@@ -143,7 +152,5 @@ public class FadeManager : MonoBehaviour
             fadeImage.color = c;
             fadeImage.gameObject.SetActive(false);
         }
-
-        isFading = false;
     }
 }

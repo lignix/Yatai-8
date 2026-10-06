@@ -26,7 +26,7 @@ public class WaypointWalker : MonoBehaviour
 
         if (anim != null)
         {
-            anim.SetBool("IsWalking", true);
+            anim.SetBool("isIdle", false);
         }
     }
 
@@ -53,7 +53,7 @@ public class WaypointWalker : MonoBehaviour
             {
                 if (anim != null)
                 {
-                    anim.SetBool("IsWalking", false);
+                    anim.SetBool("isIdle", true);
                 }
             }
         }

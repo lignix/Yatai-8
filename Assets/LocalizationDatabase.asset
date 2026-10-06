@@ -454,6 +454,20 @@ MonoBehaviour:
     german: Fehlende Kabel
     japanese: "\u6D88\u3048\u305F\u30B1\u30FC\u30D6\u30EB"
     simplifiedChinese: "\u7F3A\u5931\u7684\u7535\u7F06"
+  - key: ano_kaede_poster
+    english: Creepy Kaede Poster
+    french: Poster effrayant de Kaede
+    spanish: "P\xF3ster espeluznante de Kaede"
+    german: Unheimliches Kaede-Poster
+    japanese: "\u4E0D\u6C17\u5473\u306A\u6953\u306E\u30DD\u30B9\u30BF\u30FC"
+    simplifiedChinese: "\u6050\u6016\u7684\u67AB\u6D77\u62A5"
+  - key: ano_peeking_student
+    english: Peeking Student
+    french: "\xC9tudiante qui observe"
+    spanish: Estudiante espiando
+    german: "Sp\xE4hende Sch\xFClerin"
+    japanese: "\u8997\u304D\u8FBC\u3080\u5973\u5B50\u751F\u5F92"
+    simplifiedChinese: "\u5077\u770B\u7684\u5B66\u751F"
   - key: ui_secret_letter
     english: 'If you are reading this, you have broken the loop...
 

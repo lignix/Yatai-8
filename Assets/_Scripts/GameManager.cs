@@ -12,9 +12,9 @@ public class GameManager : MonoBehaviour
     public int winLevel = 8;
 
     [Header("Rhythm Settings (Shuffle Bag)")]
-    [Range(0f, 1f)] 
+    [Range(0f, 1f)]
     public float anomalyProbability = 0.5f;
-    public int shuffleBagSize = 10; 
+    public int shuffleBagSize = 10;
 
     [Header("UI")]
     public TMP_Text levelDisplay;
@@ -60,7 +60,7 @@ public class GameManager : MonoBehaviour
         {
             currentLevel = 0;
             Debug.Log("Wrong choice. Reset to level 0.");
-            
+
             // Resets the bag when the player makes a mistake to restart the rhythm fresh
             RefillShuffleBag();
         }
@@ -72,7 +72,7 @@ public class GameManager : MonoBehaviour
     private void RefillShuffleBag()
     {
         shuffleBag.Clear();
-        
+
         // Calculates how many anomalies should be in the bag based on probability
         int anomalyCount = Mathf.RoundToInt(anomalyProbability * shuffleBagSize);
 
@@ -80,7 +80,7 @@ public class GameManager : MonoBehaviour
         {
             shuffleBag.Add(i < anomalyCount);
         }
-        
+
         // Shuffles the bag using the Fisher-Yates algorithm
         for (int i = 0; i < shuffleBag.Count; i++)
         {
@@ -94,10 +94,10 @@ public class GameManager : MonoBehaviour
     public void RestartFromDeath()
     {
         currentLevel = 0;
-        
+
         if (FadeManager.Instance != null)
         {
-            FadeManager.Instance.FadeAndRestart();
+            FadeManager.Instance.FadeAndRestart(1.0f);
         }
         else
         {

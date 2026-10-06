@@ -25,7 +25,6 @@ public class GiantHeadAnomaly : MonoBehaviour
             initialLocalPosition = headTransform.localPosition;
         }
 
-        // S'assure que ce GameObject a bien un Trigger
         Collider col = GetComponent<Collider>();
         if (col != null) col.isTrigger = true;
     }

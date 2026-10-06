@@ -434,51 +434,117 @@ MonoBehaviour:
     japanese: "\u6B69\u304F\u5973\u751F\u5F92"
     simplifiedChinese: "\u884C\u8D70\u7684\u5973\u5B66\u751F"
   - key: ano_giant_head
-    english: "Giant Head"
-    french: "Tête Géante"
-    spanish: "Cabeza Gigante"
-    german: "Riesiger Kopf"
-    japanese: "巨大な頭"
-    simplifiedChinese: "巨大头颅"
+    english: Giant Head
+    french: "T\xEAte G\xE9ante"
+    spanish: Cabeza Gigante
+    german: Riesiger Kopf
+    japanese: "\u5DE8\u5927\u306A\u982D"
+    simplifiedChinese: "\u5DE8\u5927\u5934\u9885"
   - key: ano_dead_end
-    english: "Dead End"
-    french: "Impasse"
-    spanish: "Callejón sin salida"
-    german: "Sackgasse"
-    japanese: "行き止まり"
-    simplifiedChinese: "死胡同"
+    english: Dead End
+    french: Impasse
+    spanish: "Callej\xF3n sin salida"
+    german: Sackgasse
+    japanese: "\u884C\u304D\u6B62\u307E\u308A"
+    simplifiedChinese: "\u6B7B\u80E1\u540C"
+  - key: ano_missing_cables
+    english: Missing Cables
+    french: "C\xE2bles manquants"
+    spanish: Cables faltantes
+    german: Fehlende Kabel
+    japanese: "\u6D88\u3048\u305F\u30B1\u30FC\u30D6\u30EB"
+    simplifiedChinese: "\u7F3A\u5931\u7684\u7535\u7F06"
   - key: ui_secret_letter
-    english: "If you are reading this, you have broken the loop...\nI don't know how long I've been wandering in this hallway. Today should have been my graduation day. But the train passes endlessly, and my mind crumbles a bit more with each cycle. The 'anomalies' you encountered... they are my tearing memories.\nThank you for paying attention to me. Thank you for finding me.\nNow, walk through the door and don't look back. Flee before this place claims you too."
-    french: "Si tu lis ceci, c'est que tu as réussi à briser la boucle...\nJe ne sais plus depuis combien de temps j'erre dans ce couloir. Aujourd'hui aurait dû être le jour de ma remise de diplôme. Mais le train passe inlassablement, et mon esprit s'effrite un peu plus à chaque cycle. Les \"anomalies\" que tu as croisées... ce sont mes souvenirs qui se déchirent.\nMerci d'avoir fait attention à moi. Merci de m'avoir trouvée.\nMaintenant, franchis la porte et ne te retourne pas. Fuis avant que cet endroit ne te garde toi aussi."
-    spanish: "Si estás leyendo esto, has logrado romper el bucle...\nNo sé cuánto tiempo llevo vagando por este pasillo. Hoy debería haber sido mi día de graduación. Pero el tren pasa sin fin, y mi mente se desmorona un poco más con cada ciclo. Las \"anomalías\" que encontraste... son mis recuerdos desgarrándose.\nGracias por prestarme atención. Gracias por encontrarme.\nAhora, cruza la puerta y no mires atrás. Huye antes de que este lugar te atrape a ti también."
-    german: "Wenn du dies liest, hast du die Schleife durchbrochen...\nIch weiß nicht, wie lange ich schon in diesem Flur umherirre. Heute hätte mein Abschlusstag sein sollen. Aber der Zug fährt endlos vorbei, und mein Verstand zerbröckelt mit jedem Zyklus ein wenig mehr. Die \"Anomalien\", denen du begegnet bist... das sind meine zerreißenden Erinnerungen.\nDanke, dass du auf mich geachtet hast. Danke, dass du mich gefunden hast.\nGeh jetzt durch die Tür und sieh nicht zurück. Flieh, bevor dieser Ort auch dich für immer behält."
-    japanese: "これを読んでいるなら、あなたはループを壊すことに成功したのね…\nこの廊下をどれくらい彷徨っているのか、もう分からない。今日は私の卒業式のはずだった。でも電車は絶え間なく通り過ぎ、私の心はループのたびに崩れていく。あなたが遭遇した『異変』…それは引き裂かれた私の記憶。\n私に気付いてくれてありがとう。私を見つけてくれてありがとう。\nさあ、ドアを抜けて、決して振り返らないで。あなたもこの場所に囚われてしまう前に逃げて。"
-    simplifiedChinese: "如果你在读这封信，说明你已经打破了循环……\n我不知道在这条走廊里徘徊了多久。今天本该是我的毕业典礼。但列车无休止地经过，我的理智在每一次循环中逐渐崩塌。你所遇到的“异常”……那是我支离破碎的记忆。\n谢谢你的留意。谢谢你找到了我。\n现在，穿过那扇门，千万不要回头。在这个地方将你也吞噬之前，快逃吧。"
-  - key: ui_close_paper
-    english: "Click or press ESC to close"
-    french: "Cliquez ou appuyez sur Échap pour fermer"
-    spanish: "Haz clic o pulsa ESC para cerrar"
-    german: "Klicken oder ESC drücken zum Schließen"
-    japanese: "クリックまたはESCキーで閉じる"
-    simplifiedChinese: "点击或按 ESC 关闭"
+    english: 'If you are reading this, you have broken the loop...
+
+      I don''t
+      know how long I''ve been wandering in this hallway. Today should have been
+      my graduation day. But the train passes endlessly, and my mind crumbles a bit
+      more with each cycle. The ''anomalies'' you encountered... they are my tearing
+      memories.
+
+      Thank you for paying attention to me. Thank you for finding
+      me.
+
+      Now, walk through the door and don''t look back. Flee before this
+      place claims you too.'
+    french: "Si tu lis ceci, c'est que tu as r\xE9ussi \xE0 briser la boucle...\nJe
+      ne sais plus depuis combien de temps j'erre dans ce couloir. Aujourd'hui aurait
+      d\xFB \xEAtre le jour de ma remise de dipl\xF4me. Mais le train passe inlassablement,
+      et mon esprit s'effrite un peu plus \xE0 chaque cycle. Les \"anomalies\" que
+      tu as crois\xE9es... ce sont mes souvenirs qui se d\xE9chirent.\nMerci d'avoir
+      fait attention \xE0 moi. Merci de m'avoir trouv\xE9e.\nMaintenant, franchis
+      la porte et ne te retourne pas. Fuis avant que cet endroit ne te garde toi
+      aussi."
+    spanish: "Si est\xE1s leyendo esto, has logrado romper el bucle...\nNo s\xE9
+      cu\xE1nto tiempo llevo vagando por este pasillo. Hoy deber\xEDa haber sido
+      mi d\xEDa de graduaci\xF3n. Pero el tren pasa sin fin, y mi mente se desmorona
+      un poco m\xE1s con cada ciclo. Las \"anomal\xEDas\" que encontraste... son
+      mis recuerdos desgarr\xE1ndose.\nGracias por prestarme atenci\xF3n. Gracias
+      por encontrarme.\nAhora, cruza la puerta y no mires atr\xE1s. Huye antes de
+      que este lugar te atrape a ti tambi\xE9n."
+    german: "Wenn du dies liest, hast du die Schleife durchbrochen...\nIch wei\xDF
+      nicht, wie lange ich schon in diesem Flur umherirre. Heute h\xE4tte mein Abschlusstag
+      sein sollen. Aber der Zug f\xE4hrt endlos vorbei, und mein Verstand zerbr\xF6ckelt
+      mit jedem Zyklus ein wenig mehr. Die \"Anomalien\", denen du begegnet bist...
+      das sind meine zerrei\xDFenden Erinnerungen.\nDanke, dass du auf mich geachtet
+      hast. Danke, dass du mich gefunden hast.\nGeh jetzt durch die T\xFCr und sieh
+      nicht zur\xFCck. Flieh, bevor dieser Ort auch dich f\xFCr immer beh\xE4lt."
+    japanese: "\u3053\u308C\u3092\u8AAD\u3093\u3067\u3044\u308B\u306A\u3089\u3001\u3042\u306A\u305F\u306F\u30EB\u30FC\u30D7\u3092\u58CA\u3059\u3053\u3068\u306B\u6210\u529F\u3057\u305F\u306E\u306D\u2026\n\u3053\u306E\u5ECA\u4E0B\u3092\u3069\u308C\u304F\u3089\u3044\u5F77\u5FA8\u3063\u3066\u3044\u308B\u306E\u304B\u3001\u3082\u3046\u5206\u304B\u3089\u306A\u3044\u3002\u4ECA\u65E5\u306F\u79C1\u306E\u5352\u696D\u5F0F\u306E\u306F\u305A\u3060\u3063\u305F\u3002\u3067\u3082\u96FB\u8ECA\u306F\u7D76\u3048\u9593\u306A\u304F\u901A\u308A\u904E\u304E\u3001\u79C1\u306E\u5FC3\u306F\u30EB\u30FC\u30D7\u306E\u305F\u3073\u306B\u5D29\u308C\u3066\u3044\u304F\u3002\u3042\u306A\u305F\u304C\u906D\u9047\u3057\u305F\u300E\u7570\u5909\u300F\u2026\u305D\u308C\u306F\u5F15\u304D\u88C2\u304B\u308C\u305F\u79C1\u306E\u8A18\u61B6\u3002\n\u79C1\u306B\u6C17\u4ED8\u3044\u3066\u304F\u308C\u3066\u3042\u308A\u304C\u3068\u3046\u3002\u79C1\u3092\u898B\u3064\u3051\u3066\u304F\u308C\u3066\u3042\u308A\u304C\u3068\u3046\u3002\n\u3055\u3042\u3001\u30C9\u30A2\u3092\u629C\u3051\u3066\u3001\u6C7A\u3057\u3066\u632F\u308A\u8FD4\u3089\u306A\u3044\u3067\u3002\u3042\u306A\u305F\u3082\u3053\u306E\u5834\u6240\u306B\u56DA\u308F\u308C\u3066\u3057\u307E\u3046\u524D\u306B\u9003\u3052\u3066\u3002"
+    simplifiedChinese: "\u5982\u679C\u4F60\u5728\u8BFB\u8FD9\u5C01\u4FE1\uFF0C\u8BF4\u660E\u4F60\u5DF2\u7ECF\u6253\u7834\u4E86\u5FAA\u73AF\u2026\u2026\n\u6211\u4E0D\u77E5\u9053\u5728\u8FD9\u6761\u8D70\u5ECA\u91CC\u5F98\u5F8A\u4E86\u591A\u4E45\u3002\u4ECA\u5929\u672C\u8BE5\u662F\u6211\u7684\u6BD5\u4E1A\u5178\u793C\u3002\u4F46\u5217\u8F66\u65E0\u4F11\u6B62\u5730\u7ECF\u8FC7\uFF0C\u6211\u7684\u7406\u667A\u5728\u6BCF\u4E00\u6B21\u5FAA\u73AF\u4E2D\u9010\u6E10\u5D29\u584C\u3002\u4F60\u6240\u9047\u5230\u7684\u201C\u5F02\u5E38\u201D\u2026\u2026\u90A3\u662F\u6211\u652F\u79BB\u7834\u788E\u7684\u8BB0\u5FC6\u3002\n\u8C22\u8C22\u4F60\u7684\u7559\u610F\u3002\u8C22\u8C22\u4F60\u627E\u5230\u4E86\u6211\u3002\n\u73B0\u5728\uFF0C\u7A7F\u8FC7\u90A3\u6247\u95E8\uFF0C\u5343\u4E07\u4E0D\u8981\u56DE\u5934\u3002\u5728\u8FD9\u4E2A\u5730\u65B9\u5C06\u4F60\u4E5F\u541E\u566C\u4E4B\u524D\uFF0C\u5FEB\u9003\u5427\u3002"
+  - key: ui_click_or_esc_leave
+    english: Click or press ESC to close
+    french: "Cliquez ou appuyez sur \xC9chap pour fermer"
+    spanish: Haz clic o pulsa ESC para cerrar
+    german: "Klicken oder ESC dr\xFCcken zum Schlie\xDFen"
+    japanese: "\u30AF\u30EA\u30C3\u30AF\u307E\u305F\u306FESC\u30AD\u30FC\u3067\u9589\u3058\u308B"
+    simplifiedChinese: "\u70B9\u51FB\u6216\u6309 ESC \u5173\u95ED"
   - key: ui_how_to_play_title
-    english: "How to Play"
-    french: "Comment jouer"
-    spanish: "Cómo jugar"
-    german: "Spielanleitung"
-    japanese: "遊び方"
-    simplifiedChinese: "玩法说明"
+    english: How to Play
+    french: Comment jouer
+    spanish: "C\xF3mo jugar"
+    german: Spielanleitung
+    japanese: "\u904A\u3073\u65B9"
+    simplifiedChinese: "\u73A9\u6CD5\u8BF4\u660E"
   - key: ui_how_to_play_title_question
-    english: "How to Play?"
-    french: "Comment jouer ?"
-    spanish: "¿Cómo jugar?"
-    german: "Spielanleitung?"
-    japanese: "遊び方？"
-    simplifiedChinese: "玩法说明？"
+    english: How to Play?
+    french: Comment jouer ?
+    spanish: "\xBFC\xF3mo jugar?"
+    german: Spielanleitung?
+    japanese: "\u904A\u3073\u65B9\uFF1F"
+    simplifiedChinese: "\u73A9\u6CD5\u8BF4\u660E\uFF1F"
   - key: ui_how_to_play_text
-    english: "1. Observe your surroundings carefully.\n2. If you find an anomaly, turn back immediately.\n3. If you don't find any anomalies, keep moving forward.\n4. Reach the end to break the loop."
-    french: "1. Observez attentivement votre environnement.\n2. Si vous trouvez une anomalie, faites demi-tour immédiatement.\n3. Si vous ne trouvez aucune anomalie, continuez d'avancer.\n4. Atteignez la fin pour briser la boucle."
-    spanish: "1. Observa tu entorno con atención.\n2. Si encuentras una anomalía, da la vuelta inmediatamente.\n3. Si no encuentras ninguna anomalía, sigue avanzando.\n4. Llega al final para romper el bucle."
-    german: "1. Beobachte deine Umgebung genau.\n2. Wenn du eine Anomalie findest, dreh sofort um.\n3. Wenn du keine Anomalien findest, geh weiter vorwärts.\n4. Erreiche das Ende, um die Schleife zu brechen."
-    japanese: "１．周囲をよく観察してください。\n２．異変を見つけたら、すぐに引き返してください。\n３．異変が見つからなければ、そのまま進んでください。\n４．最後までたどり着き、ループを壊してください。"
-    simplifiedChinese: "1. 仔细观察周围环境。\n2. 如果发现异常，请立即回头。\n3. 如果没有发现异常，请继续前进。\n4. 到达终点以打破循环。"
+    english: '1. Observe your surroundings carefully.
+
+      2. If you find an anomaly,
+      turn back immediately.
+
+      3. If you don''t find any anomalies, keep moving
+      forward.
+
+      4. Reach the end to break the loop.'
+    french: "1. Observez attentivement votre environnement.\n2. Si vous trouvez une
+      anomalie, faites demi-tour imm\xE9diatement.\n3. Si vous ne trouvez aucune
+      anomalie, continuez d'avancer.\n4. Atteignez la fin pour briser la boucle."
+    spanish: "1. Observa tu entorno con atenci\xF3n.\n2. Si encuentras una anomal\xEDa,
+      da la vuelta inmediatamente.\n3. Si no encuentras ninguna anomal\xEDa, sigue
+      avanzando.\n4. Llega al final para romper el bucle."
+    german: "1. Beobachte deine Umgebung genau.\n2. Wenn du eine Anomalie findest,
+      dreh sofort um.\n3. Wenn du keine Anomalien findest, geh weiter vorw\xE4rts.\n4.
+      Erreiche das Ende, um die Schleife zu brechen."
+    japanese: "\uFF11\uFF0E\u5468\u56F2\u3092\u3088\u304F\u89B3\u5BDF\u3057\u3066\u304F\u3060\u3055\u3044\u3002\n\uFF12\uFF0E\u7570\u5909\u3092\u898B\u3064\u3051\u305F\u3089\u3001\u3059\u3050\u306B\u5F15\u304D\u8FD4\u3057\u3066\u304F\u3060\u3055\u3044\u3002\n\uFF13\uFF0E\u7570\u5909\u304C\u898B\u3064\u304B\u3089\u306A\u3051\u308C\u3070\u3001\u305D\u306E\u307E\u307E\u9032\u3093\u3067\u304F\u3060\u3055\u3044\u3002\n\uFF14\uFF0E\u6700\u5F8C\u307E\u3067\u305F\u3069\u308A\u7740\u304D\u3001\u30EB\u30FC\u30D7\u3092\u58CA\u3057\u3066\u304F\u3060\u3055\u3044\u3002"
+    simplifiedChinese: "1. \u4ED4\u7EC6\u89C2\u5BDF\u5468\u56F4\u73AF\u5883\u3002\n2.
+      \u5982\u679C\u53D1\u73B0\u5F02\u5E38\uFF0C\u8BF7\u7ACB\u5373\u56DE\u5934\u3002\n3.
+      \u5982\u679C\u6CA1\u6709\u53D1\u73B0\u5F02\u5E38\uFF0C\u8BF7\u7EE7\u7EED\u524D\u8FDB\u3002\n4.
+      \u5230\u8FBE\u7EC8\u70B9\u4EE5\u6253\u7834\u5FAA\u73AF\u3002"
+  - key: ui_warning_epilepsy
+    english: This game contains flashing lights that may affect people with photosensitive
+      epilepsy.
+    french: "Ce jeu contient des lumi\xE8res clignotantes pouvant affecter les personnes
+      souffrant d'\xE9pilepsie photosensible."
+    spanish: Este juego contiene luces intermitentes que pueden afectar a personas
+      con epilepsia fotosensible.
+    german: "Dieses Spiel enth\xE4lt blinkende Lichter, die Personen mit lichtempfindlicher
+      Epilepsie beeintr\xE4chtigen k\xF6nnen."
+    japanese: "\u3053\u306E\u30B2\u30FC\u30E0\u306B\u306F\u70B9\u6EC5\u3059\u308B\u5149\u304C\u542B\u307E\u308C\u3066\u304A\u308A\u3001\u5149\u904E\u654F\u6027\u767A\u4F5C\u3092\u5F15\u304D\u8D77\u3053\u3059\u53EF\u80FD\u6027\u304C\u3042\u308A\u307E\u3059\u3002"
+    simplifiedChinese: "\u672C\u6E38\u620F\u5305\u542B\u95EA\u70C1\u7684\u5149\u7EBF\uFF0C\u53EF\u80FD\u4F1A\u5BF9\u5149\u654F\u6027\u766B\u75EB\u60A3\u8005\u9020\u6210\u5F71\u54CD\u3002"

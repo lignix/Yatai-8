@@ -834,7 +834,6 @@ public class GiantHeadAnomaly : MonoBehaviour
             initialLocalPosition = headTransform.localPosition;
         }
 
-        // S'assure que ce GameObject a bien un Trigger
         Collider col = GetComponent<Collider>();
         if (col != null) col.isTrigger = true;
     }
@@ -2847,6 +2846,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
+using System.Collections;
 
 public class MenuManager : MonoBehaviour
 {
@@ -2854,10 +2854,13 @@ public class MenuManager : MonoBehaviour
     public AnomalyDatabase database;
 
     [Header("Panels")]
+    public GameObject warningPanel;
     public GameObject mainPanel;
     public GameObject optionsPanel;
     public GameObject anomaliesPanel;
     public GameObject howToPlayPanel;
+
+    private bool isFadingWarning = false;
 
     [Header("Anomalies Menu")]
     public TMP_Text progressText;
@@ -2871,11 +2874,31 @@ public class MenuManager : MonoBehaviour
 
     private void Start()
     {
-        ShowPanel(mainPanel);
+        if (PlayerPrefs.GetInt("HasSeenWarning", 0) == 0)
+        {
+            ShowPanel(warningPanel);
+        }
+        else
+        {
+            ShowPanel(mainPanel);
+        }
+    }
+
+    private void Update()
+    {
+        if (warningPanel != null && warningPanel.activeSelf)
+        {
+            if (UnityEngine.InputSystem.Keyboard.current != null &&
+                UnityEngine.InputSystem.Keyboard.current.escapeKey.wasPressedThisFrame)
+            {
+                AcceptWarning();
+            }
+        }
     }
 
     public void ShowPanel(GameObject panelToShow)
     {
+        if (warningPanel != null) warningPanel.SetActive(false);
         if (mainPanel != null) mainPanel.SetActive(false);
         if (optionsPanel != null) optionsPanel.SetActive(false);
         if (anomaliesPanel != null) anomaliesPanel.SetActive(false);
@@ -2890,6 +2913,43 @@ public class MenuManager : MonoBehaviour
         }
     }
 
+    public void AcceptWarning()
+    {
+        if (isFadingWarning) return;
+        
+        PlayerPrefs.SetInt("HasSeenWarning", 1);
+        PlayerPrefs.Save();
+        
+        StartCoroutine(FadeOutWarningRoutine());
+    }
+
+    private IEnumerator FadeOutWarningRoutine()
+    {
+        isFadingWarning = true;
+        
+        if (mainPanel != null) mainPanel.SetActive(true);
+
+        CanvasGroup canvasGroup = warningPanel.GetComponent<CanvasGroup>();
+        if (canvasGroup == null)
+        {
+            canvasGroup = warningPanel.AddComponent<CanvasGroup>();
+        }
+
+        float fadeDuration = 1.5f; 
+        float timer = 0f;
+
+        while (timer < fadeDuration)
+        {
+            timer += Time.deltaTime;
+            canvasGroup.alpha = Mathf.Lerp(1f, 0f, timer / fadeDuration);
+            yield return null;
+        }
+
+        if (warningPanel != null) warningPanel.SetActive(false);
+        
+        canvasGroup.alpha = 1f;
+        isFadingWarning = false;
+    }
     public void OpenHowToPlay()
     {
         ShowPanel(howToPlayPanel);
@@ -3382,174 +3442,6 @@ public class AnomalyController : MonoBehaviour
 }
 </file>
 
-<file path="Assets/_Scripts/CreditsManager.cs">
-using System.Collections;
-using UnityEngine;
-using UnityEngine.UI;
-using UnityEngine.SceneManagement;
-using UnityEngine.InputSystem;
-using UnityEngine.EventSystems;
-
-public class CreditsManager : MonoBehaviour
-{
-    [Header("References")]
-    public Image fullScreenImage;
-    public RectTransform creditsPanel;
-    
-    [Header("UI Elements")]
-    public GameObject skipButton; 
-    private CanvasGroup skipButtonCanvasGroup;
-
-    [Header("Timings")]
-    public float fadeToBlackDuration = 2f;
-    public float waitBeforeCredits = 1f;
-    public float delayAfterScroll = 3f;
-    [Tooltip("Temps d'attente avant l'apparition du bouton Skip")]
-    public float skipButtonDelay = 3f; 
-
-    [Header("Scrolling Settings")]
-    public float scrollSpeed = 100f;
-    [Tooltip("Multiplicateur de vitesse quand on maintient le clic gauche")]
-    public float fastScrollMultiplier = 4f; 
-    [Tooltip("La distance de départ de ton panneau en Y (ex: 1080)")]
-    public float startOffsetY = 1080f;
-    [Tooltip("Marge ajoutée à la hauteur du panneau pour s'assurer que le texte sort bien de l'écran")]
-    public float endPadding = 200f;
-
-    private float initialVolume;
-    private bool isSkipping = false;
-
-    private void Start()
-    {
-        if (skipButton != null)
-        {
-            skipButtonCanvasGroup = skipButton.GetComponent<CanvasGroup>();
-            
-            if (skipButtonCanvasGroup == null)
-            {
-                skipButtonCanvasGroup = skipButton.AddComponent<CanvasGroup>();
-            }
-
-            skipButtonCanvasGroup.alpha = 0f;
-            skipButtonCanvasGroup.interactable = false;
-            skipButtonCanvasGroup.blocksRaycasts = false;
-            
-            skipButton.SetActive(false);
-        }
-    }
-
-    public void StartCreditsSequence()
-    {
-        initialVolume = AudioListener.volume;
-        StartCoroutine(CreditsRoutine());
-        
-        if (skipButton != null)
-        {
-            StartCoroutine(ShowSkipButtonRoutine());
-        }
-    }
-
-    private IEnumerator ShowSkipButtonRoutine()
-    {
-        yield return new WaitForSeconds(skipButtonDelay);
-        
-        if (isSkipping) yield break;
-
-        skipButton.SetActive(true);
-        if (skipButtonCanvasGroup != null)
-        {
-            skipButtonCanvasGroup.alpha = 1f;
-            skipButtonCanvasGroup.interactable = true;
-            skipButtonCanvasGroup.blocksRaycasts = true;
-        }
-    }
-
-    private IEnumerator CreditsRoutine()
-    {
-        if (AchievementManager.Instance != null)
-        {
-            AchievementManager.Instance.UnlockAchievement("end");
-        }
-        
-        float timer = 0f;
-        Color startColor = fullScreenImage.color;
-        Color targetColor = Color.black;
-
-        while (timer < fadeToBlackDuration)
-        {
-            timer += Time.deltaTime;
-            float progress = timer / fadeToBlackDuration;
-            
-            if (fullScreenImage != null)
-            {
-                fullScreenImage.color = Color.Lerp(startColor, targetColor, progress);
-            }
-            AudioListener.volume = Mathf.Lerp(initialVolume, 0f, progress);
-
-            yield return null;
-        }
-        
-        if (fullScreenImage != null)
-        {
-            fullScreenImage.color = targetColor;
-        }
-        AudioListener.volume = 0f;
-
-        yield return new WaitForSeconds(waitBeforeCredits);
-
-        if (creditsPanel != null)
-        {
-            creditsPanel.gameObject.SetActive(true);
-
-            float dynamicEndY = creditsPanel.rect.height - startOffsetY + endPadding;
-
-            while (creditsPanel.anchoredPosition.y < dynamicEndY)
-            {
-                float currentSpeed = scrollSpeed;
-                
-                bool isPointerOverUI = EventSystem.current != null && EventSystem.current.IsPointerOverGameObject();
-
-                if (Mouse.current != null && Mouse.current.leftButton.isPressed && !isPointerOverUI)
-                {
-                    currentSpeed *= fastScrollMultiplier;
-                }
-
-                creditsPanel.anchoredPosition += Vector2.up * (currentSpeed * Time.deltaTime);
-                yield return null;
-            }
-        }
-
-        yield return new WaitForSeconds(delayAfterScroll);
-
-        LoadMenu();
-    }
-
-    public void SkipCredits()
-    {
-        LoadMenu();
-    }
-
-    private void LoadMenu()
-    {
-        if (isSkipping) return;
-        isSkipping = true;
-
-        StopAllCoroutines();
-        
-        AudioListener.volume = initialVolume;
-
-        if (FadeManager.Instance != null)
-        {
-            FadeManager.Instance.FadeAndLoadScene("Menu", 1f);
-        }
-        else
-        {
-            SceneManager.LoadScene("Menu");
-        }
-    }
-}
-</file>
-
 <file path="Assets/_Scripts/DigicodeManager.cs">
 using System.Collections;
 using UnityEngine;
@@ -3798,152 +3690,169 @@ public class LoopTrigger : MonoBehaviour
 }
 </file>
 
-<file path="Assets/_Scripts/GameManager.cs">
-using System.Collections.Generic;
+<file path="Assets/_Scripts/CreditsManager.cs">
+using System.Collections;
 using UnityEngine;
-using TMPro;
+using UnityEngine.UI;
+using UnityEngine.SceneManagement;
+using UnityEngine.InputSystem;
+using UnityEngine.EventSystems;
 
-public class GameManager : MonoBehaviour
+public class CreditsManager : MonoBehaviour
 {
-    public static GameManager Instance;
+    [Header("References")]
+    public Image fullScreenImage;
+    public RectTransform creditsPanel;
 
-    [Header("Game State")]
-    public bool hasAnomaly = false;
-    public int currentLevel = 0;
-    public int winLevel = 8;
+    [Header("UI Elements")]
+    public GameObject skipButton;
+    private CanvasGroup skipButtonCanvasGroup;
 
-    [Header("Rhythm Settings (Shuffle Bag)")]
-    [Range(0f, 1f)] 
-    public float anomalyProbability = 0.5f;
-    public int shuffleBagSize = 10; 
+    [Header("Timings")]
+    public float fadeToBlackDuration = 2f;
+    public float waitBeforeCredits = 1f;
+    public float delayAfterScroll = 3f;
+    [Tooltip("Temps d'attente avant l'apparition du bouton Skip")]
+    public float skipButtonDelay = 3f;
 
-    [Header("UI")]
-    public TMP_Text levelDisplay;
+    [Header("Scrolling Settings")]
+    public float scrollSpeed = 100f;
+    [Tooltip("Multiplicateur de vitesse quand on maintient le clic gauche")]
+    public float fastScrollMultiplier = 4f;
+    [Tooltip("La distance de départ de ton panneau en Y (ex: 1080)")]
+    public float startOffsetY = 1080f;
+    [Tooltip("Marge ajoutée à la hauteur du panneau pour s'assurer que le texte sort bien de l'écran")]
+    public float endPadding = 200f;
 
-    private string currentAnomalyName = "";
-    private List<bool> shuffleBag = new List<bool>();
-
-    private void Awake()
-    {
-        if (Instance == null) Instance = this;
-        else Destroy(gameObject);
-    }
+    private float initialVolume;
+    private bool isSkipping = false;
 
     private void Start()
     {
-        RefillShuffleBag();
-        GenerateNextLoop();
-        UpdateLevelDisplay();
-    }
-
-    public void CheckPlayerChoice(bool wentForward)
-    {
-        bool correctChoice = (wentForward && !hasAnomaly) || (!wentForward && hasAnomaly);
-
-        if (correctChoice)
+        if (skipButton != null)
         {
-            currentLevel++;
-            Debug.Log($"Correct choice. Moving to level {currentLevel}.");
+            skipButtonCanvasGroup = skipButton.GetComponent<CanvasGroup>();
 
-            if (hasAnomaly)
+            if (skipButtonCanvasGroup == null)
             {
-                AnomalyController.Instance.UnlockCurrentAnomaly();
+                skipButtonCanvasGroup = skipButton.AddComponent<CanvasGroup>();
             }
 
-            if (currentLevel >= winLevel)
+            skipButtonCanvasGroup.alpha = 0f;
+            skipButtonCanvasGroup.interactable = false;
+            skipButtonCanvasGroup.blocksRaycasts = false;
+
+            skipButton.SetActive(false);
+        }
+    }
+
+    public void StartCreditsSequence()
+    {
+        initialVolume = AudioListener.volume;
+        StartCoroutine(CreditsRoutine());
+
+        if (skipButton != null)
+        {
+            StartCoroutine(ShowSkipButtonRoutine());
+        }
+    }
+
+    private IEnumerator ShowSkipButtonRoutine()
+    {
+        yield return new WaitForSeconds(skipButtonDelay);
+
+        if (isSkipping) yield break;
+
+        skipButton.SetActive(true);
+        if (skipButtonCanvasGroup != null)
+        {
+            skipButtonCanvasGroup.alpha = 1f;
+            skipButtonCanvasGroup.interactable = true;
+            skipButtonCanvasGroup.blocksRaycasts = true;
+        }
+    }
+
+    private IEnumerator CreditsRoutine()
+    {
+        if (AchievementManager.Instance != null)
+        {
+            AchievementManager.Instance.UnlockAchievement("end");
+        }
+
+        float timer = 0f;
+        Color startColor = fullScreenImage.color;
+        Color targetColor = Color.black;
+
+        while (timer < fadeToBlackDuration)
+        {
+            timer += Time.deltaTime;
+            float progress = timer / fadeToBlackDuration;
+
+            if (fullScreenImage != null)
             {
-                Debug.Log("Win condition reached. Ready for endgame teleport.");
+                fullScreenImage.color = Color.Lerp(startColor, targetColor, progress);
+            }
+            AudioListener.volume = Mathf.Lerp(initialVolume, 0f, progress);
+
+            yield return null;
+        }
+
+        if (fullScreenImage != null)
+        {
+            fullScreenImage.color = targetColor;
+        }
+        AudioListener.volume = 0f;
+
+        yield return new WaitForSeconds(waitBeforeCredits);
+
+        if (creditsPanel != null)
+        {
+            creditsPanel.gameObject.SetActive(true);
+
+            float dynamicEndY = creditsPanel.rect.height - startOffsetY + endPadding;
+
+            while (creditsPanel.anchoredPosition.y < dynamicEndY)
+            {
+                float currentSpeed = scrollSpeed;
+
+                bool isPointerOverUI = EventSystem.current != null && EventSystem.current.IsPointerOverGameObject();
+
+                if (Mouse.current != null && Mouse.current.leftButton.isPressed && !isPointerOverUI)
+                {
+                    currentSpeed *= fastScrollMultiplier;
+                }
+
+                creditsPanel.anchoredPosition += Vector2.up * (currentSpeed * Time.deltaTime);
+                yield return null;
             }
         }
-        else
-        {
-            currentLevel = 0;
-            Debug.Log("Wrong choice. Reset to level 0.");
-            
-            // Resets the bag when the player makes a mistake to restart the rhythm fresh
-            RefillShuffleBag();
-        }
 
-        GenerateNextLoop();
-        UpdateLevelDisplay();
+        yield return new WaitForSeconds(delayAfterScroll);
+
+        LoadMenu();
     }
 
-    private void RefillShuffleBag()
+    public void SkipCredits()
     {
-        shuffleBag.Clear();
-        
-        // Calculates how many anomalies should be in the bag based on probability
-        int anomalyCount = Mathf.RoundToInt(anomalyProbability * shuffleBagSize);
-
-        for (int i = 0; i < shuffleBagSize; i++)
-        {
-            shuffleBag.Add(i < anomalyCount);
-        }
-        
-        // Shuffles the bag using the Fisher-Yates algorithm
-        for (int i = 0; i < shuffleBag.Count; i++)
-        {
-            bool temp = shuffleBag[i];
-            int randomIndex = Random.Range(i, shuffleBag.Count);
-            shuffleBag[i] = shuffleBag[randomIndex];
-            shuffleBag[randomIndex] = temp;
-        }
+        LoadMenu();
     }
 
-    public void RestartFromDeath()
+    private void LoadMenu()
     {
-        currentLevel = 0;
-        
+        if (isSkipping) return;
+        isSkipping = true;
+
+        StopAllCoroutines();
+
+        AudioListener.volume = 0f;
+
         if (FadeManager.Instance != null)
         {
-            FadeManager.Instance.FadeAndRestart();
+            FadeManager.Instance.FadeAndLoadScene("Menu", 1f);
         }
         else
         {
-            UnityEngine.SceneManagement.SceneManager.LoadScene(UnityEngine.SceneManagement.SceneManager.GetActiveScene().name);
-        }
-    }
-
-    private bool PullFromBag()
-    {
-        if (shuffleBag.Count == 0)
-        {
-            RefillShuffleBag();
-        }
-
-        bool nextState = shuffleBag[0];
-        shuffleBag.RemoveAt(0);
-        return nextState;
-    }
-
-    private void GenerateNextLoop()
-    {
-        if (currentLevel >= winLevel)
-        {
-            hasAnomaly = false;
-            return;
-        }
-
-        // Level 0 is always normal and shouldn't consume a ticket from the bag
-        if (currentLevel == 0)
-        {
-            hasAnomaly = false;
-        }
-        else
-        {
-            hasAnomaly = PullFromBag();
-        }
-
-        currentAnomalyName = AnomalyController.Instance.SetupLoop(hasAnomaly);
-
-        Debug.Log($"Next loop generated. Anomaly: {hasAnomaly} ({currentAnomalyName}). Level: {currentLevel}");
-    }
-
-    private void UpdateLevelDisplay()
-    {
-        if (levelDisplay != null)
-        {
-            levelDisplay.text = currentLevel.ToString("00");
+            SceneManager.LoadScene("Menu");
         }
     }
 }
@@ -4234,6 +4143,159 @@ public class SettingsManager : MonoBehaviour
 }
 </file>
 
+<file path="Assets/_Scripts/GameManager.cs">
+using System.Collections.Generic;
+using UnityEngine;
+using TMPro;
+
+public class GameManager : MonoBehaviour
+{
+    public static GameManager Instance;
+
+    [Header("Game State")]
+    public bool hasAnomaly = false;
+    public int currentLevel = 0;
+    public int winLevel = 8;
+
+    [Header("Rhythm Settings (Shuffle Bag)")]
+    [Range(0f, 1f)] 
+    public float anomalyProbability = 0.5f;
+    public int shuffleBagSize = 10; 
+
+    [Header("UI")]
+    public TMP_Text levelDisplay;
+
+    private string currentAnomalyName = "";
+    private List<bool> shuffleBag = new List<bool>();
+
+    private void Awake()
+    {
+        if (Instance == null) Instance = this;
+        else Destroy(gameObject);
+
+        Debug.unityLogger.logEnabled = Debug.isDebugBuild;
+    }
+
+    private void Start()
+    {
+        RefillShuffleBag();
+        GenerateNextLoop();
+        UpdateLevelDisplay();
+    }
+
+    public void CheckPlayerChoice(bool wentForward)
+    {
+        bool correctChoice = (wentForward && !hasAnomaly) || (!wentForward && hasAnomaly);
+
+        if (correctChoice)
+        {
+            currentLevel++;
+            Debug.Log($"Correct choice. Moving to level {currentLevel}.");
+
+            if (hasAnomaly)
+            {
+                AnomalyController.Instance.UnlockCurrentAnomaly();
+            }
+
+            if (currentLevel >= winLevel)
+            {
+                Debug.Log("Win condition reached. Ready for endgame teleport.");
+            }
+        }
+        else
+        {
+            currentLevel = 0;
+            Debug.Log("Wrong choice. Reset to level 0.");
+            
+            // Resets the bag when the player makes a mistake to restart the rhythm fresh
+            RefillShuffleBag();
+        }
+
+        GenerateNextLoop();
+        UpdateLevelDisplay();
+    }
+
+    private void RefillShuffleBag()
+    {
+        shuffleBag.Clear();
+        
+        // Calculates how many anomalies should be in the bag based on probability
+        int anomalyCount = Mathf.RoundToInt(anomalyProbability * shuffleBagSize);
+
+        for (int i = 0; i < shuffleBagSize; i++)
+        {
+            shuffleBag.Add(i < anomalyCount);
+        }
+        
+        // Shuffles the bag using the Fisher-Yates algorithm
+        for (int i = 0; i < shuffleBag.Count; i++)
+        {
+            bool temp = shuffleBag[i];
+            int randomIndex = Random.Range(i, shuffleBag.Count);
+            shuffleBag[i] = shuffleBag[randomIndex];
+            shuffleBag[randomIndex] = temp;
+        }
+    }
+
+    public void RestartFromDeath()
+    {
+        currentLevel = 0;
+        
+        if (FadeManager.Instance != null)
+        {
+            FadeManager.Instance.FadeAndRestart();
+        }
+        else
+        {
+            UnityEngine.SceneManagement.SceneManager.LoadScene(UnityEngine.SceneManagement.SceneManager.GetActiveScene().name);
+        }
+    }
+
+    private bool PullFromBag()
+    {
+        if (shuffleBag.Count == 0)
+        {
+            RefillShuffleBag();
+        }
+
+        bool nextState = shuffleBag[0];
+        shuffleBag.RemoveAt(0);
+        return nextState;
+    }
+
+    private void GenerateNextLoop()
+    {
+        if (currentLevel >= winLevel)
+        {
+            hasAnomaly = false;
+            return;
+        }
+
+        // Level 0 is always normal and shouldn't consume a ticket from the bag
+        if (currentLevel == 0)
+        {
+            hasAnomaly = false;
+        }
+        else
+        {
+            hasAnomaly = PullFromBag();
+        }
+
+        currentAnomalyName = AnomalyController.Instance.SetupLoop(hasAnomaly);
+
+        Debug.Log($"Next loop generated. Anomaly: {hasAnomaly} ({currentAnomalyName}). Level: {currentLevel}");
+    }
+
+    private void UpdateLevelDisplay()
+    {
+        if (levelDisplay != null)
+        {
+            levelDisplay.text = currentLevel.ToString("00");
+        }
+    }
+}
+</file>
+
 <file path="Assets/_Scripts/PauseManager.cs">
 using System.Collections.Generic;
 using TMPro;
@@ -4334,7 +4396,10 @@ public class PauseManager : MonoBehaviour
     public void LoadMainMenu()
     {
         Time.timeScale = 1f;
+        
+        AudioListener.volume = 0f; 
         AudioListener.pause = false;
+        
         SetCursorState(false);
         
         if (FadeManager.Instance != null)

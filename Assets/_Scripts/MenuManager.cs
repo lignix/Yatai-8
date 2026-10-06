@@ -3,6 +3,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
+using System.Collections;
 
 public class MenuManager : MonoBehaviour
 {
@@ -10,10 +11,15 @@ public class MenuManager : MonoBehaviour
     public AnomalyDatabase database;
 
     [Header("Panels")]
+    public GameObject warningPanel;
+    public CanvasGroup warningTextGroup;
+    public TMP_Text continuePromptText;
     public GameObject mainPanel;
     public GameObject optionsPanel;
     public GameObject anomaliesPanel;
     public GameObject howToPlayPanel;
+
+    private bool isFadingWarning = false;
 
     [Header("Anomalies Menu")]
     public TMP_Text progressText;
@@ -27,11 +33,44 @@ public class MenuManager : MonoBehaviour
 
     private void Start()
     {
-        ShowPanel(mainPanel);
+        if (PlayerPrefs.GetInt("HasSeenWarning", 0) == 0)
+        {
+            ShowPanel(warningPanel);
+        }
+        else
+        {
+            ShowPanel(mainPanel);
+        }
+    }
+
+    private void Update()
+    {
+        if (warningPanel != null && warningPanel.activeSelf)
+        {
+            bool acceptPressed = false;
+            
+            if (UnityEngine.InputSystem.Keyboard.current != null && 
+                UnityEngine.InputSystem.Keyboard.current.escapeKey.wasPressedThisFrame)
+            {
+                acceptPressed = true;
+            }
+            
+            if (UnityEngine.InputSystem.Mouse.current != null && 
+                UnityEngine.InputSystem.Mouse.current.leftButton.wasPressedThisFrame)
+            {
+                acceptPressed = true;
+            }
+
+            if (acceptPressed)
+            {
+                AcceptWarning();
+            }
+        }
     }
 
     public void ShowPanel(GameObject panelToShow)
     {
+        if (warningPanel != null) warningPanel.SetActive(false);
         if (mainPanel != null) mainPanel.SetActive(false);
         if (optionsPanel != null) optionsPanel.SetActive(false);
         if (anomaliesPanel != null) anomaliesPanel.SetActive(false);
@@ -46,6 +85,57 @@ public class MenuManager : MonoBehaviour
         }
     }
 
+    public void AcceptWarning()
+    {
+        if (isFadingWarning) return;
+        
+        PlayerPrefs.SetInt("HasSeenWarning", 1);
+        PlayerPrefs.Save();
+        
+        StartCoroutine(FadeOutWarningRoutine());
+    }
+
+    private IEnumerator FadeOutWarningRoutine()
+    {
+        isFadingWarning = true;
+        
+        if (mainPanel != null) mainPanel.SetActive(true);
+
+        float textFadeDuration = 1.0f;
+        float pauseDuration = 0.5f;
+        float bgFadeDuration = 1.0f;
+        float timer = 0f;
+
+        if (warningTextGroup != null)
+        {
+            while (timer < textFadeDuration)
+            {
+                timer += Time.deltaTime;
+                warningTextGroup.alpha = Mathf.Lerp(1f, 0f, timer / textFadeDuration);
+                yield return null;
+            }
+            warningTextGroup.alpha = 0f;
+        }
+
+        yield return new WaitForSeconds(pauseDuration);
+
+        CanvasGroup panelGroup = warningPanel.GetComponent<CanvasGroup>();
+        if (panelGroup == null) panelGroup = warningPanel.AddComponent<CanvasGroup>();
+
+        timer = 0f;
+        while (timer < bgFadeDuration)
+        {
+            timer += Time.deltaTime;
+            panelGroup.alpha = Mathf.Lerp(1f, 0f, timer / bgFadeDuration);
+            yield return null;
+        }
+
+        if (warningPanel != null) warningPanel.SetActive(false);
+        
+        panelGroup.alpha = 1f;
+        if (warningTextGroup != null) warningTextGroup.alpha = 1f;
+        isFadingWarning = false;
+    }
     public void OpenHowToPlay()
     {
         ShowPanel(howToPlayPanel);

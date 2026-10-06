@@ -6,6 +6,8 @@ public class RamenAnomaly : MonoBehaviour
 {
     [Header("References")]
     public Transform player;
+    [Tooltip("L'objet visuel des nouilles/bouillon à cacher quand on mange")]
+    public GameObject ramenContentsToHide;
 
     [Header("Settings")]
     public float interactDistance = 2.5f;
@@ -26,6 +28,12 @@ public class RamenAnomaly : MonoBehaviour
     private void OnEnable()
     {
         hasBeenEaten = false;
+        
+        if (ramenContentsToHide != null)
+        {
+            ramenContentsToHide.SetActive(true);
+        }
+
         if (Camera.main != null) mainCamera = Camera.main.transform;
 
         if (player == null)
@@ -77,6 +85,11 @@ public class RamenAnomaly : MonoBehaviour
         hasBeenEaten = true;
 
         if (indicator != null) indicator.enabled = false;
+        
+        if (ramenContentsToHide != null)
+        {
+            ramenContentsToHide.SetActive(false);
+        }
 
         if (audioSource != null && audioSource.clip != null)
         {

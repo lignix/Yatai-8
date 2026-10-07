@@ -3,6 +3,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
+using UnityEngine.InputSystem;
 using System.Collections;
 
 public class MenuManager : MonoBehaviour
@@ -19,6 +20,13 @@ public class MenuManager : MonoBehaviour
     public GameObject anomaliesPanel;
     public GameObject howToPlayPanel;
 
+    [Header("Gamepad Navigation")]
+    public GameObject defaultMainButton;
+    public GameObject defaultOptionsButton;
+    public GameObject defaultAnomaliesButton;
+    public GameObject defaultHowToPlayButton;
+
+    private GameObject lastSelectedMainButton;
     private bool isFadingWarning = false;
 
     [Header("Anomalies Menu")]
@@ -31,39 +39,107 @@ public class MenuManager : MonoBehaviour
     public Button deleteButton;
     private int deleteClicks = 0;
 
+    private InputAction cancelAction;
+    private InputAction acceptWarningAction;
+
+    private void Awake()
+    {
+        cancelAction = new InputAction("Cancel", binding: "<Keyboard>/escape");
+        cancelAction.AddBinding("<Gamepad>/buttonEast");
+
+        acceptWarningAction = new InputAction("AcceptWarning", binding: "<Keyboard>/escape");
+        acceptWarningAction.AddBinding("<Mouse>/leftButton");
+        acceptWarningAction.AddBinding("<Gamepad>/buttonSouth");
+        acceptWarningAction.AddBinding("<Gamepad>/buttonEast");
+    }
+
+    private void OnEnable()
+    {
+        LocalizationManager.LanguageChangedEvent += OnLanguageChanged;
+        cancelAction.Enable();
+        acceptWarningAction.Enable();
+    }
+
+    private void OnDisable()
+    {
+        LocalizationManager.LanguageChangedEvent -= OnLanguageChanged;
+        cancelAction.Disable();
+        acceptWarningAction.Disable();
+    }
+
     private void Start()
     {
-        if (PlayerPrefs.GetInt("HasSeenWarning", 0) == 0)
-        {
-            ShowPanel(warningPanel);
-        }
-        else
-        {
-            ShowPanel(mainPanel);
-        }
+        if (PlayerPrefs.GetInt("HasSeenWarning", 0) == 0) ShowPanel(warningPanel);
+        else ShowPanel(mainPanel);
     }
 
     private void Update()
     {
+        if (mainPanel.activeSelf && UnityEngine.EventSystems.EventSystem.current.currentSelectedGameObject != null)
+        {
+            lastSelectedMainButton = UnityEngine.EventSystems.EventSystem.current.currentSelectedGameObject;
+        }
+
         if (warningPanel != null && warningPanel.activeSelf)
         {
-            bool acceptPressed = false;
-            
-            if (UnityEngine.InputSystem.Keyboard.current != null && 
-                UnityEngine.InputSystem.Keyboard.current.escapeKey.wasPressedThisFrame)
+            if (acceptWarningAction.WasPressedThisFrame()) AcceptWarning();
+        }
+        else
+        {
+            if (cancelAction.WasPressedThisFrame())
             {
-                acceptPressed = true;
-            }
-            
-            if (UnityEngine.InputSystem.Mouse.current != null && 
-                UnityEngine.InputSystem.Mouse.current.leftButton.wasPressedThisFrame)
-            {
-                acceptPressed = true;
+                if (optionsPanel.activeSelf || anomaliesPanel.activeSelf || howToPlayPanel.activeSelf)
+                {
+                    BackToMainMenu();
+                }
             }
 
-            if (acceptPressed)
+            if (mainPanel.activeSelf) HandleSmartSelection(lastSelectedMainButton != null ? lastSelectedMainButton : defaultMainButton);
+            else if (optionsPanel.activeSelf) HandleSmartSelection(defaultOptionsButton);
+            else if (anomaliesPanel.activeSelf) HandleSmartSelection(defaultAnomaliesButton);
+            else if (howToPlayPanel.activeSelf) HandleSmartSelection(defaultHowToPlayButton);
+        }
+    }
+
+    private void HandleSmartSelection(GameObject defaultButton)
+    {
+        if (defaultButton == null) return;
+
+        if (Mouse.current != null && Mouse.current.delta.ReadValue().sqrMagnitude > 0.1f)
+        {
+            UnityEngine.EventSystems.EventSystem.current.SetSelectedGameObject(null);
+            return;
+        }
+
+        if (UnityEngine.EventSystems.EventSystem.current.currentSelectedGameObject == null)
+        {
+            bool uiInput = false;
+
+            if (Gamepad.current != null)
             {
-                AcceptWarning();
+                if (Gamepad.current.leftStick.ReadValue().sqrMagnitude > 0.1f ||
+                    Gamepad.current.dpad.ReadValue().sqrMagnitude > 0.1f ||
+                    Gamepad.current.buttonSouth.wasPressedThisFrame ||
+                    Gamepad.current.buttonEast.wasPressedThisFrame ||
+                    Gamepad.current.buttonWest.wasPressedThisFrame ||
+                    Gamepad.current.buttonNorth.wasPressedThisFrame)
+                {
+                    uiInput = true;
+                }
+            }
+
+            if (Keyboard.current != null && (Keyboard.current.upArrowKey.wasPressedThisFrame ||
+                Keyboard.current.downArrowKey.wasPressedThisFrame ||
+                Keyboard.current.leftArrowKey.wasPressedThisFrame ||
+                Keyboard.current.rightArrowKey.wasPressedThisFrame ||
+                Keyboard.current.enterKey.wasPressedThisFrame))
+            {
+                uiInput = true;
+            }
+
+            if (uiInput)
+            {
+                UnityEngine.EventSystems.EventSystem.current.SetSelectedGameObject(defaultButton);
             }
         }
     }
@@ -79,26 +155,22 @@ public class MenuManager : MonoBehaviour
         if (panelToShow != null) panelToShow.SetActive(true);
         ResetDeleteButton();
 
-        if (panelToShow == anomaliesPanel)
-        {
-            RefreshAnomalyList();
-        }
+        if (panelToShow == anomaliesPanel) RefreshAnomalyList();
+
+        UnityEngine.EventSystems.EventSystem.current.SetSelectedGameObject(null);
     }
 
     public void AcceptWarning()
     {
         if (isFadingWarning) return;
-        
         PlayerPrefs.SetInt("HasSeenWarning", 1);
         PlayerPrefs.Save();
-        
         StartCoroutine(FadeOutWarningRoutine());
     }
 
     private IEnumerator FadeOutWarningRoutine()
     {
         isFadingWarning = true;
-        
         if (mainPanel != null) mainPanel.SetActive(true);
 
         float textFadeDuration = 1.0f;
@@ -131,77 +203,63 @@ public class MenuManager : MonoBehaviour
         }
 
         if (warningPanel != null) warningPanel.SetActive(false);
-        
         panelGroup.alpha = 1f;
         if (warningTextGroup != null) warningTextGroup.alpha = 1f;
         isFadingWarning = false;
     }
-    public void OpenHowToPlay()
-    {
-        ShowPanel(howToPlayPanel);
+
+    public void OpenHowToPlay() 
+    { 
+        lastSelectedMainButton = UnityEngine.EventSystems.EventSystem.current.currentSelectedGameObject;
+        ShowPanel(howToPlayPanel); 
     }
 
-    public void OpenOptions()
-    {
-        ShowPanel(optionsPanel);
+    public void OpenOptions() 
+    { 
+        lastSelectedMainButton = UnityEngine.EventSystems.EventSystem.current.currentSelectedGameObject;
+        ShowPanel(optionsPanel); 
     }
 
-    public void OpenAnomalies()
-    {
-        ShowPanel(anomaliesPanel);
+    public void OpenAnomalies() 
+    { 
+        lastSelectedMainButton = UnityEngine.EventSystems.EventSystem.current.currentSelectedGameObject;
+        ShowPanel(anomaliesPanel); 
     }
 
     public void BackToMainMenu()
     {
         ShowPanel(mainPanel);
+        
+        if (lastSelectedMainButton != null)
+        {
+            UnityEngine.EventSystems.EventSystem.current.SetSelectedGameObject(lastSelectedMainButton);
+        }
     }
 
     public void PlayGame()
     {
-        if (FadeManager.Instance != null)
-        {
-            FadeManager.Instance.FadeAndLoadScene("Game", 0.5f);
-        }
-        else
-        {
-            SceneManager.LoadScene("Game");
-        }
+        if (FadeManager.Instance != null) FadeManager.Instance.FadeAndLoadScene("Game", 0.5f);
+        else SceneManager.LoadScene("Game");
     }
 
-    public void QuitGame()
-    {
-        Application.Quit();
-    }
+    public void QuitGame() { Application.Quit(); }
 
     public void OnDeleteSaveClicked()
     {
         deleteClicks++;
-
         if (deleteClicks == 1)
         {
-            deleteButtonText.text = LocalizationManager.Instance.GetTranslation(
-                "ui_delete_confirm"
-            );
+            deleteButtonText.text = LocalizationManager.Instance.GetTranslation("ui_delete_confirm");
             deleteButtonText.color = Color.yellow;
         }
         else if (deleteClicks >= 2)
         {
             SaveManager.DeleteSave();
-            deleteButtonText.text = LocalizationManager.Instance.GetTranslation(
-                "ui_delete_success"
-            );
+            deleteButtonText.text = LocalizationManager.Instance.GetTranslation("ui_delete_success");
             deleteButtonText.color = Color.red;
             deleteClicks = 0;
-
-            if (deleteButton != null)
-            {
-                deleteButton.interactable = false;
-            }
-
-            if (anomaliesPanel.activeSelf)
-            {
-                RefreshAnomalyList();
-            }
+            if (deleteButton != null) deleteButton.interactable = false;
+            if (anomaliesPanel.activeSelf) RefreshAnomalyList();
         }
     }
 
@@ -210,51 +268,30 @@ public class MenuManager : MonoBehaviour
         deleteClicks = 0;
         if (deleteButtonText != null)
         {
-            string key = "ui_delete_default";
-            deleteButtonText.text =
-                LocalizationManager.Instance != null
-                    ? LocalizationManager.Instance.GetTranslation(key)
-                    : "Delete";
+            deleteButtonText.text = LocalizationManager.Instance != null ? LocalizationManager.Instance.GetTranslation("ui_delete_default") : "Delete";
             deleteButtonText.color = Color.white;
         }
-
-        if (deleteButton != null)
-        {
-            deleteButton.interactable = true;
-        }
+        if (deleteButton != null) deleteButton.interactable = true;
     }
 
     private void RefreshAnomalyList()
     {
-        foreach (Transform child in anomalyListContent)
-        {
-            Destroy(child.gameObject);
-        }
+        foreach (Transform child in anomalyListContent) Destroy(child.gameObject);
 
         List<int> unlockedAnomalies = SaveManager.Load();
         int totalAnomalies = database.anomalyKeys.Count;
-
-        string progressFormat =
-            LocalizationManager.Instance != null
-                ? LocalizationManager.Instance.GetTranslation("ui_progress")
-                : "{0} / {1}";
-
+        string progressFormat = LocalizationManager.Instance != null ? LocalizationManager.Instance.GetTranslation("ui_progress") : "{0} / {1}";
         progressText.text = string.Format(progressFormat, unlockedAnomalies.Count, totalAnomalies);
 
         for (int i = 0; i < totalAnomalies; i++)
         {
             GameObject newTextObj = Instantiate(anomalyTextPrefab, anomalyListContent);
             TMP_Text tmpText = newTextObj.GetComponent<TMP_Text>();
-
             string indexString = (i + 1).ToString("00");
 
             if (unlockedAnomalies.Contains(i))
             {
-                string localizedName =
-                    LocalizationManager.Instance != null
-                        ? LocalizationManager.Instance.GetTranslation(database.anomalyKeys[i])
-                        : database.anomalyKeys[i];
-
+                string localizedName = LocalizationManager.Instance != null ? LocalizationManager.Instance.GetTranslation(database.anomalyKeys[i]) : database.anomalyKeys[i];
                 tmpText.text = $"{indexString}. {localizedName}";
                 tmpText.color = Color.white;
             }
@@ -266,22 +303,9 @@ public class MenuManager : MonoBehaviour
         }
     }
 
-    private void OnEnable()
-    {
-        LocalizationManager.LanguageChangedEvent += OnLanguageChanged;
-    }
-
-    private void OnDisable()
-    {
-        LocalizationManager.LanguageChangedEvent -= OnLanguageChanged;
-    }
-
     private void OnLanguageChanged()
     {
         ResetDeleteButton();
-        if (anomaliesPanel != null && anomaliesPanel.activeSelf)
-        {
-            RefreshAnomalyList();
-        }
+        if (anomaliesPanel != null && anomaliesPanel.activeSelf) RefreshAnomalyList();
     }
 }

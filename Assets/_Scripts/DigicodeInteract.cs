@@ -39,15 +39,10 @@ public class DigicodeInteract : MonoBehaviour
 
             if (angle <= lookAngleThreshold)
             {
-                bool interactPressed = false;
+                PlayerInput pInput = player.GetComponent<PlayerInput>();
+                bool interactPressed = pInput != null && pInput.actions["Interact"].WasPressedThisFrame();
 
-                if (!PauseManager.Instance.isPaused && Keyboard.current != null && (Keyboard.current.eKey.wasPressedThisFrame || Keyboard.current.fKey.wasPressedThisFrame))
-                    interactPressed = true;
-                    
-                if (!PauseManager.Instance.isPaused && Mouse.current != null && Mouse.current.leftButton.wasPressedThisFrame)
-                    interactPressed = true;
-
-                if (interactPressed)
+                if (interactPressed && !PauseManager.Instance.isPaused)
                 {
                     DigicodeManager.Instance.OpenKeypad(playerController);
                 }

@@ -6,33 +6,21 @@ using UnityEngine.InputSystem;
 public class PlayerController : MonoBehaviour
 {
     [Header("Player Movement")]
-    [Tooltip("Walking speed of the character in m/s")]
     public float moveSpeed = 4.0f;
-    [Tooltip("Sprint speed of the character in m/s")]
     public float sprintSpeed = 6.0f;
-    [Tooltip("Gravity force applied to the character")]
     public float gravity = -15.0f;
 
     [Header("Camera & Look")]
-    [Tooltip("Transform of the camera object for vertical rotation")]
     public Transform cameraTransform;
-    [Tooltip("Mouse sensitivity multiplier (synced with settings)")]
     public float lookSensitivity = 1.0f;
-    [Tooltip("Global multiplier to boost overall base sensitivity")]
     public float sensitivityMultiplier = 10.0f;
-    [Tooltip("Maximum upward camera angle")]
     public float topClamp = 90.0f;
-    [Tooltip("Maximum downward camera angle")]
     public float bottomClamp = -90.0f;
 
     [Header("Noclip Mode (F1 to toggle)")]
-    [Tooltip("Check this box to allow using Noclip mode with the F1 key.")]
     public bool enableNoclip = true;
-    [Tooltip("Speed multiplier when moving freely in noclip")]
     public float noclipSpeed = 10.0f;
-    [Tooltip("Sprint multiplier in noclip mode")]
     public float noclipFastMultiplier = 3.0f;
-    [Tooltip("Cinematic mouse smoothing in noclip (lower value = smoother glide)")]
     public float noclipSmoothing = 5f;
 
     private CharacterController controller;
@@ -97,12 +85,11 @@ public class PlayerController : MonoBehaviour
     private void Update()
     {
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
-    // Will be compiled only in the Editor or Development builds, allowing for noclip testing without affecting the final build.
-    if (enableNoclip && Keyboard.current != null && Keyboard.current.f1Key.wasPressedThisFrame)
-    {
-        isNoclipActive = !isNoclipActive;
-        verticalVelocity = 0f;
-    }
+        if (enableNoclip && Keyboard.current != null && Keyboard.current.f1Key.wasPressedThisFrame)
+        {
+            isNoclipActive = !isNoclipActive;
+            verticalVelocity = 0f;
+        }
 #endif
 
         if (isNoclipActive)
@@ -118,7 +105,7 @@ public class PlayerController : MonoBehaviour
 
     private void HandleNormalMovement()
     {
-        bool isSprinting = Keyboard.current != null && Keyboard.current.leftShiftKey.isPressed;
+        bool isSprinting = playerInput != null && playerInput.actions != null && playerInput.actions["Sprint"].IsPressed();
         float currentSpeed = isSprinting ? sprintSpeed : moveSpeed;
 
         Vector2 moveInput = Vector2.zero;
@@ -157,6 +144,11 @@ public class PlayerController : MonoBehaviour
             {
                 lookInput = lookAction.ReadValue<Vector2>();
             }
+        }
+
+        if (playerInput != null && playerInput.currentControlScheme == "Gamepad")
+        {
+            lookInput.y = -lookInput.y;
         }
 
         float finalSensitivity = lookSensitivity * sensitivityMultiplier * 0.1f;

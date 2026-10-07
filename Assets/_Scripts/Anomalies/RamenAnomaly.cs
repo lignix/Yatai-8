@@ -28,7 +28,7 @@ public class RamenAnomaly : MonoBehaviour
     private void OnEnable()
     {
         hasBeenEaten = false;
-        
+
         if (ramenContentsToHide != null)
         {
             ramenContentsToHide.SetActive(true);
@@ -54,25 +54,10 @@ public class RamenAnomaly : MonoBehaviour
 
             if (angle <= lookAngleThreshold)
             {
-                bool interactPressed = false;
+                PlayerInput pInput = player.GetComponent<PlayerInput>();
+                bool interactPressed = pInput != null && pInput.actions["Interact"].WasPressedThisFrame();
 
-                if (Keyboard.current != null && !PauseManager.Instance.isPaused)
-                {
-                    if (Keyboard.current.eKey.wasPressedThisFrame || Keyboard.current.fKey.wasPressedThisFrame)
-                    {
-                        interactPressed = true;
-                    }
-                }
-
-                if (Mouse.current != null && !PauseManager.Instance.isPaused)
-                {
-                    if (Mouse.current.leftButton.wasPressedThisFrame)
-                    {
-                        interactPressed = true;
-                    }
-                }
-
-                if (interactPressed)
+                if (interactPressed && !PauseManager.Instance.isPaused)
                 {
                     EatRamen();
                 }
@@ -85,7 +70,7 @@ public class RamenAnomaly : MonoBehaviour
         hasBeenEaten = true;
 
         if (indicator != null) indicator.enabled = false;
-        
+
         if (ramenContentsToHide != null)
         {
             ramenContentsToHide.SetActive(false);

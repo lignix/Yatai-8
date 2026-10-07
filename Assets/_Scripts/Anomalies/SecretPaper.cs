@@ -30,18 +30,18 @@ public class SecretPaper : MonoBehaviour
         if (player == null)
         {
             GameObject playerObj = GameObject.FindGameObjectWithTag("Player");
-            if (playerObj != null) 
+            if (playerObj != null)
             {
                 player = playerObj.transform;
                 playerController = playerObj.GetComponent<PlayerController>();
             }
         }
-        
+
         if (pauseManager == null)
         {
             pauseManager = FindAnyObjectByType<PauseManager>();
         }
-        
+
         if (creditsManager == null)
         {
             creditsManager = FindAnyObjectByType<CreditsManager>();
@@ -52,7 +52,7 @@ public class SecretPaper : MonoBehaviour
     {
         if (player == null || mainCamera == null) return;
 
-        if (!isReading && !hasBeenRead) 
+        if (!isReading && !hasBeenRead)
         {
             if (Vector3.Distance(player.position, transform.position) <= interactDistance)
             {
@@ -61,25 +61,10 @@ public class SecretPaper : MonoBehaviour
 
                 if (angle <= lookAngleThreshold)
                 {
-                    bool interactPressed = false;
-                    
-                    if (Keyboard.current != null)
-                    {
-                        if (!pauseManager.isPaused && (Keyboard.current.eKey.wasPressedThisFrame || Keyboard.current.fKey.wasPressedThisFrame))
-                        {
-                            interactPressed = true;
-                        }
-                    }
-                    
-                    if (!pauseManager.isPaused && Mouse.current != null) 
-                    {
-                        if (Mouse.current.leftButton.wasPressedThisFrame) 
-                        {
-                            interactPressed = true; 
-                        }
-                    }
+                    PlayerInput pInput = player.GetComponent<PlayerInput>();
+                    bool interactPressed = pInput != null && pInput.actions["Interact"].WasPressedThisFrame();
 
-                    if (interactPressed) 
+                    if (interactPressed && !pauseManager.isPaused)
                     {
                         ReadPaper();
                     }
@@ -88,19 +73,10 @@ public class SecretPaper : MonoBehaviour
         }
         else if (isReading)
         {
-            bool exitPressed = false;
+            PlayerInput pInput = player.GetComponent<PlayerInput>();
+            bool exitPressed = pInput != null && pInput.actions["Cancel"].WasPressedThisFrame();
 
-            if (!pauseManager.isPaused && Keyboard.current != null && Keyboard.current.escapeKey.wasPressedThisFrame)
-            {
-                exitPressed = true;
-            }
-            
-            if (!pauseManager.isPaused && Mouse.current != null && Mouse.current.leftButton.wasPressedThisFrame)
-            {
-                exitPressed = true;
-            }
-
-            if (exitPressed)
+            if (exitPressed && !pauseManager.isPaused)
             {
                 CloseAndRollCredits();
             }
@@ -128,7 +104,7 @@ public class SecretPaper : MonoBehaviour
     {
         isReading = false;
         if (paperUIPanel != null) paperUIPanel.SetActive(false);
-        
+
         if (AchievementManager.Instance != null)
         {
             AchievementManager.Instance.UnlockAchievement("secret_end");

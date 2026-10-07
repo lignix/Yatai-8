@@ -24,7 +24,7 @@ public class CreditsManager : MonoBehaviour
 
     [Header("Scrolling Settings")]
     public float scrollSpeed = 100f;
-    [Tooltip("Multiplicateur de vitesse quand on maintient le clic gauche")]
+    [Tooltip("Multiplicateur de vitesse quand on maintient le clic gauche ou le bouton Est (B/Rond) de la manette")]
     public float fastScrollMultiplier = 4f;
     [Tooltip("La distance de départ de ton panneau en Y (ex: 1080)")]
     public float startOffsetY = 1080f;
@@ -77,6 +77,8 @@ public class CreditsManager : MonoBehaviour
             skipButtonCanvasGroup.interactable = true;
             skipButtonCanvasGroup.blocksRaycasts = true;
         }
+
+        EventSystem.current.SetSelectedGameObject(skipButton);
     }
 
     private IEnumerator CreditsRoutine()
@@ -123,8 +125,12 @@ public class CreditsManager : MonoBehaviour
                 float currentSpeed = scrollSpeed;
 
                 bool isPointerOverUI = EventSystem.current != null && EventSystem.current.IsPointerOverGameObject();
+                bool fastScroll = false;
 
-                if (Mouse.current != null && Mouse.current.leftButton.isPressed && !isPointerOverUI)
+                if (Mouse.current != null && Mouse.current.leftButton.isPressed && !isPointerOverUI) fastScroll = true;
+                if (Gamepad.current != null && Gamepad.current.buttonEast.isPressed) fastScroll = true;
+
+                if (fastScroll)
                 {
                     currentSpeed *= fastScrollMultiplier;
                 }

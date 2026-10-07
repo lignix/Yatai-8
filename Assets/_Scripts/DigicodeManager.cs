@@ -11,6 +11,9 @@ public class DigicodeManager : MonoBehaviour
     public GameObject keypadPanel;
     public TMP_Text displayCode;
 
+    [Header("Gamepad Navigation")]
+    public GameObject defaultKeypadButton;
+
     [Header("Audio Feedback")]
     public AudioSource audioSource;
     public AudioClip[] buttonBeepClips;
@@ -33,12 +36,27 @@ public class DigicodeManager : MonoBehaviour
 
     public InteractableIndicator indicator;
 
+    private InputAction cancelAction;
+
     private void Awake()
     {
         Instance = this;
         if (keypadPanel != null) keypadPanel.SetActive(false);
+
+        cancelAction = new InputAction("Cancel", binding: "<Keyboard>/escape");
+        cancelAction.AddBinding("<Gamepad>/buttonEast");
     }
-    
+
+    private void OnEnable()
+    {
+        cancelAction.Enable();
+    }
+
+    private void OnDisable()
+    {
+        cancelAction.Disable();
+    }
+
     private void Start()
     {
         pauseManager = FindAnyObjectByType<PauseManager>();
@@ -48,9 +66,50 @@ public class DigicodeManager : MonoBehaviour
     {
         if (keypadPanel != null && keypadPanel.activeSelf && !isSolved)
         {
-            if (Keyboard.current != null && Keyboard.current.escapeKey.wasPressedThisFrame)
+            if (cancelAction.WasPressedThisFrame()) CloseKeypad();
+            HandleSmartSelection(defaultKeypadButton);
+        }
+    }
+
+    private void HandleSmartSelection(GameObject defaultButton)
+    {
+        if (defaultButton == null) return;
+
+        if (Mouse.current != null && Mouse.current.delta.ReadValue().sqrMagnitude > 0.1f)
+        {
+            UnityEngine.EventSystems.EventSystem.current.SetSelectedGameObject(null);
+            return;
+        }
+
+        if (UnityEngine.EventSystems.EventSystem.current.currentSelectedGameObject == null)
+        {
+            bool uiInput = false;
+
+            if (Gamepad.current != null)
             {
-                CloseKeypad();
+                if (Gamepad.current.leftStick.ReadValue().sqrMagnitude > 0.1f ||
+                    Gamepad.current.dpad.ReadValue().sqrMagnitude > 0.1f ||
+                    Gamepad.current.buttonSouth.wasPressedThisFrame ||
+                    Gamepad.current.buttonEast.wasPressedThisFrame ||
+                    Gamepad.current.buttonWest.wasPressedThisFrame ||
+                    Gamepad.current.buttonNorth.wasPressedThisFrame)
+                {
+                    uiInput = true;
+                }
+            }
+
+            if (Keyboard.current != null && (Keyboard.current.upArrowKey.wasPressedThisFrame ||
+                Keyboard.current.downArrowKey.wasPressedThisFrame ||
+                Keyboard.current.leftArrowKey.wasPressedThisFrame ||
+                Keyboard.current.rightArrowKey.wasPressedThisFrame ||
+                Keyboard.current.enterKey.wasPressedThisFrame))
+            {
+                uiInput = true;
+            }
+
+            if (uiInput)
+            {
+                UnityEngine.EventSystems.EventSystem.current.SetSelectedGameObject(defaultButton);
             }
         }
     }
@@ -67,8 +126,8 @@ public class DigicodeManager : MonoBehaviour
         Cursor.visible = true;
 
         ClearInputSilent();
-
         if (keypadPanel != null) keypadPanel.SetActive(true);
+        UnityEngine.EventSystems.EventSystem.current.SetSelectedGameObject(null);
     }
 
     public void CloseKeypad()
@@ -80,18 +139,15 @@ public class DigicodeManager : MonoBehaviour
 
         if (playerController != null) playerController.enabled = true;
         if (pauseManager != null) pauseManager.enabled = true;
+        UnityEngine.EventSystems.EventSystem.current.SetSelectedGameObject(null);
     }
 
     public void AddDigit(string digit)
     {
         PlayRandomBeep();
-
         if (currentInput.Length < 6)
         {
-            if (currentInput.Length == 0)
-            {
-                displayCode.color = Color.white;
-            }
+            if (currentInput.Length == 0) displayCode.color = Color.white;
             currentInput += digit;
             displayCode.text = currentInput;
         }
@@ -106,16 +162,7 @@ public class DigicodeManager : MonoBehaviour
     private void ClearInputSilent()
     {
         currentInput = "";
-
-        if (LocalizationManager.Instance != null)
-        {
-            displayCode.text = LocalizationManager.Instance.GetTranslation(placeholderKey);
-        }
-        else
-        {
-            displayCode.text = "AA/MM/JJ";
-        }
-
+        displayCode.text = LocalizationManager.Instance != null ? LocalizationManager.Instance.GetTranslation(placeholderKey) : "AA/MM/JJ";
         displayCode.color = Color.gray;
     }
 
@@ -138,10 +185,7 @@ public class DigicodeManager : MonoBehaviour
         }
         else
         {
-            if (audioSource != null && errorClip != null)
-            {
-                audioSource.PlayOneShot(errorClip);
-            }
+            if (audioSource != null && errorClip != null) audioSource.PlayOneShot(errorClip);
             CloseKeypad();
         }
     }
@@ -157,22 +201,12 @@ public class DigicodeManager : MonoBehaviour
 
     private IEnumerator UnlockSequence()
     {
-        if (audioSource != null && successClip != null)
-        {
-            audioSource.PlayOneShot(successClip);
-        }
+        if (audioSource != null && successClip != null) audioSource.PlayOneShot(successClip);
         yield return new WaitForSeconds(0.5f);
         CloseKeypad();
 
-        if (doorAudioSource != null && doorOpenClip != null)
-        {
-            doorAudioSource.PlayOneShot(doorOpenClip);
-        }
-
-        if (AchievementManager.Instance != null)
-        {
-            AchievementManager.Instance.UnlockAchievement("secret_end");
-        }
+        if (doorAudioSource != null && doorOpenClip != null) doorAudioSource.PlayOneShot(doorOpenClip);
+        if (AchievementManager.Instance != null) AchievementManager.Instance.UnlockAchievement("secret_end");
 
         if (secretDoor != null)
         {

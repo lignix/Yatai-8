@@ -16,6 +16,7 @@ public class RamenAnomaly : MonoBehaviour
     private AudioSource audioSource;
     private bool hasBeenEaten = false;
     private Transform mainCamera;
+    private float sqrInteractDistance;
 
     public InteractableIndicator indicator;
 
@@ -23,23 +24,19 @@ public class RamenAnomaly : MonoBehaviour
     {
         audioSource = GetComponent<AudioSource>();
         audioSource.playOnAwake = false;
+        sqrInteractDistance = interactDistance * interactDistance;
     }
 
     private void OnEnable()
     {
         hasBeenEaten = false;
 
-        if (ramenContentsToHide != null)
-        {
-            ramenContentsToHide.SetActive(true);
-        }
-
+        if (ramenContentsToHide != null) ramenContentsToHide.SetActive(true);
         if (Camera.main != null) mainCamera = Camera.main.transform;
 
-        if (player == null)
+        if (player == null && PlayerController.InstanceTransform != null)
         {
-            GameObject playerObj = GameObject.FindGameObjectWithTag("Player");
-            if (playerObj != null) player = playerObj.transform;
+            player = PlayerController.InstanceTransform;
         }
     }
 
@@ -47,7 +44,7 @@ public class RamenAnomaly : MonoBehaviour
     {
         if (hasBeenEaten || player == null || mainCamera == null) return;
 
-        if (Vector3.Distance(player.position, transform.position) <= interactDistance)
+        if ((player.position - transform.position).sqrMagnitude <= sqrInteractDistance)
         {
             Vector3 dirToTarget = (transform.position - mainCamera.position).normalized;
             float angle = Vector3.Angle(mainCamera.forward, dirToTarget);
@@ -68,23 +65,10 @@ public class RamenAnomaly : MonoBehaviour
     private void EatRamen()
     {
         hasBeenEaten = true;
-
         if (indicator != null) indicator.enabled = false;
-
-        if (ramenContentsToHide != null)
-        {
-            ramenContentsToHide.SetActive(false);
-        }
-
-        if (audioSource != null && audioSource.clip != null)
-        {
-            audioSource.Play();
-        }
-
-        if (AchievementManager.Instance != null)
-        {
-            AchievementManager.Instance.UnlockAchievement("eat");
-        }
+        if (ramenContentsToHide != null) ramenContentsToHide.SetActive(false);
+        if (audioSource != null && audioSource.clip != null) audioSource.Play();
+        if (AchievementManager.Instance != null) AchievementManager.Instance.UnlockAchievement("eat");
     }
 
     private void OnDrawGizmosSelected()

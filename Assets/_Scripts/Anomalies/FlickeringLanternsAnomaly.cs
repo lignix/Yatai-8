@@ -17,16 +17,15 @@ public class FlickeringLanternsAnomaly : MonoBehaviour
     private Transform playerTransform;
     private bool hasTriggered = false;
     private Dictionary<Light, float> baseIntensities = new Dictionary<Light, float>();
+    private float sqrTriggerDistance;
 
     private void Awake()
     {
         foreach (Light l in lanterneLights)
         {
-            if (l != null)
-            {
-                baseIntensities[l] = l.intensity;
-            }
+            if (l != null) baseIntensities[l] = l.intensity;
         }
+        sqrTriggerDistance = triggerDistance * triggerDistance;
     }
 
     private void OnEnable()
@@ -35,19 +34,12 @@ public class FlickeringLanternsAnomaly : MonoBehaviour
         
         foreach (Light l in lanterneLights)
         {
-            if (l != null && baseIntensities.ContainsKey(l))
-            {
-                l.intensity = baseIntensities[l];
-            }
+            if (l != null && baseIntensities.ContainsKey(l)) l.intensity = baseIntensities[l];
         }
 
-        if (playerTransform == null)
+        if (playerTransform == null && PlayerController.InstanceTransform != null)
         {
-            GameObject playerObj = GameObject.FindGameObjectWithTag("Player");
-            if (playerObj != null)
-            {
-                playerTransform = playerObj.transform;
-            }
+            playerTransform = PlayerController.InstanceTransform;
         }
     }
 
@@ -57,17 +49,13 @@ public class FlickeringLanternsAnomaly : MonoBehaviour
 
         if (!hasTriggered)
         {
-            float distance = Vector3.Distance(playerTransform.position, transform.position);
-            if (distance <= triggerDistance)
+            if ((playerTransform.position - transform.position).sqrMagnitude <= sqrTriggerDistance)
             {
                 hasTriggered = true;
             }
         }
 
-        if (hasTriggered)
-        {
-            ApplyFlicker();
-        }
+        if (hasTriggered) ApplyFlicker();
     }
 
     private void ApplyFlicker()

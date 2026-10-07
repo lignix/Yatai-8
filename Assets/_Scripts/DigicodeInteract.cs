@@ -10,29 +10,30 @@ public class DigicodeInteract : MonoBehaviour
     private Transform player;
     private PlayerController playerController;
     private Transform mainCamera;
+    private float sqrInteractDistance;
+
+    private void Awake()
+    {
+        sqrInteractDistance = interactDistance * interactDistance;
+    }
 
     private void OnEnable()
     {
         if (Camera.main != null) mainCamera = Camera.main.transform;
 
-        if (player == null)
+        if (player == null && PlayerController.InstanceTransform != null)
         {
-            GameObject p = GameObject.FindGameObjectWithTag("Player");
-            if (p != null)
-            {
-                player = p.transform;
-                playerController = p.GetComponent<PlayerController>();
-            }
+            player = PlayerController.InstanceTransform;
+            playerController = PlayerController.Instance;
         }
     }
 
     private void Update()
     {
         if (player == null || mainCamera == null || DigicodeManager.Instance == null) return;
-        if (DigicodeManager.Instance.isSolved) return;
-        if (DigicodeManager.Instance.keypadPanel.activeSelf) return;
+        if (DigicodeManager.Instance.isSolved || DigicodeManager.Instance.keypadPanel.activeSelf) return;
 
-        if (Vector3.Distance(player.position, transform.position) <= interactDistance)
+        if ((player.position - transform.position).sqrMagnitude <= sqrInteractDistance)
         {
             Vector3 dirToTarget = (transform.position - mainCamera.position).normalized;
             float angle = Vector3.Angle(mainCamera.forward, dirToTarget);

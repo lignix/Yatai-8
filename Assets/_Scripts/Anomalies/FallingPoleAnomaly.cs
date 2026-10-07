@@ -18,13 +18,14 @@ public class FallingPoleAnomaly : MonoBehaviour
     private Quaternion originalRotation;
     private Quaternion targetRotation;
     private Collider poleCollider;
+    private float sqrTriggerDistance;
 
     private void Awake()
     {
         poleCollider = GetComponent<Collider>();
-        
         originalRotation = transform.localRotation;
         targetRotation = Quaternion.Euler(absoluteTargetRotation);
+        sqrTriggerDistance = triggerDistance * triggerDistance;
     }
 
     private void OnEnable()
@@ -33,9 +34,11 @@ public class FallingPoleAnomaly : MonoBehaviour
         isFalling = false;
         transform.localRotation = originalRotation;
 
-        if (poleCollider != null) 
+        if (poleCollider != null) poleCollider.enabled = true;
+
+        if (player == null && PlayerController.InstanceTransform != null)
         {
-            poleCollider.enabled = true;
+            player = PlayerController.InstanceTransform;
         }
     }
 
@@ -43,21 +46,16 @@ public class FallingPoleAnomaly : MonoBehaviour
     {
         if (player == null) return;
 
-        if (!hasTriggered && Vector3.Distance(player.position, transform.position) <= triggerDistance)
+        if (!hasTriggered && (player.position - transform.position).sqrMagnitude <= sqrTriggerDistance)
         {
             hasTriggered = true;
             isFalling = true;
-
-            if (fallSound != null)
-            {
-                fallSound.Play();
-            }
+            if (fallSound != null) fallSound.Play();
         }
 
         if (isFalling)
         {
             transform.localRotation = Quaternion.RotateTowards(transform.localRotation, targetRotation, fallSpeed * Time.deltaTime);
-
             if (Quaternion.Angle(transform.localRotation, targetRotation) < 0.1f)
             {
                 isFalling = false; 
@@ -70,12 +68,7 @@ public class FallingPoleAnomaly : MonoBehaviour
         if (hasTriggered && isFalling && other.CompareTag("Player"))
         {
             isFalling = false;
-            
-            if (poleCollider != null) 
-            {
-                poleCollider.enabled = false;
-            }
-
+            if (poleCollider != null) poleCollider.enabled = false;
             GameManager.Instance.RestartFromDeath();
         }
     }

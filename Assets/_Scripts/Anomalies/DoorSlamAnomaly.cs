@@ -15,25 +15,28 @@ public class DoorSlamAnomaly : MonoBehaviour
     private AudioSource audioSource;
     private bool hasTriggered = false;
     private Quaternion originalRotation;
+    private float sqrTriggerDistance;
 
     private void Awake()
     {
         audioSource = GetComponent<AudioSource>();
-
-        // Store the initial rotation so it can be reset in future loops
         originalRotation = transform.localRotation;
+        sqrTriggerDistance = triggerDistance * triggerDistance;
     }
 
     private void OnEnable()
     {
-        // Reset state every time the AnomalyController activates this object
         hasTriggered = false;
         transform.localRotation = originalRotation;
+
+        if (player == null && PlayerController.InstanceTransform != null)
+        {
+            player = PlayerController.InstanceTransform;
+        }
     }
 
     private void OnDisable()
     {
-        // Prevent the coroutine from running if the anomaly is disabled mid-animation
         StopAllCoroutines();
     }
 
@@ -41,7 +44,7 @@ public class DoorSlamAnomaly : MonoBehaviour
     {
         if (hasTriggered || player == null) return;
 
-        if (Vector3.Distance(player.position, transform.position) <= triggerDistance)
+        if ((player.position - transform.position).sqrMagnitude <= sqrTriggerDistance)
         {
             TriggerSlam();
         }
@@ -50,25 +53,18 @@ public class DoorSlamAnomaly : MonoBehaviour
     private void TriggerSlam()
     {
         hasTriggered = true;
-
-        if (audioSource != null && audioSource.clip != null)
-        {
-            audioSource.Play();
-        }
-
+        if (audioSource != null && audioSource.clip != null) audioSource.Play();
         StartCoroutine(SlamRoutine());
     }
 
     private IEnumerator SlamRoutine()
     {
         Quaternion targetRotation = Quaternion.Euler(closedRotation);
-
         while (Quaternion.Angle(transform.localRotation, targetRotation) > 0.1f)
         {
             transform.localRotation = Quaternion.Lerp(transform.localRotation, targetRotation, Time.deltaTime * slamSpeed);
             yield return null;
         }
-
         transform.localRotation = targetRotation;
     }
 }

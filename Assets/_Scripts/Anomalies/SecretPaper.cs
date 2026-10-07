@@ -20,31 +20,30 @@ public class SecretPaper : MonoBehaviour
     private bool isReading = false;
     private bool hasBeenRead = false;
     private Transform mainCamera;
+    private float sqrInteractDistance;
 
     public InteractableIndicator indicator;
+
+    private void Awake()
+    {
+        sqrInteractDistance = interactDistance * interactDistance;
+    }
 
     private void OnEnable()
     {
         if (Camera.main != null) mainCamera = Camera.main.transform;
 
-        if (player == null)
+        if (player == null && PlayerController.InstanceTransform != null)
         {
-            GameObject playerObj = GameObject.FindGameObjectWithTag("Player");
-            if (playerObj != null)
-            {
-                player = playerObj.transform;
-                playerController = playerObj.GetComponent<PlayerController>();
-            }
+            player = PlayerController.InstanceTransform;
+            playerController = PlayerController.Instance;
         }
 
-        if (pauseManager == null)
-        {
-            pauseManager = FindAnyObjectByType<PauseManager>();
-        }
+        pauseManager = PauseManager.Instance;
 
         if (creditsManager == null)
         {
-            creditsManager = FindAnyObjectByType<CreditsManager>();
+            creditsManager = Object.FindAnyObjectByType<CreditsManager>();
         }
     }
 
@@ -54,7 +53,7 @@ public class SecretPaper : MonoBehaviour
 
         if (!isReading && !hasBeenRead)
         {
-            if (Vector3.Distance(player.position, transform.position) <= interactDistance)
+            if ((player.position - transform.position).sqrMagnitude <= sqrInteractDistance)
             {
                 Vector3 dirToTarget = (transform.position - mainCamera.position).normalized;
                 float angle = Vector3.Angle(mainCamera.forward, dirToTarget);
@@ -88,14 +87,8 @@ public class SecretPaper : MonoBehaviour
         isReading = true;
         hasBeenRead = true;
         if (indicator != null) indicator.enabled = false;
-
-        if (pickupSound != null)
-        {
-            pickupSound.Play();
-        }
-
+        if (pickupSound != null) pickupSound.Play();
         if (paperUIPanel != null) paperUIPanel.SetActive(true);
-
         if (playerController != null) playerController.enabled = false;
         if (pauseManager != null) pauseManager.enabled = false;
     }
@@ -104,22 +97,12 @@ public class SecretPaper : MonoBehaviour
     {
         isReading = false;
         if (paperUIPanel != null) paperUIPanel.SetActive(false);
+        if (AchievementManager.Instance != null) AchievementManager.Instance.UnlockAchievement("secret_end");
 
-        if (AchievementManager.Instance != null)
-        {
-            AchievementManager.Instance.UnlockAchievement("secret_end");
-        }
+        EndgameFade endgameFade = Object.FindAnyObjectByType<EndgameFade>();
+        if (endgameFade != null) endgameFade.enabled = false;
 
-        EndgameFade endgameFade = FindAnyObjectByType<EndgameFade>();
-        if (endgameFade != null)
-        {
-            endgameFade.enabled = false;
-        }
-
-        if (creditsManager != null)
-        {
-            creditsManager.StartCreditsSequence();
-        }
+        if (creditsManager != null) creditsManager.StartCreditsSequence();
     }
 
     private void OnDrawGizmosSelected()

@@ -5,6 +5,9 @@ using UnityEngine.InputSystem;
 [RequireComponent(typeof(PlayerInput))]
 public class PlayerController : MonoBehaviour
 {
+    public static Transform InstanceTransform { get; private set; }
+    public static PlayerController Instance { get; private set; }
+
     [Header("Player Movement")]
     public float moveSpeed = 4.0f;
     public float sprintSpeed = 6.0f;
@@ -36,6 +39,9 @@ public class PlayerController : MonoBehaviour
 
     private void Awake()
     {
+        InstanceTransform = transform;
+        Instance = this;
+
         controller = GetComponent<CharacterController>();
         playerInput = GetComponent<PlayerInput>();
 

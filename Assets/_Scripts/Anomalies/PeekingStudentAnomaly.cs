@@ -14,13 +14,12 @@ public class PeekingStudentAnomaly : MonoBehaviour
 
     private bool hasTriggered = false;
     private Vector3 initialPosition;
+    private float sqrTriggerDistance;
 
     private void Awake()
     {
-        if (student != null)
-        {
-            initialPosition = student.transform.position;
-        }
+        if (student != null) initialPosition = student.transform.position;
+        sqrTriggerDistance = triggerDistance * triggerDistance;
     }
 
     private void OnEnable()
@@ -33,10 +32,9 @@ public class PeekingStudentAnomaly : MonoBehaviour
             student.SetActive(true);
         }
 
-        if (player == null)
+        if (player == null && PlayerController.InstanceTransform != null)
         {
-            GameObject p = GameObject.FindGameObjectWithTag("Player");
-            if (p != null) player = p.transform;
+            player = PlayerController.InstanceTransform;
         }
     }
 
@@ -49,7 +47,7 @@ public class PeekingStudentAnomaly : MonoBehaviour
     {
         if (hasTriggered || player == null || student == null) return;
 
-        if (Vector3.Distance(player.position, transform.position) <= triggerDistance)
+        if ((player.position - transform.position).sqrMagnitude <= sqrTriggerDistance)
         {
             hasTriggered = true;
             StartCoroutine(HideRoutine());

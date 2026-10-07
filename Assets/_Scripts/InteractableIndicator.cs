@@ -6,14 +6,15 @@ public class InteractableIndicator : MonoBehaviour
     public GameObject indicatorPrefab;
     public float interactDistance = 2.5f;
     public float lookAngleThreshold = 20f;
-
     public Vector3 indicatorOffset = new Vector3(0f, 0.2f, 0f);
 
     private GameObject indicatorInstance;
     private Transform mainCamera;
+    private float sqrInteractDistance;
 
     private void Start()
     {
+        sqrInteractDistance = interactDistance * interactDistance;
         if (Camera.main != null) mainCamera = Camera.main.transform;
 
         if (indicatorPrefab != null)
@@ -34,9 +35,7 @@ public class InteractableIndicator : MonoBehaviour
             return;
         }
 
-        float distance = Vector3.Distance(mainCamera.position, transform.position);
-
-        if (distance <= interactDistance)
+        if ((mainCamera.position - transform.position).sqrMagnitude <= sqrInteractDistance)
         {
             Vector3 dirToTarget = (transform.position - mainCamera.position).normalized;
             float angle = Vector3.Angle(mainCamera.forward, dirToTarget);
@@ -56,10 +55,10 @@ public class InteractableIndicator : MonoBehaviour
         Gizmos.color = new Color(1f, 0.92f, 0.016f, 0.5f);
         Vector3 gizmoPos = transform.TransformPoint(indicatorOffset);
         Gizmos.DrawSphere(gizmoPos, 0.1f);
-
         Gizmos.color = Color.yellow;
         Gizmos.DrawLine(transform.position, gizmoPos);
     }
+
     private void OnDisable()
     {
         if (indicatorInstance != null)

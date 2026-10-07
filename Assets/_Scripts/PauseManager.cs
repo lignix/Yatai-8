@@ -143,8 +143,7 @@ public class PauseManager : MonoBehaviour
 
         SetCursorState(!isPaused);
 
-        PlayerController playerController = FindAnyObjectByType<PlayerController>();
-        if (playerController != null) playerController.enabled = !isPaused;
+        if (PlayerController.Instance != null) PlayerController.Instance.enabled = !isPaused;
 
         if (isPaused)
         {

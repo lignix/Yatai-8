@@ -56,6 +56,8 @@ Assets/
       DisableLight.cs.meta
       DoorSlamAnomaly.cs
       DoorSlamAnomaly.cs.meta
+      EscapedStudentAnomaly.cs
+      EscapedStudentAnomaly.cs.meta
       FallingPoleAnomaly.cs
       FallingPoleAnomaly.cs.meta
       FlickeringLanternsAnomaly.cs
@@ -68,6 +70,8 @@ Assets/
       KnockingDoorAnomaly.cs.meta
       LightFlicker.cs
       LightFlicker.cs.meta
+      PeekingStudentAnomaly.cs
+      PeekingStudentAnomaly.cs.meta
       RamenAnomaly.cs
       RamenAnomaly.cs.meta
       RotatingConeAnomaly.cs
@@ -101,6 +105,8 @@ Assets/
     FadeManager.cs.meta
     GameManager.cs
     GameManager.cs.meta
+    GamepadScroll.cs
+    GamepadScroll.cs.meta
     IndicatorAnim.cs
     IndicatorAnim.cs.meta
     InteractableIndicator.cs
@@ -135,6 +141,45 @@ Assets/
 
 <files>
 This section contains the contents of the repository's files.
+
+<file path="Assets/_Scripts/GamepadScroll.cs">
+using UnityEngine;
+using UnityEngine.UI;
+using UnityEngine.InputSystem;
+
+[RequireComponent(typeof(ScrollRect))]
+public class GamepadScroll : MonoBehaviour
+{
+    public float scrollSpeed = 1.5f;
+    
+    private ScrollRect scrollRect;
+
+    private void Awake()
+    {
+        scrollRect = GetComponent<ScrollRect>();
+    }
+
+    private void Update()
+    {
+        if (Gamepad.current != null)
+        {
+            float scrollInput = Gamepad.current.rightStick.y.ReadValue();
+            
+            if (Mathf.Abs(scrollInput) > 0.1f)
+            {
+                scrollRect.verticalNormalizedPosition += scrollInput * scrollSpeed * Time.unscaledDeltaTime;
+                
+                scrollRect.verticalNormalizedPosition = Mathf.Clamp01(scrollRect.verticalNormalizedPosition);
+            }
+        }
+    }
+}
+</file>
+
+<file path="Assets/_Scripts/GamepadScroll.cs.meta">
+fileFormatVersion: 2
+guid: faf7e30715fef854f84cc2bc3478345d
+</file>
 
 <file path="Assets/_Scripts/Anomalies/ArcadeAnomaly.cs">
 using System.Collections;
@@ -614,6 +659,123 @@ fileFormatVersion: 2
 guid: 94cb332d477ecad428d1a6b56aab1a9e
 </file>
 
+<file path="Assets/_Scripts/Anomalies/EscapedStudentAnomaly.cs">
+using System.Collections;
+using UnityEngine;
+
+public class EscapedStudentAnomaly : MonoBehaviour
+{
+    [Header("References")]
+    public Transform posterTransform;
+    public GameObject studentModel;
+    public Transform retreatTarget;
+
+    [Header("Audio")]
+    public AudioSource laughSound;
+    public AudioSource scareSound;
+
+    public float posterLookDistance = 10f;
+    public float posterLookAngle = 20f;
+    public float minSpawnAngle = 75f;
+
+    public float studentLookAngle = 25f;
+    public float retreatSpeed = 3f;
+
+    private Transform mainCamera;
+    private bool hasAppeared = false;
+    private bool isRetreating = false;
+    private Vector3 initialStudentPosition;
+
+    private void Awake()
+    {
+        if (studentModel != null)
+        {
+            initialStudentPosition = studentModel.transform.position;
+        }
+    }
+
+    private void OnEnable()
+    {
+        hasAppeared = false;
+        isRetreating = false;
+
+        if (Camera.main != null) mainCamera = Camera.main.transform;
+
+        if (studentModel != null)
+        {
+            studentModel.transform.position = initialStudentPosition;
+            studentModel.SetActive(false);
+        }
+    }
+
+    private void OnDisable()
+    {
+        StopAllCoroutines();
+    }
+
+    private void Update()
+    {
+        if (mainCamera == null || posterTransform == null) return;
+
+        if (!hasAppeared)
+        {
+            float distToPoster = Vector3.Distance(mainCamera.position, posterTransform.position);
+
+            if (distToPoster <= posterLookDistance)
+            {
+                Vector3 dirToPoster = (posterTransform.position - mainCamera.position).normalized;
+                float angleToPoster = Vector3.Angle(mainCamera.forward, dirToPoster);
+
+                if (angleToPoster <= posterLookAngle)
+                {
+                    Vector3 dirToSpawn = (initialStudentPosition - mainCamera.position).normalized;
+                    float angleToSpawn = Vector3.Angle(mainCamera.forward, dirToSpawn);
+
+                    if (angleToSpawn >= minSpawnAngle)
+                    {
+                        hasAppeared = true;
+
+                        if (studentModel != null) studentModel.SetActive(true);
+                        if (laughSound != null) laughSound.Play();
+                    }
+                }
+            }
+        }
+        else if (!isRetreating && studentModel != null)
+        {
+            Vector3 dirToStudent = (studentModel.transform.position - mainCamera.position).normalized;
+            float angleToStudent = Vector3.Angle(mainCamera.forward, dirToStudent);
+
+            if (angleToStudent <= studentLookAngle)
+            {
+                isRetreating = true;
+
+                if (scareSound != null) scareSound.Play();
+
+                StartCoroutine(RetreatRoutine());
+            }
+        }
+    }
+
+    private IEnumerator RetreatRoutine()
+    {
+        if (studentModel != null && retreatTarget != null)
+        {
+            while (Vector3.Distance(studentModel.transform.position, retreatTarget.position) > 0.01f)
+            {
+                studentModel.transform.position = Vector3.MoveTowards(studentModel.transform.position, retreatTarget.position, retreatSpeed * Time.deltaTime);
+                yield return null;
+            }
+        }
+    }
+}
+</file>
+
+<file path="Assets/_Scripts/Anomalies/EscapedStudentAnomaly.cs.meta">
+fileFormatVersion: 2
+guid: 160ab3d34fd980545940bcde3216196e
+</file>
+
 <file path="Assets/_Scripts/Anomalies/FallingPoleAnomaly.cs">
 using UnityEngine;
 
@@ -1003,6 +1165,86 @@ fileFormatVersion: 2
 guid: e7e70bb3ca09627489276a58b773ebc1
 </file>
 
+<file path="Assets/_Scripts/Anomalies/PeekingStudentAnomaly.cs">
+using System.Collections;
+using UnityEngine;
+
+public class PeekingStudentAnomaly : MonoBehaviour
+{
+    [Header("References")]
+    public Transform player;
+    public GameObject student;
+    public Transform hideTarget; 
+
+    [Header("Settings")]
+    public float triggerDistance = 6f;
+    public float moveSpeed = 4f;
+
+    private bool hasTriggered = false;
+    private Vector3 initialPosition;
+
+    private void Awake()
+    {
+        if (student != null)
+        {
+            initialPosition = student.transform.position;
+        }
+    }
+
+    private void OnEnable()
+    {
+        hasTriggered = false;
+        
+        if (student != null)
+        {
+            student.transform.position = initialPosition;
+            student.SetActive(true);
+        }
+
+        if (player == null)
+        {
+            GameObject p = GameObject.FindGameObjectWithTag("Player");
+            if (p != null) player = p.transform;
+        }
+    }
+
+    private void OnDisable()
+    {
+        StopAllCoroutines();
+    }
+
+    private void Update()
+    {
+        if (hasTriggered || player == null || student == null) return;
+
+        if (Vector3.Distance(player.position, transform.position) <= triggerDistance)
+        {
+            hasTriggered = true;
+            StartCoroutine(HideRoutine());
+        }
+    }
+
+    private IEnumerator HideRoutine()
+    {
+        if (hideTarget != null)
+        {
+            while (Vector3.Distance(student.transform.position, hideTarget.position) > 0.01f)
+            {
+                student.transform.position = Vector3.MoveTowards(student.transform.position, hideTarget.position, moveSpeed * Time.deltaTime);
+                yield return null;
+            }
+        }
+        
+        student.SetActive(false);
+    }
+}
+</file>
+
+<file path="Assets/_Scripts/Anomalies/PeekingStudentAnomaly.cs.meta">
+fileFormatVersion: 2
+guid: 243380ac77d60664dbf8b9e3948ff23c
+</file>
+
 <file path="Assets/_Scripts/Anomalies/RamenAnomaly.cs.meta">
 fileFormatVersion: 2
 guid: 038cf47bc205ce749b877ae7598fb83b
@@ -1284,70 +1526,6 @@ public class TrashBagCollisionSound : MonoBehaviour
 <file path="Assets/_Scripts/Anomalies/TrashBagCollisionSound.cs.meta">
 fileFormatVersion: 2
 guid: 0f284e176f93e6e48b296c1b518a8000
-</file>
-
-<file path="Assets/_Scripts/Anomalies/WaypointWalker.cs">
-using UnityEngine;
-
-public class WaypointWalker : MonoBehaviour
-{
-    public Transform[] waypoints;
-    public float moveSpeed = 2f;
-    public float turnSpeed = 8f; 
-    
-    private int currentPoint = 0;
-    private Animator anim;
-
-    void Awake()
-    {
-        anim = GetComponent<Animator>();
-    }
-
-    void OnEnable()
-    {
-        currentPoint = 0;
-        
-        if (waypoints.Length > 0 && waypoints[0] != null)
-        {
-            transform.position = waypoints[0].position;
-            transform.rotation = waypoints[0].rotation;
-        }
-
-        if (anim != null)
-        {
-            anim.SetBool("IsWalking", true);
-        }
-    }
-
-    void Update()
-    {
-        if (waypoints.Length == 0 || currentPoint >= waypoints.Length) return;
-
-        Transform target = waypoints[currentPoint];
-        
-        transform.position = Vector3.MoveTowards(transform.position, target.position, moveSpeed * Time.deltaTime);
-
-        Vector3 direction = (target.position - transform.position).normalized;
-        if (direction != Vector3.zero)
-        {
-            Quaternion lookRotation = Quaternion.LookRotation(new Vector3(direction.x, 0f, direction.z));
-            transform.rotation = Quaternion.Slerp(transform.rotation, lookRotation, Time.deltaTime * turnSpeed);
-        }
-
-        if (Vector3.Distance(transform.position, target.position) < 0.05f)
-        {
-            currentPoint++;
-
-            if (currentPoint >= waypoints.Length)
-            {
-                if (anim != null)
-                {
-                    anim.SetBool("IsWalking", false);
-                }
-            }
-        }
-    }
-}
 </file>
 
 <file path="Assets/_Scripts/Anomalies/WaypointWalker.cs.meta">
@@ -1846,6 +2024,70 @@ public class GiantHeadAnomaly : MonoBehaviour
 }
 </file>
 
+<file path="Assets/_Scripts/Anomalies/WaypointWalker.cs">
+using UnityEngine;
+
+public class WaypointWalker : MonoBehaviour
+{
+    public Transform[] waypoints;
+    public float moveSpeed = 2f;
+    public float turnSpeed = 8f; 
+    
+    private int currentPoint = 0;
+    private Animator anim;
+
+    void Awake()
+    {
+        anim = GetComponent<Animator>();
+    }
+
+    void OnEnable()
+    {
+        currentPoint = 0;
+        
+        if (waypoints.Length > 0 && waypoints[0] != null)
+        {
+            transform.position = waypoints[0].position;
+            transform.rotation = waypoints[0].rotation;
+        }
+
+        if (anim != null)
+        {
+            anim.SetBool("isIdle", false);
+        }
+    }
+
+    void Update()
+    {
+        if (waypoints.Length == 0 || currentPoint >= waypoints.Length) return;
+
+        Transform target = waypoints[currentPoint];
+        
+        transform.position = Vector3.MoveTowards(transform.position, target.position, moveSpeed * Time.deltaTime);
+
+        Vector3 direction = (target.position - transform.position).normalized;
+        if (direction != Vector3.zero)
+        {
+            Quaternion lookRotation = Quaternion.LookRotation(new Vector3(direction.x, 0f, direction.z));
+            transform.rotation = Quaternion.Slerp(transform.rotation, lookRotation, Time.deltaTime * turnSpeed);
+        }
+
+        if (Vector3.Distance(transform.position, target.position) < 0.05f)
+        {
+            currentPoint++;
+
+            if (currentPoint >= waypoints.Length)
+            {
+                if (anim != null)
+                {
+                    anim.SetBool("isIdle", true);
+                }
+            }
+        }
+    }
+}
+</file>
+
 <file path="Assets/_Scripts/AchievementManager.cs">
 using System.Collections;
 using System.Collections.Generic;
@@ -1919,153 +2161,6 @@ public class AchievementManager : MonoBehaviour
             SteamUserStats.StoreStats();
             Debug.Log($"[Steam] Succès débloqué : {achievementID}");
         }
-    }
-}
-</file>
-
-<file path="Assets/_Scripts/FadeManager.cs">
-using System.Collections;
-using UnityEngine;
-using UnityEngine.UI;
-using UnityEngine.SceneManagement;
-
-public class FadeManager : MonoBehaviour
-{
-    public static FadeManager Instance;
-
-    [Header("References")]
-    public Image fadeImage;
-    [Tooltip("L'objet contenant ton image ou texte de chargement")]
-    public GameObject loadingIcon; 
-
-    [Header("Settings")]
-    public float fadeOutDuration = 1.5f; 
-    public float fadeInDuration = 0.1f; 
-
-    private bool isFading = false;
-
-    private void Awake()
-    {
-        if (Instance == null)
-        {
-            Instance = this;
-            transform.SetParent(null); 
-            DontDestroyOnLoad(gameObject);
-        }
-        else
-        {
-            Destroy(gameObject);
-        }
-    }
-
-    private void Start()
-    {
-        if (loadingIcon != null) loadingIcon.SetActive(false);
-
-        if (fadeImage != null && !isFading)
-        {
-            fadeImage.gameObject.SetActive(true);
-            fadeImage.color = Color.black;
-            StartCoroutine(InitialFadeInRoutine());
-        }
-    }
-
-    private IEnumerator InitialFadeInRoutine()
-    {
-        isFading = true;
-        
-        yield return null;
-        yield return null;
-        yield return null;
-
-        float timer = 0f;
-        while (timer < fadeOutDuration)
-        {
-            timer += Time.unscaledDeltaTime;
-            float alpha = Mathf.Lerp(1f, 0f, timer / fadeOutDuration);
-            if (fadeImage != null)
-            {
-                Color c = fadeImage.color;
-                c.a = alpha;
-                fadeImage.color = c;
-            }
-            yield return null;
-        }
-
-        if (fadeImage != null) fadeImage.gameObject.SetActive(false);
-        isFading = false;
-    }
-
-    public void FadeAndRestart()
-    {
-        if (isFading) return;
-        StartCoroutine(RealLoadingSequence(SceneManager.GetActiveScene().name, fadeInDuration));
-    }
-
-    public void FadeAndLoadScene(string sceneName, float duration)
-    {
-        if (isFading) return;
-        StartCoroutine(RealLoadingSequence(sceneName, duration));
-    }
-
-    private IEnumerator RealLoadingSequence(string targetScene, float fadeDuration)
-    {
-        isFading = true;
-        
-        if (fadeImage != null) fadeImage.gameObject.SetActive(true);
-        float timer = 0f;
-        while (timer < fadeDuration)
-        {
-            timer += Time.unscaledDeltaTime;
-            float alpha = Mathf.Lerp(0f, 1f, timer / fadeDuration);
-            if (fadeImage != null)
-            {
-                Color c = fadeImage.color;
-                c.a = alpha;
-                fadeImage.color = c;
-            }
-            yield return null;
-        }
-
-        if (fadeImage != null) fadeImage.color = Color.black;
-
-        if (loadingIcon != null) loadingIcon.SetActive(true);
-
-        AsyncOperation asyncLoad = SceneManager.LoadSceneAsync(targetScene);
-        while (!asyncLoad.isDone)
-        {
-            yield return null;
-        }
-
-        yield return null;
-        yield return null;
-        yield return null;
-
-        if (loadingIcon != null) loadingIcon.SetActive(false);
-
-        timer = 0f;
-        while (timer < fadeOutDuration)
-        {
-            timer += Time.unscaledDeltaTime;
-            float alpha = Mathf.Lerp(1f, 0f, timer / fadeOutDuration);
-            if (fadeImage != null)
-            {
-                Color c = fadeImage.color;
-                c.a = alpha;
-                fadeImage.color = c;
-            }
-            yield return null;
-        }
-
-        if (fadeImage != null)
-        {
-            Color c = fadeImage.color;
-            c.a = 0f;
-            fadeImage.color = c;
-            fadeImage.gameObject.SetActive(false);
-        }
-
-        isFading = false;
     }
 }
 </file>
@@ -2331,106 +2426,6 @@ public class SteamManager : MonoBehaviour
 }
 </file>
 
-<file path="Assets/_Scripts/Anomalies/RamenAnomaly.cs">
-using UnityEngine;
-using UnityEngine.InputSystem;
-
-[RequireComponent(typeof(AudioSource))]
-public class RamenAnomaly : MonoBehaviour
-{
-    [Header("References")]
-    public Transform player;
-
-    [Header("Settings")]
-    public float interactDistance = 2.5f;
-    public float lookAngleThreshold = 20f;
-
-    private AudioSource audioSource;
-    private bool hasBeenEaten = false;
-    private Transform mainCamera;
-
-    public InteractableIndicator indicator;
-
-    private void Awake()
-    {
-        audioSource = GetComponent<AudioSource>();
-        audioSource.playOnAwake = false;
-    }
-
-    private void OnEnable()
-    {
-        hasBeenEaten = false;
-        if (Camera.main != null) mainCamera = Camera.main.transform;
-
-        if (player == null)
-        {
-            GameObject playerObj = GameObject.FindGameObjectWithTag("Player");
-            if (playerObj != null) player = playerObj.transform;
-        }
-    }
-
-    private void Update()
-    {
-        if (hasBeenEaten || player == null || mainCamera == null) return;
-
-        if (Vector3.Distance(player.position, transform.position) <= interactDistance)
-        {
-            Vector3 dirToTarget = (transform.position - mainCamera.position).normalized;
-            float angle = Vector3.Angle(mainCamera.forward, dirToTarget);
-
-            if (angle <= lookAngleThreshold)
-            {
-                bool interactPressed = false;
-
-                if (Keyboard.current != null && !PauseManager.Instance.isPaused)
-                {
-                    if (Keyboard.current.eKey.wasPressedThisFrame || Keyboard.current.fKey.wasPressedThisFrame)
-                    {
-                        interactPressed = true;
-                    }
-                }
-
-                if (Mouse.current != null && !PauseManager.Instance.isPaused)
-                {
-                    if (Mouse.current.leftButton.wasPressedThisFrame)
-                    {
-                        interactPressed = true;
-                    }
-                }
-
-                if (interactPressed)
-                {
-                    EatRamen();
-                }
-            }
-        }
-    }
-
-    private void EatRamen()
-    {
-        hasBeenEaten = true;
-
-        if (indicator != null) indicator.enabled = false;
-
-        if (audioSource != null && audioSource.clip != null)
-        {
-            audioSource.Play();
-        }
-
-        if (AchievementManager.Instance != null)
-        {
-            AchievementManager.Instance.UnlockAchievement("eat");
-        }
-    }
-
-    private void OnDrawGizmosSelected()
-    {
-        Gizmos.color = Color.cyan;
-        Gizmos.DrawWireSphere(transform.position, interactDistance);
-    }
-}
-</file>
-
 <file path="Assets/_Scripts/Anomalies/SecretPaper.cs">
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -2464,18 +2459,18 @@ public class SecretPaper : MonoBehaviour
         if (player == null)
         {
             GameObject playerObj = GameObject.FindGameObjectWithTag("Player");
-            if (playerObj != null) 
+            if (playerObj != null)
             {
                 player = playerObj.transform;
                 playerController = playerObj.GetComponent<PlayerController>();
             }
         }
-        
+
         if (pauseManager == null)
         {
             pauseManager = FindAnyObjectByType<PauseManager>();
         }
-        
+
         if (creditsManager == null)
         {
             creditsManager = FindAnyObjectByType<CreditsManager>();
@@ -2486,7 +2481,7 @@ public class SecretPaper : MonoBehaviour
     {
         if (player == null || mainCamera == null) return;
 
-        if (!isReading && !hasBeenRead) 
+        if (!isReading && !hasBeenRead)
         {
             if (Vector3.Distance(player.position, transform.position) <= interactDistance)
             {
@@ -2495,25 +2490,10 @@ public class SecretPaper : MonoBehaviour
 
                 if (angle <= lookAngleThreshold)
                 {
-                    bool interactPressed = false;
-                    
-                    if (Keyboard.current != null)
-                    {
-                        if (!pauseManager.isPaused && (Keyboard.current.eKey.wasPressedThisFrame || Keyboard.current.fKey.wasPressedThisFrame))
-                        {
-                            interactPressed = true;
-                        }
-                    }
-                    
-                    if (!pauseManager.isPaused && Mouse.current != null) 
-                    {
-                        if (Mouse.current.leftButton.wasPressedThisFrame) 
-                        {
-                            interactPressed = true; 
-                        }
-                    }
+                    PlayerInput pInput = player.GetComponent<PlayerInput>();
+                    bool interactPressed = pInput != null && pInput.actions["Interact"].WasPressedThisFrame();
 
-                    if (interactPressed) 
+                    if (interactPressed && !pauseManager.isPaused)
                     {
                         ReadPaper();
                     }
@@ -2522,19 +2502,10 @@ public class SecretPaper : MonoBehaviour
         }
         else if (isReading)
         {
-            bool exitPressed = false;
+            PlayerInput pInput = player.GetComponent<PlayerInput>();
+            bool exitPressed = pInput != null && pInput.actions["Cancel"].WasPressedThisFrame();
 
-            if (!pauseManager.isPaused && Keyboard.current != null && Keyboard.current.escapeKey.wasPressedThisFrame)
-            {
-                exitPressed = true;
-            }
-            
-            if (!pauseManager.isPaused && Mouse.current != null && Mouse.current.leftButton.wasPressedThisFrame)
-            {
-                exitPressed = true;
-            }
-
-            if (exitPressed)
+            if (exitPressed && !pauseManager.isPaused)
             {
                 CloseAndRollCredits();
             }
@@ -2562,7 +2533,7 @@ public class SecretPaper : MonoBehaviour
     {
         isReading = false;
         if (paperUIPanel != null) paperUIPanel.SetActive(false);
-        
+
         if (AchievementManager.Instance != null)
         {
             AchievementManager.Instance.UnlockAchievement("secret_end");
@@ -2630,15 +2601,10 @@ public class DigicodeInteract : MonoBehaviour
 
             if (angle <= lookAngleThreshold)
             {
-                bool interactPressed = false;
+                PlayerInput pInput = player.GetComponent<PlayerInput>();
+                bool interactPressed = pInput != null && pInput.actions["Interact"].WasPressedThisFrame();
 
-                if (!PauseManager.Instance.isPaused && Keyboard.current != null && (Keyboard.current.eKey.wasPressedThisFrame || Keyboard.current.fKey.wasPressedThisFrame))
-                    interactPressed = true;
-                    
-                if (!PauseManager.Instance.isPaused && Mouse.current != null && Mouse.current.leftButton.wasPressedThisFrame)
-                    interactPressed = true;
-
-                if (interactPressed)
+                if (interactPressed && !PauseManager.Instance.isPaused)
                 {
                     DigicodeManager.Instance.OpenKeypad(playerController);
                 }
@@ -2849,33 +2815,21 @@ using UnityEngine.InputSystem;
 public class PlayerController : MonoBehaviour
 {
     [Header("Player Movement")]
-    [Tooltip("Walking speed of the character in m/s")]
     public float moveSpeed = 4.0f;
-    [Tooltip("Sprint speed of the character in m/s")]
     public float sprintSpeed = 6.0f;
-    [Tooltip("Gravity force applied to the character")]
     public float gravity = -15.0f;
 
     [Header("Camera & Look")]
-    [Tooltip("Transform of the camera object for vertical rotation")]
     public Transform cameraTransform;
-    [Tooltip("Mouse sensitivity multiplier (synced with settings)")]
     public float lookSensitivity = 1.0f;
-    [Tooltip("Global multiplier to boost overall base sensitivity")]
     public float sensitivityMultiplier = 10.0f;
-    [Tooltip("Maximum upward camera angle")]
     public float topClamp = 90.0f;
-    [Tooltip("Maximum downward camera angle")]
     public float bottomClamp = -90.0f;
 
     [Header("Noclip Mode (F1 to toggle)")]
-    [Tooltip("Check this box to allow using Noclip mode with the F1 key.")]
     public bool enableNoclip = true;
-    [Tooltip("Speed multiplier when moving freely in noclip")]
     public float noclipSpeed = 10.0f;
-    [Tooltip("Sprint multiplier in noclip mode")]
     public float noclipFastMultiplier = 3.0f;
-    [Tooltip("Cinematic mouse smoothing in noclip (lower value = smoother glide)")]
     public float noclipSmoothing = 5f;
 
     private CharacterController controller;
@@ -2940,12 +2894,11 @@ public class PlayerController : MonoBehaviour
     private void Update()
     {
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
-    // Will be compiled only in the Editor or Development builds, allowing for noclip testing without affecting the final build.
-    if (enableNoclip && Keyboard.current != null && Keyboard.current.f1Key.wasPressedThisFrame)
-    {
-        isNoclipActive = !isNoclipActive;
-        verticalVelocity = 0f;
-    }
+        if (enableNoclip && Keyboard.current != null && Keyboard.current.f1Key.wasPressedThisFrame)
+        {
+            isNoclipActive = !isNoclipActive;
+            verticalVelocity = 0f;
+        }
 #endif
 
         if (isNoclipActive)
@@ -2961,7 +2914,7 @@ public class PlayerController : MonoBehaviour
 
     private void HandleNormalMovement()
     {
-        bool isSprinting = Keyboard.current != null && Keyboard.current.leftShiftKey.isPressed;
+        bool isSprinting = playerInput != null && playerInput.actions != null && playerInput.actions["Sprint"].IsPressed();
         float currentSpeed = isSprinting ? sprintSpeed : moveSpeed;
 
         Vector2 moveInput = Vector2.zero;
@@ -3000,6 +2953,11 @@ public class PlayerController : MonoBehaviour
             {
                 lookInput = lookAction.ReadValue<Vector2>();
             }
+        }
+
+        if (playerInput != null && playerInput.currentControlScheme == "Gamepad")
+        {
+            lookInput.y = -lookInput.y;
         }
 
         float finalSensitivity = lookSensitivity * sensitivityMultiplier * 0.1f;
@@ -3046,6 +3004,104 @@ public class PlayerController : MonoBehaviour
         }
 
         transform.position += noclipDir * speed * Time.deltaTime;
+    }
+}
+</file>
+
+<file path="Assets/_Scripts/Anomalies/RamenAnomaly.cs">
+using UnityEngine;
+using UnityEngine.InputSystem;
+
+[RequireComponent(typeof(AudioSource))]
+public class RamenAnomaly : MonoBehaviour
+{
+    [Header("References")]
+    public Transform player;
+    [Tooltip("L'objet visuel des nouilles/bouillon à cacher quand on mange")]
+    public GameObject ramenContentsToHide;
+
+    [Header("Settings")]
+    public float interactDistance = 2.5f;
+    public float lookAngleThreshold = 20f;
+
+    private AudioSource audioSource;
+    private bool hasBeenEaten = false;
+    private Transform mainCamera;
+
+    public InteractableIndicator indicator;
+
+    private void Awake()
+    {
+        audioSource = GetComponent<AudioSource>();
+        audioSource.playOnAwake = false;
+    }
+
+    private void OnEnable()
+    {
+        hasBeenEaten = false;
+
+        if (ramenContentsToHide != null)
+        {
+            ramenContentsToHide.SetActive(true);
+        }
+
+        if (Camera.main != null) mainCamera = Camera.main.transform;
+
+        if (player == null)
+        {
+            GameObject playerObj = GameObject.FindGameObjectWithTag("Player");
+            if (playerObj != null) player = playerObj.transform;
+        }
+    }
+
+    private void Update()
+    {
+        if (hasBeenEaten || player == null || mainCamera == null) return;
+
+        if (Vector3.Distance(player.position, transform.position) <= interactDistance)
+        {
+            Vector3 dirToTarget = (transform.position - mainCamera.position).normalized;
+            float angle = Vector3.Angle(mainCamera.forward, dirToTarget);
+
+            if (angle <= lookAngleThreshold)
+            {
+                PlayerInput pInput = player.GetComponent<PlayerInput>();
+                bool interactPressed = pInput != null && pInput.actions["Interact"].WasPressedThisFrame();
+
+                if (interactPressed && !PauseManager.Instance.isPaused)
+                {
+                    EatRamen();
+                }
+            }
+        }
+    }
+
+    private void EatRamen()
+    {
+        hasBeenEaten = true;
+
+        if (indicator != null) indicator.enabled = false;
+
+        if (ramenContentsToHide != null)
+        {
+            ramenContentsToHide.SetActive(false);
+        }
+
+        if (audioSource != null && audioSource.clip != null)
+        {
+            audioSource.Play();
+        }
+
+        if (AchievementManager.Instance != null)
+        {
+            AchievementManager.Instance.UnlockAchievement("eat");
+        }
+    }
+
+    private void OnDrawGizmosSelected()
+    {
+        Gizmos.color = Color.cyan;
+        Gizmos.DrawWireSphere(transform.position, interactDistance);
     }
 }
 </file>
@@ -3195,6 +3251,9 @@ public class DigicodeManager : MonoBehaviour
     public GameObject keypadPanel;
     public TMP_Text displayCode;
 
+    [Header("Gamepad Navigation")]
+    public GameObject defaultKeypadButton;
+
     [Header("Audio Feedback")]
     public AudioSource audioSource;
     public AudioClip[] buttonBeepClips;
@@ -3217,12 +3276,27 @@ public class DigicodeManager : MonoBehaviour
 
     public InteractableIndicator indicator;
 
+    private InputAction cancelAction;
+
     private void Awake()
     {
         Instance = this;
         if (keypadPanel != null) keypadPanel.SetActive(false);
+
+        cancelAction = new InputAction("Cancel", binding: "<Keyboard>/escape");
+        cancelAction.AddBinding("<Gamepad>/buttonEast");
     }
-    
+
+    private void OnEnable()
+    {
+        cancelAction.Enable();
+    }
+
+    private void OnDisable()
+    {
+        cancelAction.Disable();
+    }
+
     private void Start()
     {
         pauseManager = FindAnyObjectByType<PauseManager>();
@@ -3232,9 +3306,50 @@ public class DigicodeManager : MonoBehaviour
     {
         if (keypadPanel != null && keypadPanel.activeSelf && !isSolved)
         {
-            if (Keyboard.current != null && Keyboard.current.escapeKey.wasPressedThisFrame)
+            if (cancelAction.WasPressedThisFrame()) CloseKeypad();
+            HandleSmartSelection(defaultKeypadButton);
+        }
+    }
+
+    private void HandleSmartSelection(GameObject defaultButton)
+    {
+        if (defaultButton == null) return;
+
+        if (Mouse.current != null && Mouse.current.delta.ReadValue().sqrMagnitude > 0.1f)
+        {
+            UnityEngine.EventSystems.EventSystem.current.SetSelectedGameObject(null);
+            return;
+        }
+
+        if (UnityEngine.EventSystems.EventSystem.current.currentSelectedGameObject == null)
+        {
+            bool uiInput = false;
+
+            if (Gamepad.current != null)
             {
-                CloseKeypad();
+                if (Gamepad.current.leftStick.ReadValue().sqrMagnitude > 0.1f ||
+                    Gamepad.current.dpad.ReadValue().sqrMagnitude > 0.1f ||
+                    Gamepad.current.buttonSouth.wasPressedThisFrame ||
+                    Gamepad.current.buttonEast.wasPressedThisFrame ||
+                    Gamepad.current.buttonWest.wasPressedThisFrame ||
+                    Gamepad.current.buttonNorth.wasPressedThisFrame)
+                {
+                    uiInput = true;
+                }
+            }
+
+            if (Keyboard.current != null && (Keyboard.current.upArrowKey.wasPressedThisFrame ||
+                Keyboard.current.downArrowKey.wasPressedThisFrame ||
+                Keyboard.current.leftArrowKey.wasPressedThisFrame ||
+                Keyboard.current.rightArrowKey.wasPressedThisFrame ||
+                Keyboard.current.enterKey.wasPressedThisFrame))
+            {
+                uiInput = true;
+            }
+
+            if (uiInput)
+            {
+                UnityEngine.EventSystems.EventSystem.current.SetSelectedGameObject(defaultButton);
             }
         }
     }
@@ -3251,8 +3366,8 @@ public class DigicodeManager : MonoBehaviour
         Cursor.visible = true;
 
         ClearInputSilent();
-
         if (keypadPanel != null) keypadPanel.SetActive(true);
+        UnityEngine.EventSystems.EventSystem.current.SetSelectedGameObject(null);
     }
 
     public void CloseKeypad()
@@ -3264,18 +3379,15 @@ public class DigicodeManager : MonoBehaviour
 
         if (playerController != null) playerController.enabled = true;
         if (pauseManager != null) pauseManager.enabled = true;
+        UnityEngine.EventSystems.EventSystem.current.SetSelectedGameObject(null);
     }
 
     public void AddDigit(string digit)
     {
         PlayRandomBeep();
-
         if (currentInput.Length < 6)
         {
-            if (currentInput.Length == 0)
-            {
-                displayCode.color = Color.white;
-            }
+            if (currentInput.Length == 0) displayCode.color = Color.white;
             currentInput += digit;
             displayCode.text = currentInput;
         }
@@ -3290,16 +3402,7 @@ public class DigicodeManager : MonoBehaviour
     private void ClearInputSilent()
     {
         currentInput = "";
-
-        if (LocalizationManager.Instance != null)
-        {
-            displayCode.text = LocalizationManager.Instance.GetTranslation(placeholderKey);
-        }
-        else
-        {
-            displayCode.text = "AA/MM/JJ";
-        }
-
+        displayCode.text = LocalizationManager.Instance != null ? LocalizationManager.Instance.GetTranslation(placeholderKey) : "AA/MM/JJ";
         displayCode.color = Color.gray;
     }
 
@@ -3322,10 +3425,7 @@ public class DigicodeManager : MonoBehaviour
         }
         else
         {
-            if (audioSource != null && errorClip != null)
-            {
-                audioSource.PlayOneShot(errorClip);
-            }
+            if (audioSource != null && errorClip != null) audioSource.PlayOneShot(errorClip);
             CloseKeypad();
         }
     }
@@ -3341,22 +3441,12 @@ public class DigicodeManager : MonoBehaviour
 
     private IEnumerator UnlockSequence()
     {
-        if (audioSource != null && successClip != null)
-        {
-            audioSource.PlayOneShot(successClip);
-        }
+        if (audioSource != null && successClip != null) audioSource.PlayOneShot(successClip);
         yield return new WaitForSeconds(0.5f);
         CloseKeypad();
 
-        if (doorAudioSource != null && doorOpenClip != null)
-        {
-            doorAudioSource.PlayOneShot(doorOpenClip);
-        }
-
-        if (AchievementManager.Instance != null)
-        {
-            AchievementManager.Instance.UnlockAchievement("secret_end");
-        }
+        if (doorAudioSource != null && doorOpenClip != null) doorAudioSource.PlayOneShot(doorOpenClip);
+        if (AchievementManager.Instance != null) AchievementManager.Instance.UnlockAchievement("secret_end");
 
         if (secretDoor != null)
         {
@@ -3372,6 +3462,165 @@ public class DigicodeManager : MonoBehaviour
             }
 
             secretDoor.localRotation = targetRot;
+        }
+    }
+}
+</file>
+
+<file path="Assets/_Scripts/FadeManager.cs">
+using System.Collections;
+using UnityEngine;
+using UnityEngine.UI;
+using UnityEngine.SceneManagement;
+
+public class FadeManager : MonoBehaviour
+{
+    public static FadeManager Instance;
+
+    [Header("References")]
+    public Image fadeImage;
+    public GameObject loadingIcon;
+
+    [Header("Settings")]
+    public float fadeOutDuration = 1.5f;
+    public float fadeInDuration = 0.1f;
+
+    private bool isTransitioning = false;
+
+    private void Awake()
+    {
+        if (Instance == null)
+        {
+            Instance = this;
+            transform.SetParent(null);
+            DontDestroyOnLoad(gameObject);
+        }
+        else
+        {
+            Destroy(gameObject);
+        }
+    }
+
+    private void Start()
+    {
+        if (loadingIcon != null) loadingIcon.SetActive(false);
+
+        if (fadeImage != null)
+        {
+            fadeImage.gameObject.SetActive(true);
+            fadeImage.color = Color.black;
+            fadeImage.raycastTarget = false;
+            StartCoroutine(InitialFadeInRoutine());
+        }
+    }
+
+    private IEnumerator InitialFadeInRoutine()
+    {
+        yield return null;
+        yield return null;
+        yield return null;
+
+        float timer = 0f;
+        while (timer < fadeOutDuration)
+        {
+            timer += Time.unscaledDeltaTime;
+            float alpha = Mathf.Lerp(1f, 0f, timer / fadeOutDuration);
+            if (fadeImage != null)
+            {
+                Color c = fadeImage.color;
+                c.a = alpha;
+                fadeImage.color = c;
+            }
+            yield return null;
+        }
+
+        if (fadeImage != null) fadeImage.gameObject.SetActive(false);
+    }
+
+    public void FadeAndRestart(float blackScreenPause = 0f)
+    {
+        if (isTransitioning) return;
+
+        StopAllCoroutines();
+        StartCoroutine(RealLoadingSequence(SceneManager.GetActiveScene().name, fadeInDuration, blackScreenPause));
+    }
+
+    public void FadeAndLoadScene(string sceneName, float duration, float blackScreenPause = 0f)
+    {
+        if (isTransitioning) return;
+
+        StopAllCoroutines();
+        StartCoroutine(RealLoadingSequence(sceneName, duration, blackScreenPause));
+    }
+
+    private IEnumerator RealLoadingSequence(string targetScene, float fadeDuration, float blackScreenPause)
+    {
+        isTransitioning = true;
+
+        if (fadeImage != null)
+        {
+            fadeImage.gameObject.SetActive(true);
+            fadeImage.raycastTarget = true;
+        }
+
+        float timer = 0f;
+        while (timer < fadeDuration)
+        {
+            timer += Time.unscaledDeltaTime;
+            float alpha = Mathf.Lerp(0f, 1f, timer / fadeDuration);
+            if (fadeImage != null)
+            {
+                Color c = fadeImage.color;
+                c.a = alpha;
+                fadeImage.color = c;
+            }
+            yield return null;
+        }
+
+        if (fadeImage != null) fadeImage.color = Color.black;
+
+        if (blackScreenPause > 0f)
+        {
+            yield return new WaitForSecondsRealtime(blackScreenPause);
+        }
+
+        if (loadingIcon != null) loadingIcon.SetActive(true);
+
+        AsyncOperation asyncLoad = SceneManager.LoadSceneAsync(targetScene);
+        while (!asyncLoad.isDone)
+        {
+            yield return null;
+        }
+
+        yield return null;
+        yield return null;
+        yield return null;
+
+        if (loadingIcon != null) loadingIcon.SetActive(false);
+
+        isTransitioning = false;
+        if (fadeImage != null) fadeImage.raycastTarget = false;
+
+        timer = 0f;
+        while (timer < fadeOutDuration)
+        {
+            timer += Time.unscaledDeltaTime;
+            float alpha = Mathf.Lerp(1f, 0f, timer / fadeOutDuration);
+            if (fadeImage != null)
+            {
+                Color c = fadeImage.color;
+                c.a = alpha;
+                fadeImage.color = c;
+            }
+            yield return null;
+        }
+
+        if (fadeImage != null)
+        {
+            Color c = fadeImage.color;
+            c.a = 0f;
+            fadeImage.color = c;
+            fadeImage.gameObject.SetActive(false);
         }
     }
 }
@@ -3435,6 +3684,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
+using UnityEngine.InputSystem;
 using System.Collections;
 
 public class MenuManager : MonoBehaviour
@@ -3451,6 +3701,13 @@ public class MenuManager : MonoBehaviour
     public GameObject anomaliesPanel;
     public GameObject howToPlayPanel;
 
+    [Header("Gamepad Navigation")]
+    public GameObject defaultMainButton;
+    public GameObject defaultOptionsButton;
+    public GameObject defaultAnomaliesButton;
+    public GameObject defaultHowToPlayButton;
+
+    private GameObject lastSelectedMainButton;
     private bool isFadingWarning = false;
 
     [Header("Anomalies Menu")]
@@ -3463,39 +3720,107 @@ public class MenuManager : MonoBehaviour
     public Button deleteButton;
     private int deleteClicks = 0;
 
+    private InputAction cancelAction;
+    private InputAction acceptWarningAction;
+
+    private void Awake()
+    {
+        cancelAction = new InputAction("Cancel", binding: "<Keyboard>/escape");
+        cancelAction.AddBinding("<Gamepad>/buttonEast");
+
+        acceptWarningAction = new InputAction("AcceptWarning", binding: "<Keyboard>/escape");
+        acceptWarningAction.AddBinding("<Mouse>/leftButton");
+        acceptWarningAction.AddBinding("<Gamepad>/buttonSouth");
+        acceptWarningAction.AddBinding("<Gamepad>/buttonEast");
+    }
+
+    private void OnEnable()
+    {
+        LocalizationManager.LanguageChangedEvent += OnLanguageChanged;
+        cancelAction.Enable();
+        acceptWarningAction.Enable();
+    }
+
+    private void OnDisable()
+    {
+        LocalizationManager.LanguageChangedEvent -= OnLanguageChanged;
+        cancelAction.Disable();
+        acceptWarningAction.Disable();
+    }
+
     private void Start()
     {
-        if (PlayerPrefs.GetInt("HasSeenWarning", 0) == 0)
-        {
-            ShowPanel(warningPanel);
-        }
-        else
-        {
-            ShowPanel(mainPanel);
-        }
+        if (PlayerPrefs.GetInt("HasSeenWarning", 0) == 0) ShowPanel(warningPanel);
+        else ShowPanel(mainPanel);
     }
 
     private void Update()
     {
+        if (mainPanel.activeSelf && UnityEngine.EventSystems.EventSystem.current.currentSelectedGameObject != null)
+        {
+            lastSelectedMainButton = UnityEngine.EventSystems.EventSystem.current.currentSelectedGameObject;
+        }
+
         if (warningPanel != null && warningPanel.activeSelf)
         {
-            bool acceptPressed = false;
-            
-            if (UnityEngine.InputSystem.Keyboard.current != null && 
-                UnityEngine.InputSystem.Keyboard.current.escapeKey.wasPressedThisFrame)
+            if (acceptWarningAction.WasPressedThisFrame()) AcceptWarning();
+        }
+        else
+        {
+            if (cancelAction.WasPressedThisFrame())
             {
-                acceptPressed = true;
-            }
-            
-            if (UnityEngine.InputSystem.Mouse.current != null && 
-                UnityEngine.InputSystem.Mouse.current.leftButton.wasPressedThisFrame)
-            {
-                acceptPressed = true;
+                if (optionsPanel.activeSelf || anomaliesPanel.activeSelf || howToPlayPanel.activeSelf)
+                {
+                    BackToMainMenu();
+                }
             }
 
-            if (acceptPressed)
+            if (mainPanel.activeSelf) HandleSmartSelection(lastSelectedMainButton != null ? lastSelectedMainButton : defaultMainButton);
+            else if (optionsPanel.activeSelf) HandleSmartSelection(defaultOptionsButton);
+            else if (anomaliesPanel.activeSelf) HandleSmartSelection(defaultAnomaliesButton);
+            else if (howToPlayPanel.activeSelf) HandleSmartSelection(defaultHowToPlayButton);
+        }
+    }
+
+    private void HandleSmartSelection(GameObject defaultButton)
+    {
+        if (defaultButton == null) return;
+
+        if (Mouse.current != null && Mouse.current.delta.ReadValue().sqrMagnitude > 0.1f)
+        {
+            UnityEngine.EventSystems.EventSystem.current.SetSelectedGameObject(null);
+            return;
+        }
+
+        if (UnityEngine.EventSystems.EventSystem.current.currentSelectedGameObject == null)
+        {
+            bool uiInput = false;
+
+            if (Gamepad.current != null)
             {
-                AcceptWarning();
+                if (Gamepad.current.leftStick.ReadValue().sqrMagnitude > 0.1f ||
+                    Gamepad.current.dpad.ReadValue().sqrMagnitude > 0.1f ||
+                    Gamepad.current.buttonSouth.wasPressedThisFrame ||
+                    Gamepad.current.buttonEast.wasPressedThisFrame ||
+                    Gamepad.current.buttonWest.wasPressedThisFrame ||
+                    Gamepad.current.buttonNorth.wasPressedThisFrame)
+                {
+                    uiInput = true;
+                }
+            }
+
+            if (Keyboard.current != null && (Keyboard.current.upArrowKey.wasPressedThisFrame ||
+                Keyboard.current.downArrowKey.wasPressedThisFrame ||
+                Keyboard.current.leftArrowKey.wasPressedThisFrame ||
+                Keyboard.current.rightArrowKey.wasPressedThisFrame ||
+                Keyboard.current.enterKey.wasPressedThisFrame))
+            {
+                uiInput = true;
+            }
+
+            if (uiInput)
+            {
+                UnityEngine.EventSystems.EventSystem.current.SetSelectedGameObject(defaultButton);
             }
         }
     }
@@ -3511,26 +3836,22 @@ public class MenuManager : MonoBehaviour
         if (panelToShow != null) panelToShow.SetActive(true);
         ResetDeleteButton();
 
-        if (panelToShow == anomaliesPanel)
-        {
-            RefreshAnomalyList();
-        }
+        if (panelToShow == anomaliesPanel) RefreshAnomalyList();
+
+        UnityEngine.EventSystems.EventSystem.current.SetSelectedGameObject(null);
     }
 
     public void AcceptWarning()
     {
         if (isFadingWarning) return;
-        
         PlayerPrefs.SetInt("HasSeenWarning", 1);
         PlayerPrefs.Save();
-        
         StartCoroutine(FadeOutWarningRoutine());
     }
 
     private IEnumerator FadeOutWarningRoutine()
     {
         isFadingWarning = true;
-        
         if (mainPanel != null) mainPanel.SetActive(true);
 
         float textFadeDuration = 1.0f;
@@ -3563,77 +3884,63 @@ public class MenuManager : MonoBehaviour
         }
 
         if (warningPanel != null) warningPanel.SetActive(false);
-        
         panelGroup.alpha = 1f;
         if (warningTextGroup != null) warningTextGroup.alpha = 1f;
         isFadingWarning = false;
     }
-    public void OpenHowToPlay()
-    {
-        ShowPanel(howToPlayPanel);
+
+    public void OpenHowToPlay() 
+    { 
+        lastSelectedMainButton = UnityEngine.EventSystems.EventSystem.current.currentSelectedGameObject;
+        ShowPanel(howToPlayPanel); 
     }
 
-    public void OpenOptions()
-    {
-        ShowPanel(optionsPanel);
+    public void OpenOptions() 
+    { 
+        lastSelectedMainButton = UnityEngine.EventSystems.EventSystem.current.currentSelectedGameObject;
+        ShowPanel(optionsPanel); 
     }
 
-    public void OpenAnomalies()
-    {
-        ShowPanel(anomaliesPanel);
+    public void OpenAnomalies() 
+    { 
+        lastSelectedMainButton = UnityEngine.EventSystems.EventSystem.current.currentSelectedGameObject;
+        ShowPanel(anomaliesPanel); 
     }
 
     public void BackToMainMenu()
     {
         ShowPanel(mainPanel);
+        
+        if (lastSelectedMainButton != null)
+        {
+            UnityEngine.EventSystems.EventSystem.current.SetSelectedGameObject(lastSelectedMainButton);
+        }
     }
 
     public void PlayGame()
     {
-        if (FadeManager.Instance != null)
-        {
-            FadeManager.Instance.FadeAndLoadScene("Game", 0.5f);
-        }
-        else
-        {
-            SceneManager.LoadScene("Game");
-        }
+        if (FadeManager.Instance != null) FadeManager.Instance.FadeAndLoadScene("Game", 0.5f);
+        else SceneManager.LoadScene("Game");
     }
 
-    public void QuitGame()
-    {
-        Application.Quit();
-    }
+    public void QuitGame() { Application.Quit(); }
 
     public void OnDeleteSaveClicked()
     {
         deleteClicks++;
-
         if (deleteClicks == 1)
         {
-            deleteButtonText.text = LocalizationManager.Instance.GetTranslation(
-                "ui_delete_confirm"
-            );
+            deleteButtonText.text = LocalizationManager.Instance.GetTranslation("ui_delete_confirm");
             deleteButtonText.color = Color.yellow;
         }
         else if (deleteClicks >= 2)
         {
             SaveManager.DeleteSave();
-            deleteButtonText.text = LocalizationManager.Instance.GetTranslation(
-                "ui_delete_success"
-            );
+            deleteButtonText.text = LocalizationManager.Instance.GetTranslation("ui_delete_success");
             deleteButtonText.color = Color.red;
             deleteClicks = 0;
-
-            if (deleteButton != null)
-            {
-                deleteButton.interactable = false;
-            }
-
-            if (anomaliesPanel.activeSelf)
-            {
-                RefreshAnomalyList();
-            }
+            if (deleteButton != null) deleteButton.interactable = false;
+            if (anomaliesPanel.activeSelf) RefreshAnomalyList();
         }
     }
 
@@ -3642,51 +3949,30 @@ public class MenuManager : MonoBehaviour
         deleteClicks = 0;
         if (deleteButtonText != null)
         {
-            string key = "ui_delete_default";
-            deleteButtonText.text =
-                LocalizationManager.Instance != null
-                    ? LocalizationManager.Instance.GetTranslation(key)
-                    : "Delete";
+            deleteButtonText.text = LocalizationManager.Instance != null ? LocalizationManager.Instance.GetTranslation("ui_delete_default") : "Delete";
             deleteButtonText.color = Color.white;
         }
-
-        if (deleteButton != null)
-        {
-            deleteButton.interactable = true;
-        }
+        if (deleteButton != null) deleteButton.interactable = true;
     }
 
     private void RefreshAnomalyList()
     {
-        foreach (Transform child in anomalyListContent)
-        {
-            Destroy(child.gameObject);
-        }
+        foreach (Transform child in anomalyListContent) Destroy(child.gameObject);
 
         List<int> unlockedAnomalies = SaveManager.Load();
         int totalAnomalies = database.anomalyKeys.Count;
-
-        string progressFormat =
-            LocalizationManager.Instance != null
-                ? LocalizationManager.Instance.GetTranslation("ui_progress")
-                : "{0} / {1}";
-
+        string progressFormat = LocalizationManager.Instance != null ? LocalizationManager.Instance.GetTranslation("ui_progress") : "{0} / {1}";
         progressText.text = string.Format(progressFormat, unlockedAnomalies.Count, totalAnomalies);
 
         for (int i = 0; i < totalAnomalies; i++)
         {
             GameObject newTextObj = Instantiate(anomalyTextPrefab, anomalyListContent);
             TMP_Text tmpText = newTextObj.GetComponent<TMP_Text>();
-
             string indexString = (i + 1).ToString("00");
 
             if (unlockedAnomalies.Contains(i))
             {
-                string localizedName =
-                    LocalizationManager.Instance != null
-                        ? LocalizationManager.Instance.GetTranslation(database.anomalyKeys[i])
-                        : database.anomalyKeys[i];
-
+                string localizedName = LocalizationManager.Instance != null ? LocalizationManager.Instance.GetTranslation(database.anomalyKeys[i]) : database.anomalyKeys[i];
                 tmpText.text = $"{indexString}. {localizedName}";
                 tmpText.color = Color.white;
             }
@@ -3698,23 +3984,10 @@ public class MenuManager : MonoBehaviour
         }
     }
 
-    private void OnEnable()
-    {
-        LocalizationManager.LanguageChangedEvent += OnLanguageChanged;
-    }
-
-    private void OnDisable()
-    {
-        LocalizationManager.LanguageChangedEvent -= OnLanguageChanged;
-    }
-
     private void OnLanguageChanged()
     {
         ResetDeleteButton();
-        if (anomaliesPanel != null && anomaliesPanel.activeSelf)
-        {
-            RefreshAnomalyList();
-        }
+        if (anomaliesPanel != null && anomaliesPanel.activeSelf) RefreshAnomalyList();
     }
 }
 </file>
@@ -3746,7 +4019,7 @@ public class CreditsManager : MonoBehaviour
 
     [Header("Scrolling Settings")]
     public float scrollSpeed = 100f;
-    [Tooltip("Multiplicateur de vitesse quand on maintient le clic gauche")]
+    [Tooltip("Multiplicateur de vitesse quand on maintient le clic gauche ou le bouton Est (B/Rond) de la manette")]
     public float fastScrollMultiplier = 4f;
     [Tooltip("La distance de départ de ton panneau en Y (ex: 1080)")]
     public float startOffsetY = 1080f;
@@ -3799,6 +4072,8 @@ public class CreditsManager : MonoBehaviour
             skipButtonCanvasGroup.interactable = true;
             skipButtonCanvasGroup.blocksRaycasts = true;
         }
+
+        EventSystem.current.SetSelectedGameObject(skipButton);
     }
 
     private IEnumerator CreditsRoutine()
@@ -3845,8 +4120,12 @@ public class CreditsManager : MonoBehaviour
                 float currentSpeed = scrollSpeed;
 
                 bool isPointerOverUI = EventSystem.current != null && EventSystem.current.IsPointerOverGameObject();
+                bool fastScroll = false;
 
-                if (Mouse.current != null && Mouse.current.leftButton.isPressed && !isPointerOverUI)
+                if (Mouse.current != null && Mouse.current.leftButton.isPressed && !isPointerOverUI) fastScroll = true;
+                if (Gamepad.current != null && Gamepad.current.buttonEast.isPressed) fastScroll = true;
+
+                if (fastScroll)
                 {
                     currentSpeed *= fastScrollMultiplier;
                 }
@@ -4187,9 +4466,9 @@ public class GameManager : MonoBehaviour
     public int winLevel = 8;
 
     [Header("Rhythm Settings (Shuffle Bag)")]
-    [Range(0f, 1f)] 
+    [Range(0f, 1f)]
     public float anomalyProbability = 0.5f;
-    public int shuffleBagSize = 10; 
+    public int shuffleBagSize = 10;
 
     [Header("UI")]
     public TMP_Text levelDisplay;
@@ -4235,7 +4514,7 @@ public class GameManager : MonoBehaviour
         {
             currentLevel = 0;
             Debug.Log("Wrong choice. Reset to level 0.");
-            
+
             // Resets the bag when the player makes a mistake to restart the rhythm fresh
             RefillShuffleBag();
         }
@@ -4247,7 +4526,7 @@ public class GameManager : MonoBehaviour
     private void RefillShuffleBag()
     {
         shuffleBag.Clear();
-        
+
         // Calculates how many anomalies should be in the bag based on probability
         int anomalyCount = Mathf.RoundToInt(anomalyProbability * shuffleBagSize);
 
@@ -4255,7 +4534,7 @@ public class GameManager : MonoBehaviour
         {
             shuffleBag.Add(i < anomalyCount);
         }
-        
+
         // Shuffles the bag using the Fisher-Yates algorithm
         for (int i = 0; i < shuffleBag.Count; i++)
         {
@@ -4269,10 +4548,10 @@ public class GameManager : MonoBehaviour
     public void RestartFromDeath()
     {
         currentLevel = 0;
-        
+
         if (FadeManager.Instance != null)
         {
-            FadeManager.Instance.FadeAndRestart();
+            FadeManager.Instance.FadeAndRestart(1.0f);
         }
         else
         {
@@ -4335,9 +4614,16 @@ using UnityEngine.SceneManagement;
 public class PauseManager : MonoBehaviour
 {
     public static PauseManager Instance;
+
     [Header("Panels")]
     public GameObject pausePanel;
     public GameObject optionsPanel;
+
+    [Header("Gamepad Navigation")]
+    public GameObject defaultPauseButton;
+    public GameObject defaultOptionsButton;
+
+    private GameObject lastSelectedPauseButton;
 
     [Header("Progress UI")]
     public TMP_Text progressText;
@@ -4348,10 +4634,33 @@ public class PauseManager : MonoBehaviour
 
     public bool isPaused = false;
 
+    private InputAction pauseAction;
+    private InputAction cancelAction;
+
     private void Awake()
     {
         if (Instance == null) Instance = this;
         else Destroy(gameObject);
+
+        pauseAction = new InputAction("Pause", binding: "<Keyboard>/escape");
+        pauseAction.AddBinding("<Gamepad>/start");
+
+        cancelAction = new InputAction("Cancel", binding: "<Keyboard>/escape");
+        cancelAction.AddBinding("<Gamepad>/buttonEast");
+    }
+
+    private void OnEnable()
+    {
+        LocalizationManager.LanguageChangedEvent += UpdateProgressText;
+        pauseAction.Enable();
+        cancelAction.Enable();
+    }
+
+    private void OnDisable()
+    {
+        LocalizationManager.LanguageChangedEvent -= UpdateProgressText;
+        pauseAction.Disable();
+        cancelAction.Disable();
     }
 
     private void Start()
@@ -4365,27 +4674,70 @@ public class PauseManager : MonoBehaviour
 
     private void Update()
     {
-        if (Keyboard.current != null && Keyboard.current.escapeKey.wasPressedThisFrame)
+        if (pauseAction.WasPressedThisFrame() || cancelAction.WasPressedThisFrame())
         {
             if (optionsPanel != null && optionsPanel.activeSelf)
             {
                 CloseOptions();
             }
-            else
+            else if (pauseAction.WasPressedThisFrame() && !isPaused)
+            {
+                TogglePause();
+            }
+            else if ((pauseAction.WasPressedThisFrame() || cancelAction.WasPressedThisFrame()) && isPaused)
             {
                 TogglePause();
             }
         }
+
+        if (isPaused)
+        {
+            if (optionsPanel != null && optionsPanel.activeSelf) HandleSmartSelection(defaultOptionsButton);
+            else HandleSmartSelection(lastSelectedPauseButton != null ? lastSelectedPauseButton : defaultPauseButton);
+        }
     }
 
-    private void OnEnable()
+    private void HandleSmartSelection(GameObject defaultButton)
     {
-        LocalizationManager.LanguageChangedEvent += UpdateProgressText;
-    }
+        if (defaultButton == null) return;
 
-    private void OnDisable()
-    {
-        LocalizationManager.LanguageChangedEvent -= UpdateProgressText;
+        if (Mouse.current != null && Mouse.current.delta.ReadValue().sqrMagnitude > 0.1f)
+        {
+            UnityEngine.EventSystems.EventSystem.current.SetSelectedGameObject(null);
+            return;
+        }
+
+        if (UnityEngine.EventSystems.EventSystem.current.currentSelectedGameObject == null)
+        {
+            bool uiInput = false;
+
+            if (Gamepad.current != null)
+            {
+                if (Gamepad.current.leftStick.ReadValue().sqrMagnitude > 0.1f ||
+                    Gamepad.current.dpad.ReadValue().sqrMagnitude > 0.1f ||
+                    Gamepad.current.buttonSouth.wasPressedThisFrame ||
+                    Gamepad.current.buttonEast.wasPressedThisFrame ||
+                    Gamepad.current.buttonWest.wasPressedThisFrame ||
+                    Gamepad.current.buttonNorth.wasPressedThisFrame)
+                {
+                    uiInput = true;
+                }
+            }
+
+            if (Keyboard.current != null && (Keyboard.current.upArrowKey.wasPressedThisFrame ||
+                Keyboard.current.downArrowKey.wasPressedThisFrame ||
+                Keyboard.current.leftArrowKey.wasPressedThisFrame ||
+                Keyboard.current.rightArrowKey.wasPressedThisFrame ||
+                Keyboard.current.enterKey.wasPressedThisFrame))
+            {
+                uiInput = true;
+            }
+
+            if (uiInput)
+            {
+                UnityEngine.EventSystems.EventSystem.current.SetSelectedGameObject(defaultButton);
+            }
+        }
     }
 
     public void TogglePause()
@@ -4399,46 +4751,47 @@ public class PauseManager : MonoBehaviour
         SetCursorState(!isPaused);
 
         PlayerController playerController = FindAnyObjectByType<PlayerController>();
-        if (playerController != null)
-        {
-            playerController.enabled = !isPaused;
-        }
+        if (playerController != null) playerController.enabled = !isPaused;
 
         if (isPaused)
         {
             UpdateProgressText();
+            UnityEngine.EventSystems.EventSystem.current.SetSelectedGameObject(null);
         }
     }
 
     public void OpenOptions()
     {
+        lastSelectedPauseButton = UnityEngine.EventSystems.EventSystem.current.currentSelectedGameObject;
         pausePanel.SetActive(false);
         if (optionsPanel != null) optionsPanel.SetActive(true);
+        UnityEngine.EventSystems.EventSystem.current.SetSelectedGameObject(null);
     }
 
     public void CloseOptions()
     {
         if (optionsPanel != null) optionsPanel.SetActive(false);
         pausePanel.SetActive(true);
+
+        if (lastSelectedPauseButton != null)
+        {
+            UnityEngine.EventSystems.EventSystem.current.SetSelectedGameObject(lastSelectedPauseButton);
+        }
+        else
+        {
+            UnityEngine.EventSystems.EventSystem.current.SetSelectedGameObject(null);
+        }
     }
 
     public void LoadMainMenu()
     {
         Time.timeScale = 1f;
-        
-        AudioListener.volume = 0f; 
+        AudioListener.volume = 0f;
         AudioListener.pause = false;
-        
         SetCursorState(false);
-        
-        if (FadeManager.Instance != null)
-        {
-            FadeManager.Instance.FadeAndLoadScene("Menu", 0.5f);
-        }
-        else
-        {
-            SceneManager.LoadScene("Menu");
-        }
+
+        if (FadeManager.Instance != null) FadeManager.Instance.FadeAndLoadScene("Menu", 0.5f);
+        else SceneManager.LoadScene("Menu");
     }
 
     private void SetCursorState(bool locked)
@@ -4450,14 +4803,9 @@ public class PauseManager : MonoBehaviour
     private void UpdateProgressText()
     {
         if (progressText == null || database == null) return;
-
         List<int> unlockedAnomalies = SaveManager.Load();
         int totalAnomalies = database.anomalyKeys.Count;
-
-        string progressFormat = LocalizationManager.Instance != null
-            ? LocalizationManager.Instance.GetTranslation("ui_progress")
-            : "{0} / {1}";
-
+        string progressFormat = LocalizationManager.Instance != null ? LocalizationManager.Instance.GetTranslation("ui_progress") : "{0} / {1}";
         progressText.text = string.Format(progressFormat, unlockedAnomalies.Count, totalAnomalies);
     }
 }

@@ -60063,6 +60063,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::DigicodeInteract
   interactDistance: 1.5
   lookAngleThreshold: 20
+  player: {fileID: 1331851726}
+  playerController: {fileID: 1331851727}
 --- !u!1 &881198930
 GameObject:
   m_ObjectHideFlags: 0

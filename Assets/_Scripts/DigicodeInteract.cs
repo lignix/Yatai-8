@@ -7,8 +7,10 @@ public class DigicodeInteract : MonoBehaviour
     public float interactDistance = 2.5f;
     public float lookAngleThreshold = 20f;
 
-    private Transform player;
-    private PlayerController playerController;
+    [Header("References")]
+    public Transform player;
+    public PlayerController playerController;
+
     private Transform mainCamera;
     private float sqrInteractDistance;
 
@@ -30,6 +32,12 @@ public class DigicodeInteract : MonoBehaviour
 
     private void Update()
     {
+        if (player == null && PlayerController.InstanceTransform != null)
+        {
+            player = PlayerController.InstanceTransform;
+            playerController = PlayerController.Instance;
+        }
+
         if (player == null || mainCamera == null || DigicodeManager.Instance == null) return;
         if (DigicodeManager.Instance.isSolved || DigicodeManager.Instance.keypadPanel.activeSelf) return;
 

@@ -1,15 +1,19 @@
+using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
+using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
-using UnityEngine.InputSystem;
-using System.Collections;
 
 public class MenuManager : MonoBehaviour
 {
     [Header("Database")]
     public AnomalyDatabase database;
+
+    [Header("Mode Selection")]
+    public GameObject modeSelectionPanel;
+    public GameObject defaultNormalModeButton;
 
     [Header("Panels")]
     public GameObject warningPanel;
@@ -69,13 +73,15 @@ public class MenuManager : MonoBehaviour
 
     private void Start()
     {
-        if (PlayerPrefs.GetInt("HasSeenWarning", 0) == 0) ShowPanel(warningPanel);
-        else ShowPanel(mainPanel);
+        if (PlayerPrefs.GetInt("HasSeenWarning", 0) == 0)
+            ShowPanel(warningPanel);
+        else
+            ShowPanel(mainPanel);
     }
 
     private void Update()
     {
-        if (mainPanel.activeSelf && UnityEngine.EventSystems.EventSystem.current.currentSelectedGameObject != null)
+        if (mainPanel.activeSelf && (modeSelectionPanel == null || !modeSelectionPanel.activeSelf) && UnityEngine.EventSystems.EventSystem.current.currentSelectedGameObject != null)
         {
             lastSelectedMainButton = UnityEngine.EventSystems.EventSystem.current.currentSelectedGameObject;
         }
@@ -88,13 +94,14 @@ public class MenuManager : MonoBehaviour
         {
             if (cancelAction.WasPressedThisFrame())
             {
-                if (optionsPanel.activeSelf || anomaliesPanel.activeSelf || howToPlayPanel.activeSelf)
+                if (optionsPanel.activeSelf || anomaliesPanel.activeSelf || howToPlayPanel.activeSelf || (modeSelectionPanel != null && modeSelectionPanel.activeSelf))
                 {
                     BackToMainMenu();
                 }
             }
 
-            if (mainPanel.activeSelf) HandleSmartSelection(lastSelectedMainButton != null ? lastSelectedMainButton : defaultMainButton);
+            if (modeSelectionPanel != null && modeSelectionPanel.activeSelf) HandleSmartSelection(defaultNormalModeButton);
+            else if (mainPanel.activeSelf) HandleSmartSelection(lastSelectedMainButton != null ? lastSelectedMainButton : defaultMainButton);
             else if (optionsPanel.activeSelf) HandleSmartSelection(defaultOptionsButton);
             else if (anomaliesPanel.activeSelf) HandleSmartSelection(defaultAnomaliesButton);
             else if (howToPlayPanel.activeSelf) HandleSmartSelection(defaultHowToPlayButton);
@@ -103,7 +110,8 @@ public class MenuManager : MonoBehaviour
 
     private void HandleSmartSelection(GameObject defaultButton)
     {
-        if (defaultButton == null) return;
+        if (defaultButton == null)
+            return;
 
         if (Mouse.current != null && Mouse.current.delta.ReadValue().sqrMagnitude > 0.1f)
         {
@@ -117,22 +125,29 @@ public class MenuManager : MonoBehaviour
 
             if (Gamepad.current != null)
             {
-                if (Gamepad.current.leftStick.ReadValue().sqrMagnitude > 0.1f ||
-                    Gamepad.current.dpad.ReadValue().sqrMagnitude > 0.1f ||
-                    Gamepad.current.buttonSouth.wasPressedThisFrame ||
-                    Gamepad.current.buttonEast.wasPressedThisFrame ||
-                    Gamepad.current.buttonWest.wasPressedThisFrame ||
-                    Gamepad.current.buttonNorth.wasPressedThisFrame)
+                if (
+                    Gamepad.current.leftStick.ReadValue().sqrMagnitude > 0.1f
+                    || Gamepad.current.dpad.ReadValue().sqrMagnitude > 0.1f
+                    || Gamepad.current.buttonSouth.wasPressedThisFrame
+                    || Gamepad.current.buttonEast.wasPressedThisFrame
+                    || Gamepad.current.buttonWest.wasPressedThisFrame
+                    || Gamepad.current.buttonNorth.wasPressedThisFrame
+                )
                 {
                     uiInput = true;
                 }
             }
 
-            if (Keyboard.current != null && (Keyboard.current.upArrowKey.wasPressedThisFrame ||
-                Keyboard.current.downArrowKey.wasPressedThisFrame ||
-                Keyboard.current.leftArrowKey.wasPressedThisFrame ||
-                Keyboard.current.rightArrowKey.wasPressedThisFrame ||
-                Keyboard.current.enterKey.wasPressedThisFrame))
+            if (
+                Keyboard.current != null
+                && (
+                    Keyboard.current.upArrowKey.wasPressedThisFrame
+                    || Keyboard.current.downArrowKey.wasPressedThisFrame
+                    || Keyboard.current.leftArrowKey.wasPressedThisFrame
+                    || Keyboard.current.rightArrowKey.wasPressedThisFrame
+                    || Keyboard.current.enterKey.wasPressedThisFrame
+                )
+            )
             {
                 uiInput = true;
             }
@@ -146,23 +161,33 @@ public class MenuManager : MonoBehaviour
 
     public void ShowPanel(GameObject panelToShow)
     {
-        if (warningPanel != null) warningPanel.SetActive(false);
-        if (mainPanel != null) mainPanel.SetActive(false);
-        if (optionsPanel != null) optionsPanel.SetActive(false);
-        if (anomaliesPanel != null) anomaliesPanel.SetActive(false);
-        if (howToPlayPanel != null) howToPlayPanel.SetActive(false);
+        if (warningPanel != null)
+            warningPanel.SetActive(false);
+        if (mainPanel != null)
+            mainPanel.SetActive(false);
+        if (optionsPanel != null)
+            optionsPanel.SetActive(false);
+        if (anomaliesPanel != null)
+            anomaliesPanel.SetActive(false);
+        if (howToPlayPanel != null)
+            howToPlayPanel.SetActive(false);
+        if (modeSelectionPanel != null)
+            modeSelectionPanel.SetActive(false);
 
-        if (panelToShow != null) panelToShow.SetActive(true);
+        if (panelToShow != null)
+            panelToShow.SetActive(true);
         ResetDeleteButton();
 
-        if (panelToShow == anomaliesPanel) RefreshAnomalyList();
+        if (panelToShow == anomaliesPanel)
+            RefreshAnomalyList();
 
         UnityEngine.EventSystems.EventSystem.current.SetSelectedGameObject(null);
     }
 
     public void AcceptWarning()
     {
-        if (isFadingWarning) return;
+        if (isFadingWarning)
+            return;
         PlayerPrefs.SetInt("HasSeenWarning", 1);
         PlayerPrefs.Save();
         StartCoroutine(FadeOutWarningRoutine());
@@ -171,7 +196,8 @@ public class MenuManager : MonoBehaviour
     private IEnumerator FadeOutWarningRoutine()
     {
         isFadingWarning = true;
-        if (mainPanel != null) mainPanel.SetActive(true);
+        if (mainPanel != null)
+            mainPanel.SetActive(true);
 
         float textFadeDuration = 1.0f;
         float pauseDuration = 0.5f;
@@ -192,7 +218,8 @@ public class MenuManager : MonoBehaviour
         yield return new WaitForSeconds(pauseDuration);
 
         CanvasGroup panelGroup = warningPanel.GetComponent<CanvasGroup>();
-        if (panelGroup == null) panelGroup = warningPanel.AddComponent<CanvasGroup>();
+        if (panelGroup == null)
+            panelGroup = warningPanel.AddComponent<CanvasGroup>();
 
         timer = 0f;
         while (timer < bgFadeDuration)
@@ -202,32 +229,51 @@ public class MenuManager : MonoBehaviour
             yield return null;
         }
 
-        if (warningPanel != null) warningPanel.SetActive(false);
+        if (warningPanel != null)
+            warningPanel.SetActive(false);
         panelGroup.alpha = 1f;
-        if (warningTextGroup != null) warningTextGroup.alpha = 1f;
+        if (warningTextGroup != null)
+            warningTextGroup.alpha = 1f;
         isFadingWarning = false;
     }
 
-    public void OpenHowToPlay() 
-    { 
-        lastSelectedMainButton = UnityEngine.EventSystems.EventSystem.current.currentSelectedGameObject;
-        ShowPanel(howToPlayPanel); 
+    public void OpenHowToPlay()
+    {
+        lastSelectedMainButton = UnityEngine
+            .EventSystems
+            .EventSystem
+            .current
+            .currentSelectedGameObject;
+        ShowPanel(howToPlayPanel);
     }
 
-    public void OpenOptions() 
-    { 
-        lastSelectedMainButton = UnityEngine.EventSystems.EventSystem.current.currentSelectedGameObject;
-        ShowPanel(optionsPanel); 
+    public void OpenOptions()
+    {
+        lastSelectedMainButton = UnityEngine
+            .EventSystems
+            .EventSystem
+            .current
+            .currentSelectedGameObject;
+        ShowPanel(optionsPanel);
     }
 
-    public void OpenAnomalies() 
-    { 
-        lastSelectedMainButton = UnityEngine.EventSystems.EventSystem.current.currentSelectedGameObject;
-        ShowPanel(anomaliesPanel); 
+    public void OpenAnomalies()
+    {
+        lastSelectedMainButton = UnityEngine
+            .EventSystems
+            .EventSystem
+            .current
+            .currentSelectedGameObject;
+        ShowPanel(anomaliesPanel);
     }
 
     public void BackToMainMenu()
     {
+        CanvasGroup mainGroup = mainPanel.GetComponent<CanvasGroup>();
+        if (mainGroup != null) mainGroup.blocksRaycasts = true;
+
+        if (modeSelectionPanel != null) modeSelectionPanel.SetActive(false);
+
         ShowPanel(mainPanel);
         
         if (lastSelectedMainButton != null)
@@ -238,28 +284,70 @@ public class MenuManager : MonoBehaviour
 
     public void PlayGame()
     {
-        if (FadeManager.Instance != null) FadeManager.Instance.FadeAndLoadScene("Game", 0.5f);
-        else SceneManager.LoadScene("Game");
+        if (PlayerPrefs.GetInt("GameCompleted", 0) == 1 && modeSelectionPanel != null)
+        {
+            modeSelectionPanel.SetActive(true);
+
+            CanvasGroup mainGroup = mainPanel.GetComponent<CanvasGroup>();
+            if (mainGroup != null) mainGroup.blocksRaycasts = false;
+
+            lastSelectedMainButton = UnityEngine.EventSystems.EventSystem.current.currentSelectedGameObject;
+            UnityEngine.EventSystems.EventSystem.current.SetSelectedGameObject(defaultNormalModeButton);
+        }
+        else
+        {
+            LaunchNormalMode();
+        }
     }
 
-    public void QuitGame() { Application.Quit(); }
+    public void LaunchNormalMode()
+    {
+        PlayerPrefs.SetFloat("SelectedAnomalyProbability", 0.5f);
+        LoadGameScene();
+    }
+
+    public void LaunchHunterMode()
+    {
+        PlayerPrefs.SetFloat("SelectedAnomalyProbability", 0.75f);
+        LoadGameScene();
+    }
+
+    private void LoadGameScene()
+    {
+        if (FadeManager.Instance != null)
+            FadeManager.Instance.FadeAndLoadScene("Game", 0.5f);
+        else
+            SceneManager.LoadScene("Game");
+    }
+
+    public void QuitGame()
+    {
+        Application.Quit();
+    }
 
     public void OnDeleteSaveClicked()
     {
         deleteClicks++;
         if (deleteClicks == 1)
         {
-            deleteButtonText.text = LocalizationManager.Instance.GetTranslation("ui_delete_confirm");
+            deleteButtonText.text = LocalizationManager.Instance.GetTranslation(
+                "ui_delete_confirm"
+            );
             deleteButtonText.color = Color.yellow;
         }
         else if (deleteClicks >= 2)
         {
             SaveManager.DeleteSave();
-            deleteButtonText.text = LocalizationManager.Instance.GetTranslation("ui_delete_success");
+            PlayerPrefs.DeleteKey("GameCompleted");
+            deleteButtonText.text = LocalizationManager.Instance.GetTranslation(
+                "ui_delete_success"
+            );
             deleteButtonText.color = Color.red;
             deleteClicks = 0;
-            if (deleteButton != null) deleteButton.interactable = false;
-            if (anomaliesPanel.activeSelf) RefreshAnomalyList();
+            if (deleteButton != null)
+                deleteButton.interactable = false;
+            if (anomaliesPanel.activeSelf)
+                RefreshAnomalyList();
         }
     }
 
@@ -268,19 +356,27 @@ public class MenuManager : MonoBehaviour
         deleteClicks = 0;
         if (deleteButtonText != null)
         {
-            deleteButtonText.text = LocalizationManager.Instance != null ? LocalizationManager.Instance.GetTranslation("ui_delete_default") : "Delete";
+            deleteButtonText.text =
+                LocalizationManager.Instance != null
+                    ? LocalizationManager.Instance.GetTranslation("ui_delete_default")
+                    : "Delete";
             deleteButtonText.color = Color.white;
         }
-        if (deleteButton != null) deleteButton.interactable = true;
+        if (deleteButton != null)
+            deleteButton.interactable = true;
     }
 
     private void RefreshAnomalyList()
     {
-        foreach (Transform child in anomalyListContent) Destroy(child.gameObject);
+        foreach (Transform child in anomalyListContent)
+            Destroy(child.gameObject);
 
         List<int> unlockedAnomalies = SaveManager.Load();
         int totalAnomalies = database.anomalyKeys.Count;
-        string progressFormat = LocalizationManager.Instance != null ? LocalizationManager.Instance.GetTranslation("ui_progress") : "{0} / {1}";
+        string progressFormat =
+            LocalizationManager.Instance != null
+                ? LocalizationManager.Instance.GetTranslation("ui_progress")
+                : "{0} / {1}";
         progressText.text = string.Format(progressFormat, unlockedAnomalies.Count, totalAnomalies);
 
         for (int i = 0; i < totalAnomalies; i++)
@@ -291,7 +387,10 @@ public class MenuManager : MonoBehaviour
 
             if (unlockedAnomalies.Contains(i))
             {
-                string localizedName = LocalizationManager.Instance != null ? LocalizationManager.Instance.GetTranslation(database.anomalyKeys[i]) : database.anomalyKeys[i];
+                string localizedName =
+                    LocalizationManager.Instance != null
+                        ? LocalizationManager.Instance.GetTranslation(database.anomalyKeys[i])
+                        : database.anomalyKeys[i];
                 tmpText.text = $"{indexString}. {localizedName}";
                 tmpText.color = Color.white;
             }
@@ -306,6 +405,7 @@ public class MenuManager : MonoBehaviour
     private void OnLanguageChanged()
     {
         ResetDeleteButton();
-        if (anomaliesPanel != null && anomaliesPanel.activeSelf) RefreshAnomalyList();
+        if (anomaliesPanel != null && anomaliesPanel.activeSelf)
+            RefreshAnomalyList();
     }
 }

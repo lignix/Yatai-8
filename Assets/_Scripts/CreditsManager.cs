@@ -1,9 +1,9 @@
 using System.Collections;
 using UnityEngine;
-using UnityEngine.UI;
-using UnityEngine.SceneManagement;
-using UnityEngine.InputSystem;
 using UnityEngine.EventSystems;
+using UnityEngine.InputSystem;
+using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 
 public class CreditsManager : MonoBehaviour
 {
@@ -19,16 +19,24 @@ public class CreditsManager : MonoBehaviour
     public float fadeToBlackDuration = 2f;
     public float waitBeforeCredits = 1f;
     public float delayAfterScroll = 3f;
+
     [Tooltip("Temps d'attente avant l'apparition du bouton Skip")]
     public float skipButtonDelay = 3f;
 
     [Header("Scrolling Settings")]
     public float scrollSpeed = 100f;
-    [Tooltip("Multiplicateur de vitesse quand on maintient le clic gauche ou le bouton Est (B/Rond) de la manette")]
+
+    [Tooltip(
+        "Multiplicateur de vitesse quand on maintient le clic gauche ou le bouton Est (B/Rond) de la manette"
+    )]
     public float fastScrollMultiplier = 4f;
+
     [Tooltip("La distance de départ de ton panneau en Y (ex: 1080)")]
     public float startOffsetY = 1080f;
-    [Tooltip("Marge ajoutée à la hauteur du panneau pour s'assurer que le texte sort bien de l'écran")]
+
+    [Tooltip(
+        "Marge ajoutée à la hauteur du panneau pour s'assurer que le texte sort bien de l'écran"
+    )]
     public float endPadding = 200f;
 
     private float initialVolume;
@@ -55,6 +63,9 @@ public class CreditsManager : MonoBehaviour
 
     public void StartCreditsSequence()
     {
+        PlayerPrefs.SetInt("GameCompleted", 1);
+        PlayerPrefs.Save();
+
         initialVolume = AudioListener.volume;
         StartCoroutine(CreditsRoutine());
 
@@ -68,7 +79,8 @@ public class CreditsManager : MonoBehaviour
     {
         yield return new WaitForSeconds(skipButtonDelay);
 
-        if (isSkipping) yield break;
+        if (isSkipping)
+            yield break;
 
         skipButton.SetActive(true);
         if (skipButtonCanvasGroup != null)
@@ -124,11 +136,14 @@ public class CreditsManager : MonoBehaviour
             {
                 float currentSpeed = scrollSpeed;
 
-                bool isPointerOverUI = EventSystem.current != null && EventSystem.current.IsPointerOverGameObject();
+                bool isPointerOverUI =
+                    EventSystem.current != null && EventSystem.current.IsPointerOverGameObject();
                 bool fastScroll = false;
 
-                if (Mouse.current != null && Mouse.current.leftButton.isPressed && !isPointerOverUI) fastScroll = true;
-                if (Gamepad.current != null && Gamepad.current.buttonEast.isPressed) fastScroll = true;
+                if (Mouse.current != null && Mouse.current.leftButton.isPressed && !isPointerOverUI)
+                    fastScroll = true;
+                if (Gamepad.current != null && Gamepad.current.buttonEast.isPressed)
+                    fastScroll = true;
 
                 if (fastScroll)
                 {
@@ -152,7 +167,8 @@ public class CreditsManager : MonoBehaviour
 
     private void LoadMenu()
     {
-        if (isSkipping) return;
+        if (isSkipping)
+            return;
         isSkipping = true;
 
         StopAllCoroutines();

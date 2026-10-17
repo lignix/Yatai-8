@@ -27,6 +27,8 @@ public class GameManager : MonoBehaviour
         if (Instance == null) Instance = this;
         else Destroy(gameObject);
 
+        anomalyProbability = PlayerPrefs.GetFloat("SelectedAnomalyProbability", 0.5f);
+
         Debug.unityLogger.logEnabled = Debug.isDebugBuild;
     }
 

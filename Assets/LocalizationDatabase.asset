@@ -590,3 +590,24 @@ MonoBehaviour:
     german: "Erh\xF6hte Wahrscheinlichkeit, auf eine Anomalie zu sto\xDFen."
     japanese: "\u7570\u5909\u304C\u767A\u751F\u3059\u308B\u78BA\u7387\u304C\u4E0A\u6607\u3057\u307E\u3059\u3002"
     simplifiedChinese: "\u9047\u5230\u5F02\u5E38\u7684\u6982\u7387\u589E\u52A0\u3002"
+  - key: ui_endless_mode_title
+    english: Endless
+    french: Sans fin
+    spanish: Sin fin
+    german: Endlos
+    japanese: "\u30A8\u30F3\u30C9\u30EC\u30B9"
+    simplifiedChinese: "\u65E0\u5C3D"
+  - key: ui_endless_mode_desc
+    english: Survive as long as possible.
+    french: Survivez le plus longtemps possible.
+    spanish: Sobrevive el mayor tiempo posible.
+    german: "\xDCberlebe so lange wie m\xF6glich."
+    japanese: "\u3067\u304D\u308B\u3060\u3051\u9577\u304F\u751F\u304D\u6B8B\u308B\u3002"
+    simplifiedChinese: "\u5C3D\u53EF\u80FD\u751F\u5B58\u4E0B\u53BB\u3002"
+  - key: ui_highscore
+    english: 'High Score: {0}'
+    french: 'Record : {0}'
+    spanish: "R\xE9cord: {0}"
+    german: 'Rekord: {0}'
+    japanese: "\u6700\u9AD8\u8A18\u9332 : {0}"
+    simplifiedChinese: "\u6700\u9AD8\u8BB0\u5F55\uFF1A{0}"

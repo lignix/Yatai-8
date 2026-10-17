@@ -15,6 +15,9 @@ public class MenuManager : MonoBehaviour
     public GameObject modeSelectionPanel;
     public GameObject defaultNormalModeButton;
 
+    [Header("Endless Mode")]
+    public TMP_Text endlessHighScoreText;
+    
     [Header("Panels")]
     public GameObject warningPanel;
     public CanvasGroup warningTextGroup;
@@ -288,6 +291,14 @@ public class MenuManager : MonoBehaviour
         {
             modeSelectionPanel.SetActive(true);
 
+            if (endlessHighScoreText != null)
+            {
+                int highScore = PlayerPrefs.GetInt("EndlessHighScore", 0);
+                string formatString = LocalizationManager.Instance != null ? 
+                    LocalizationManager.Instance.GetTranslation("ui_highscore") : "Record: {0}";
+                endlessHighScoreText.text = string.Format(formatString, highScore);
+            }
+
             CanvasGroup mainGroup = mainPanel.GetComponent<CanvasGroup>();
             if (mainGroup != null) mainGroup.blocksRaycasts = false;
 
@@ -303,12 +314,21 @@ public class MenuManager : MonoBehaviour
     public void LaunchNormalMode()
     {
         PlayerPrefs.SetFloat("SelectedAnomalyProbability", 0.5f);
+        PlayerPrefs.SetInt("IsEndlessMode", 0);
         LoadGameScene();
     }
 
     public void LaunchHunterMode()
     {
         PlayerPrefs.SetFloat("SelectedAnomalyProbability", 0.75f);
+        PlayerPrefs.SetInt("IsEndlessMode", 0);
+        LoadGameScene();
+    }
+
+    public void LaunchEndlessMode()
+    {
+        PlayerPrefs.SetFloat("SelectedAnomalyProbability", 0.5f);
+        PlayerPrefs.SetInt("IsEndlessMode", 1);
         LoadGameScene();
     }
 
@@ -407,5 +427,13 @@ public class MenuManager : MonoBehaviour
         ResetDeleteButton();
         if (anomaliesPanel != null && anomaliesPanel.activeSelf)
             RefreshAnomalyList();
+            
+        if (modeSelectionPanel != null && modeSelectionPanel.activeSelf && endlessHighScoreText != null)
+        {
+            int highScore = PlayerPrefs.GetInt("EndlessHighScore", 0);
+            string formatString = LocalizationManager.Instance != null ? 
+                LocalizationManager.Instance.GetTranslation("ui_highscore") : "Record: {0}";
+            endlessHighScoreText.text = string.Format(formatString, highScore);
+        }
     }
 }

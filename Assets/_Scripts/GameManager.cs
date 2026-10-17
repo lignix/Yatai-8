@@ -10,6 +10,7 @@ public class GameManager : MonoBehaviour
     public bool hasAnomaly = false;
     public int currentLevel = 0;
     public int winLevel = 8;
+    public bool isEndlessMode = false;
 
     [Header("Rhythm Settings (Shuffle Bag)")]
     [Range(0f, 1f)]
@@ -28,6 +29,7 @@ public class GameManager : MonoBehaviour
         else Destroy(gameObject);
 
         anomalyProbability = PlayerPrefs.GetFloat("SelectedAnomalyProbability", 0.5f);
+        isEndlessMode = PlayerPrefs.GetInt("IsEndlessMode", 0) == 1;
 
         Debug.unityLogger.logEnabled = Debug.isDebugBuild;
     }
@@ -46,14 +48,19 @@ public class GameManager : MonoBehaviour
         if (correctChoice)
         {
             currentLevel++;
-            Debug.Log($"Correct choice. Moving to level {currentLevel}.");
 
-            if (hasAnomaly)
+            if (hasAnomaly) AnomalyController.Instance.UnlockCurrentAnomaly();
+
+            if (isEndlessMode)
             {
-                AnomalyController.Instance.UnlockCurrentAnomaly();
+                int currentHighScore = PlayerPrefs.GetInt("EndlessHighScore", 0);
+                if (currentLevel > currentHighScore)
+                {
+                    PlayerPrefs.SetInt("EndlessHighScore", currentLevel);
+                    PlayerPrefs.Save();
+                }
             }
-
-            if (currentLevel >= winLevel)
+            else if (currentLevel >= winLevel)
             {
                 Debug.Log("Win condition reached. Ready for endgame teleport.");
             }
@@ -61,9 +68,7 @@ public class GameManager : MonoBehaviour
         else
         {
             currentLevel = 0;
-            Debug.Log("Wrong choice. Reset to level 0.");
-
-            // Resets the bag when the player makes a mistake to restart the rhythm fresh
+            PlayerPrefs.Save();
             RefillShuffleBag();
         }
 
@@ -121,7 +126,7 @@ public class GameManager : MonoBehaviour
 
     private void GenerateNextLoop()
     {
-        if (currentLevel >= winLevel)
+        if (!isEndlessMode && currentLevel >= winLevel)
         {
             hasAnomaly = false;
             return;

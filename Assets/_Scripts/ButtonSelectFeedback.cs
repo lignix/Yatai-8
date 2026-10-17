@@ -10,6 +10,9 @@ public class ButtonSelectFeedback : MonoBehaviour, IPointerEnterHandler, IPointe
     private Vector3 originalScale;
     private Vector3 targetScale;
 
+    private bool isHovered = false;
+    private bool isSelected = false;
+
     private void Awake()
     {
         originalScale = transform.localScale;
@@ -23,12 +26,20 @@ public class ButtonSelectFeedback : MonoBehaviour, IPointerEnterHandler, IPointe
 
     private void OnDisable()
     {
+        isHovered = false;
+        isSelected = false;
         targetScale = originalScale;
         transform.localScale = originalScale;
     }
 
-    public void OnPointerEnter(PointerEventData eventData) => targetScale = originalScale * scaleFactor;
-    public void OnPointerExit(PointerEventData eventData) => targetScale = originalScale;
-    public void OnSelect(BaseEventData eventData) => targetScale = originalScale * scaleFactor;
-    public void OnDeselect(BaseEventData eventData) => targetScale = originalScale;
+    public void OnPointerEnter(PointerEventData eventData) { isHovered = true; UpdateScale(); }
+    public void OnPointerExit(PointerEventData eventData) { isHovered = false; UpdateScale(); }
+    public void OnSelect(BaseEventData eventData) { isSelected = true; UpdateScale(); }
+    public void OnDeselect(BaseEventData eventData) { isSelected = false; UpdateScale(); }
+
+    private void UpdateScale()
+    {
+        if (isHovered || isSelected) targetScale = originalScale * scaleFactor;
+        else targetScale = originalScale;
+    }
 }

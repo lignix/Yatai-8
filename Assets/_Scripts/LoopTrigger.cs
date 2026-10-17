@@ -26,7 +26,7 @@ public class LoopTrigger : MonoBehaviour
 
                 Transform targetDestination = landingPoint;
 
-                if (GameManager.Instance.currentLevel >= GameManager.Instance.winLevel)
+                if (!GameManager.Instance.isEndlessMode && GameManager.Instance.currentLevel >= GameManager.Instance.winLevel)
                 {
                     targetDestination = endgameLandingPoint;
                 }

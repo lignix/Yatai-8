@@ -64,14 +64,14 @@ public class PlayerController : MonoBehaviour
         }
         if (cameraTransform != null)
             playerCamera = cameraTransform.GetComponent<Camera>();
+        
+        SettingsManager.OnSensitivityChanged += ApplySavedSensitivity;
+        SettingsManager.OnFOVChanged += ApplySavedFOV;
+        SettingsManager.OnSprintToggleChanged += ApplySprintSetting;
     }
 
     private void OnEnable()
     {
-        SettingsManager.OnSensitivityChanged += ApplySavedSensitivity;
-        SettingsManager.OnFOVChanged += ApplySavedFOV;
-        SettingsManager.OnSprintToggleChanged += ApplySprintSetting;
-
         ApplySavedSensitivity(PlayerPrefs.GetFloat("SensitivityPref", 1f));
         ApplySavedFOV(PlayerPrefs.GetFloat("FOVPref", 75f));
         ApplySprintSetting(PlayerPrefs.GetInt("SprintTogglePref", 0) == 1);
@@ -82,12 +82,15 @@ public class PlayerController : MonoBehaviour
 
     private void OnDisable()
     {
+        Cursor.lockState = CursorLockMode.None;
+        Cursor.visible = true;
+    }
+
+    private void OnDestroy()
+    {
         SettingsManager.OnSensitivityChanged -= ApplySavedSensitivity;
         SettingsManager.OnFOVChanged -= ApplySavedFOV;
         SettingsManager.OnSprintToggleChanged -= ApplySprintSetting;
-
-        Cursor.lockState = CursorLockMode.None;
-        Cursor.visible = true;
     }
 
     private void ApplySavedFOV(float newFOV)

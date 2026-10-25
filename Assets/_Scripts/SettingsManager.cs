@@ -1,14 +1,20 @@
 using System.Collections.Generic;
-using UnityEngine;
-using UnityEngine.UI;
 using TMPro;
+using UnityEngine;
+using UnityEngine.EventSystems;
+using UnityEngine.InputSystem;
 using UnityEngine.Rendering.Universal;
+using UnityEngine.UI;
 
 public class SettingsManager : MonoBehaviour
 {
     [Header("UI Elements")]
     public TMP_Dropdown resolutionDropdown;
     public TMP_Dropdown languageDropdown;
+
+    [Header("Slider Info Panel (Keyboard / Gamepad Guide)")]
+    public GameObject sliderInfoPanel;
+    private bool isUsingKeyboardOrGamepad = false;
 
     [Header("Volume")]
     public Slider volumeSlider;
@@ -20,6 +26,21 @@ public class SettingsManager : MonoBehaviour
 
     [Header("Graphics")]
     public TMP_Dropdown aaDropdown;
+
+    [Header("QoL & Accessibility")]
+    public Slider fovSlider;
+    public TMP_Text fovValueText;
+    public Toggle reticleToggle;
+    public Toggle sprintToggle;
+
+    public delegate void FOVChangedEvent(float newValue);
+    public static event FOVChangedEvent OnFOVChanged;
+
+    public delegate void ReticleChangedEvent(bool newValue);
+    public static event ReticleChangedEvent OnReticleChanged;
+
+    public delegate void SprintToggleChangedEvent(bool newValue);
+    public static event SprintToggleChangedEvent OnSprintToggleChanged;
 
     [Header("Sensitivity")]
     public Slider sensitivitySlider;
@@ -33,10 +54,13 @@ public class SettingsManager : MonoBehaviour
     private void Update()
     {
 #if DEVELOPMENT_BUILD || UNITY_EDITOR
-        if (UnityEngine.InputSystem.Keyboard.current != null && UnityEngine.InputSystem.Keyboard.current.f12Key.wasPressedThisFrame)
+        if (
+            UnityEngine.InputSystem.Keyboard.current != null
+            && UnityEngine.InputSystem.Keyboard.current.f12Key.wasPressedThisFrame
+        )
         {
             PlayerPrefs.DeleteAll();
-            
+
             Debug.Log("[DevTool] Reloading game...");
 
 #if UNITY_EDITOR
@@ -46,6 +70,101 @@ public class SettingsManager : MonoBehaviour
 #endif
         }
 #endif
+
+        DetectInputDevice();
+        HandleSelectedSliderInput();
+        UpdateSliderInfoPanel();
+    }
+
+    private void DetectInputDevice()
+    {
+        if (Mouse.current != null && Mouse.current.delta.ReadValue().sqrMagnitude > 0.1f)
+        {
+            isUsingKeyboardOrGamepad = false;
+        }
+
+        if (Keyboard.current != null && Keyboard.current.anyKey.wasPressedThisFrame)
+        {
+            isUsingKeyboardOrGamepad = true;
+        }
+
+        if (Gamepad.current != null)
+        {
+            if (
+                Gamepad.current.leftStick.ReadValue().sqrMagnitude > 0.1f
+                || Gamepad.current.dpad.ReadValue().sqrMagnitude > 0.1f
+                || Gamepad.current.buttonSouth.wasPressedThisFrame
+                || Gamepad.current.buttonEast.wasPressedThisFrame
+            )
+            {
+                isUsingKeyboardOrGamepad = true;
+            }
+        }
+    }
+
+    private void HandleSelectedSliderInput()
+    {
+        GameObject selectedObj =
+            EventSystem.current != null ? EventSystem.current.currentSelectedGameObject : null;
+        if (selectedObj == null)
+            return;
+
+        Slider slider = selectedObj.GetComponent<Slider>();
+        if (slider == null)
+            return;
+
+        float step = (slider.maxValue - slider.minValue) * 0.05f;
+        if (step <= 0f)
+            step = 0.1f;
+
+        float direction = 0f;
+
+        if (Keyboard.current != null)
+        {
+            if (Keyboard.current.eKey.wasPressedThisFrame)
+                direction = -1f;
+            else if (Keyboard.current.rKey.wasPressedThisFrame)
+                direction = 1f;
+        }
+
+        if (Gamepad.current != null && direction == 0f)
+        {
+            if (
+                Gamepad.current.leftShoulder.wasPressedThisFrame
+                || Gamepad.current.leftTrigger.wasPressedThisFrame
+            )
+                direction = -1f;
+            else if (
+                Gamepad.current.rightShoulder.wasPressedThisFrame
+                || Gamepad.current.rightTrigger.wasPressedThisFrame
+            )
+                direction = 1f;
+        }
+
+        if (direction != 0f)
+        {
+            slider.value = Mathf.Clamp(
+                slider.value + direction * step,
+                slider.minValue,
+                slider.maxValue
+            );
+        }
+    }
+
+    private void UpdateSliderInfoPanel()
+    {
+        if (sliderInfoPanel == null)
+            return;
+
+        GameObject selectedObj =
+            EventSystem.current != null ? EventSystem.current.currentSelectedGameObject : null;
+        bool isSliderSelected = selectedObj != null && selectedObj.GetComponent<Slider>() != null;
+
+        bool shouldShow = isSliderSelected && isUsingKeyboardOrGamepad;
+        if (sliderInfoPanel.activeSelf != shouldShow)
+        {
+            sliderInfoPanel.SetActive(shouldShow);
+        }
     }
 
     private void Start()
@@ -58,6 +177,56 @@ public class SettingsManager : MonoBehaviour
         SetupFPS();
         SetupAA();
         SetupSensitivity();
+        SetupQoL();
+        if (sliderInfoPanel != null)
+            sliderInfoPanel.SetActive(false);
+    }
+
+    private void SetupQoL()
+    {
+        if (fovSlider != null)
+        {
+            float savedFov = PlayerPrefs.GetFloat("FOVPref", 75f);
+            fovSlider.SetValueWithoutNotify(savedFov);
+            UpdateFOVText(savedFov);
+        }
+
+        if (reticleToggle != null)
+        {
+            bool isReticleOn = PlayerPrefs.GetInt("ReticlePref", 0) == 1;
+            reticleToggle.SetIsOnWithoutNotify(isReticleOn);
+        }
+
+        if (sprintToggle != null)
+        {
+            bool isSprintToggleOn = PlayerPrefs.GetInt("SprintTogglePref", 0) == 1;
+            sprintToggle.SetIsOnWithoutNotify(isSprintToggleOn);
+        }
+    }
+
+    public void SetFOV(float value)
+    {
+        PlayerPrefs.SetFloat("FOVPref", value);
+        UpdateFOVText(value);
+        OnFOVChanged?.Invoke(value);
+    }
+
+    private void UpdateFOVText(float value)
+    {
+        if (fovValueText != null)
+            fovValueText.text = Mathf.RoundToInt(value).ToString();
+    }
+
+    public void SetReticle(bool isOn)
+    {
+        PlayerPrefs.SetInt("ReticlePref", isOn ? 1 : 0);
+        OnReticleChanged?.Invoke(isOn);
+    }
+
+    public void SetSprintToggle(bool isOn)
+    {
+        PlayerPrefs.SetInt("SprintTogglePref", isOn ? 1 : 0);
+        OnSprintToggleChanged?.Invoke(isOn);
     }
 
     private void SetupResolutions()
@@ -86,7 +255,10 @@ public class SettingsManager : MonoBehaviour
                 filteredResolutions.Add(res);
                 options.Add(option);
 
-                if (res.width == Screen.currentResolution.width && res.height == Screen.currentResolution.height)
+                if (
+                    res.width == Screen.currentResolution.width
+                    && res.height == Screen.currentResolution.height
+                )
                 {
                     currentResIndex = filteredResolutions.Count - 1;
                 }
@@ -105,17 +277,19 @@ public class SettingsManager : MonoBehaviour
 
         int savedRes = PlayerPrefs.GetInt("ResolutionPref", defaultResIndex);
 
-        if (savedRes >= filteredResolutions.Count) savedRes = defaultResIndex;
+        if (savedRes >= filteredResolutions.Count)
+            savedRes = defaultResIndex;
 
         resolutionDropdown.SetValueWithoutNotify(savedRes);
         resolutionDropdown.RefreshShownValue();
         SetResolution(savedRes);
     }
+
     public void SetResolution(int index)
     {
         Resolution res = filteredResolutions[index];
         bool isFullscreen = PlayerPrefs.GetInt("FullscreenPref", 1) == 1;
-        
+
         Screen.SetResolution(res.width, res.height, isFullscreen);
         PlayerPrefs.SetInt("ResolutionPref", index);
     }
@@ -213,10 +387,17 @@ public class SettingsManager : MonoBehaviour
 
     private void UpdateFPSDropdownText()
     {
-        if (fpsDropdown != null && fpsDropdown.options.Count > 0 && LocalizationManager.Instance != null)
+        if (
+            fpsDropdown != null
+            && fpsDropdown.options.Count > 0
+            && LocalizationManager.Instance != null
+        )
         {
-            fpsDropdown.options[0].text = LocalizationManager.Instance.GetTranslation("ui_unlimited");
-            if (fpsDropdown.value == 0) fpsDropdown.captionText.text = fpsDropdown.options[0].text;
+            fpsDropdown.options[0].text = LocalizationManager.Instance.GetTranslation(
+                "ui_unlimited"
+            );
+            if (fpsDropdown.value == 0)
+                fpsDropdown.captionText.text = fpsDropdown.options[0].text;
         }
     }
 
@@ -247,7 +428,8 @@ public class SettingsManager : MonoBehaviour
         Camera targetCam = Camera.main != null ? Camera.main : FindAnyObjectByType<Camera>();
         if (targetCam != null)
         {
-            UniversalAdditionalCameraData camData = targetCam.GetComponent<UniversalAdditionalCameraData>();
+            UniversalAdditionalCameraData camData =
+                targetCam.GetComponent<UniversalAdditionalCameraData>();
             if (camData != null)
             {
                 camData.antialiasing = (AntialiasingMode)index;

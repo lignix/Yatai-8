@@ -611,3 +611,52 @@ MonoBehaviour:
     german: 'Rekord: {0}'
     japanese: "\u6700\u9AD8\u8A18\u9332 : {0}"
     simplifiedChinese: "\u6700\u9AD8\u8BB0\u5F55\uFF1A{0}"
+  - key: ui_settings_fov
+    english: Field of View
+    french: Champ de vision
+    spanish: Campo de visión
+    german: Sichtfeld
+    japanese: "\u754C\u9762\u89D2"
+    simplifiedChinese: "\u89c6\u91ce"
+  - key: ui_settings_reticle
+    english: Reticle
+    french: Réticule
+    spanish: Retícula
+    german: Fadenkreuz
+    japanese: "\u30ec\u30c1\u30af\u30eb"
+    simplifiedChinese: "\u51c6\u661f"
+  - key: ui_settings_sprint_toggle
+    english: Toggle Sprint
+    french: Sprint en bascule
+    spanish: Sprint alternado
+    german: Umschalt-Sprint
+    japanese: "\u30b9\u30d7\u30ea\u30f3\u30c8\u5207\u66ff"
+    simplifiedChinese: "\u5207\u6362\u75be\u8dd1"
+  - key: ano_missing_aircons
+    english: Missing AC units
+    french: Climatisations manquantes
+    spanish: Aires acondicionados desaparecidos
+    german: Fehlende Klimaanlagen
+    japanese: "\u6d88\u3048\u305f\u30a8\u30a2\u30b3\u30f3"
+    simplifiedChinese: "\u6d88\u5931\u7684\u7a7f\u58c1\u7a7f\u6846"
+  - key: ano_silouhette_jidouhanbaiki
+    english: Vending machine shadow face
+    french: Visage dans les distributeurs
+    spanish: Rostro en la máquina expendedora
+    german: Schatten-Gesicht im Automaten
+    japanese: "\u81ea\u8ca9\u6a5f\u306e\u5f71\u306e\u9854"
+    simplifiedChinese: "\u81ea\u552e\u673a\u9634\u5f71\u4eba\u8138"
+  - key: ano_posters_wrong_order
+    english: Posters out of order
+    french: Ordre des posters incorrect
+    spanish: Carteles en orden incorrecto
+    german: Vertauschte Poster
+    japanese: "\u30dd\u30b9\u30bf\u30fc\u306e\u9806\u756a\u304c\u9055\u3046"
+    simplifiedChinese: "\u6d77\u62a5\u987a\u5e8f\u9519\u4e71"
+  - key: ano_no_brand_jidouhanbaiki
+    english: Unbranded vending machines
+    french: Distributeurs sans marque
+    spanish: Máquinas expendedoras sin marca
+    german: Markenlose Automaten
+    japanese: "\u30ed\u30b4\u306e\u306a\u3044\u81ea\u8ca9\u6a5f"
+    simplifiedChinese: "\u65e0\u54c1\u724c\u81ea\u552e\u673a"

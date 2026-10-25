@@ -19,6 +19,9 @@ public class PlayerController : MonoBehaviour
     public float sensitivityMultiplier = 10.0f;
     public float topClamp = 90.0f;
     public float bottomClamp = -90.0f;
+    private Camera playerCamera;
+    private bool useToggleSprint = false;
+    private bool isSprintToggledOn = false;
 
     [Header("Noclip Mode (F1 to toggle)")]
     public bool enableNoclip = true;
@@ -59,12 +62,19 @@ public class PlayerController : MonoBehaviour
         {
             cameraTransform = Camera.main.transform;
         }
+        if (cameraTransform != null)
+            playerCamera = cameraTransform.GetComponent<Camera>();
     }
 
     private void OnEnable()
     {
         SettingsManager.OnSensitivityChanged += ApplySavedSensitivity;
+        SettingsManager.OnFOVChanged += ApplySavedFOV;
+        SettingsManager.OnSprintToggleChanged += ApplySprintSetting;
+
         ApplySavedSensitivity(PlayerPrefs.GetFloat("SensitivityPref", 1f));
+        ApplySavedFOV(PlayerPrefs.GetFloat("FOVPref", 75f));
+        ApplySprintSetting(PlayerPrefs.GetInt("SprintTogglePref", 0) == 1);
 
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
@@ -73,9 +83,23 @@ public class PlayerController : MonoBehaviour
     private void OnDisable()
     {
         SettingsManager.OnSensitivityChanged -= ApplySavedSensitivity;
+        SettingsManager.OnFOVChanged -= ApplySavedFOV;
+        SettingsManager.OnSprintToggleChanged -= ApplySprintSetting;
 
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
+    }
+
+    private void ApplySavedFOV(float newFOV)
+    {
+        if (playerCamera != null)
+            playerCamera.fieldOfView = newFOV;
+    }
+
+    private void ApplySprintSetting(bool useToggle)
+    {
+        useToggleSprint = useToggle;
+        isSprintToggledOn = false;
     }
 
     private void Start()
@@ -111,25 +135,44 @@ public class PlayerController : MonoBehaviour
 
     private void HandleNormalMovement()
     {
-        bool isSprinting = playerInput != null && playerInput.actions != null && playerInput.actions["Sprint"].IsPressed();
-        float currentSpeed = isSprinting ? sprintSpeed : moveSpeed;
-
         Vector2 moveInput = Vector2.zero;
         if (playerInput != null && playerInput.actions != null)
         {
             InputAction moveAction = playerInput.actions["Move"];
             if (moveAction != null)
-            {
                 moveInput = moveAction.ReadValue<Vector2>();
+        }
+
+        bool isSprinting = false;
+        if (playerInput != null && playerInput.actions != null)
+        {
+            InputAction sprintAction = playerInput.actions["Sprint"];
+            if (useToggleSprint)
+            {
+                if (sprintAction.WasPressedThisFrame())
+                    isSprintToggledOn = !isSprintToggledOn;
+
+                if (moveInput.sqrMagnitude < 0.01f)
+                    isSprintToggledOn = false;
+
+                isSprinting = isSprintToggledOn;
+            }
+            else
+            {
+                isSprinting = sprintAction.IsPressed();
+                isSprintToggledOn = false;
             }
         }
+
+        float currentSpeed = isSprinting ? sprintSpeed : moveSpeed;
 
         Vector3 moveDirection = transform.right * moveInput.x + transform.forward * moveInput.y;
         moveDirection.Normalize();
 
         if (controller.isGrounded)
         {
-            if (verticalVelocity < 0.0f) verticalVelocity = -2f;
+            if (verticalVelocity < 0.0f)
+                verticalVelocity = -2f;
         }
         else
         {
@@ -180,24 +223,40 @@ public class PlayerController : MonoBehaviour
             noclipRotY = Mathf.Clamp(noclipRotY, -90f, 90f);
         }
 
-        currentNoclipRotX = Mathf.Lerp(currentNoclipRotX, noclipRotX, noclipSmoothing * Time.deltaTime);
-        currentNoclipRotY = Mathf.Lerp(currentNoclipRotY, noclipRotY, noclipSmoothing * Time.deltaTime);
+        currentNoclipRotX = Mathf.Lerp(
+            currentNoclipRotX,
+            noclipRotX,
+            noclipSmoothing * Time.deltaTime
+        );
+        currentNoclipRotY = Mathf.Lerp(
+            currentNoclipRotY,
+            noclipRotY,
+            noclipSmoothing * Time.deltaTime
+        );
 
         transform.rotation = Quaternion.Euler(currentNoclipRotY, currentNoclipRotX, 0f);
-        if (cameraTransform != null) cameraTransform.localRotation = Quaternion.identity;
+        if (cameraTransform != null)
+            cameraTransform.localRotation = Quaternion.identity;
 
         float speed = noclipSpeed;
-        if (Keyboard.current != null && Keyboard.current.leftShiftKey.isPressed) speed *= noclipFastMultiplier;
+        if (Keyboard.current != null && Keyboard.current.leftShiftKey.isPressed)
+            speed *= noclipFastMultiplier;
 
         Vector3 noclipDir = Vector3.zero;
         if (Keyboard.current != null)
         {
-            if (Keyboard.current.wKey.isPressed || Keyboard.current.zKey.isPressed) noclipDir += transform.forward;
-            if (Keyboard.current.sKey.isPressed) noclipDir -= transform.forward;
-            if (Keyboard.current.dKey.isPressed) noclipDir += transform.right;
-            if (Keyboard.current.qKey.isPressed || Keyboard.current.aKey.isPressed) noclipDir -= transform.right;
-            if (Keyboard.current.eKey.isPressed) noclipDir += Vector3.up;
-            if (Keyboard.current.xKey.isPressed) noclipDir -= Vector3.up;
+            if (Keyboard.current.wKey.isPressed || Keyboard.current.zKey.isPressed)
+                noclipDir += transform.forward;
+            if (Keyboard.current.sKey.isPressed)
+                noclipDir -= transform.forward;
+            if (Keyboard.current.dKey.isPressed)
+                noclipDir += transform.right;
+            if (Keyboard.current.qKey.isPressed || Keyboard.current.aKey.isPressed)
+                noclipDir -= transform.right;
+            if (Keyboard.current.eKey.isPressed)
+                noclipDir += Vector3.up;
+            if (Keyboard.current.xKey.isPressed)
+                noclipDir -= Vector3.up;
         }
 
         transform.position += noclipDir * speed * Time.deltaTime;
